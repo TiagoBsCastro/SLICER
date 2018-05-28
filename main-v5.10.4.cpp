@@ -32,12 +32,12 @@
 /*    This code has been adapted to run on Magneticum simulations:           */
 /*    other functionalities removed for simplicity                           */
 /*                                                                           */
-/*      - Proper mass assignment to Hydro particles        		               */
+/*      - Proper mass assignment to Hydro particles        		     */
 /*      - Proper mass assignment to  BH   particles                          */
-/*	- Bug fixed: Proper construction of light-cones in case of few           */
+/*	- Bug fixed: Proper construction of light-cones in case of few       */
 /*                   snapshots                                               */
 /*                                                                           */
-/*                              adapted  by Tiago Castro castro@if.ufrj.br   */
+/*                        adapted  by Tiago Castro tiagobscastro@gmail.com   */
 /*****************************************************************************/
 
 using namespace std;
