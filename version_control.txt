@@ -22,6 +22,7 @@ main-v5.cpp -> Checking if the map was already created allowing to continue quit
 		main-v5.10.2.cpp -> Bug fix of particle angular position assignment
 		main-v5.10.3.cpp -> Proper mass assignemnt on borders
 		main-v5.10.4.cpp -> New directive to control how many BLOCKs (NBLOKS) should be skiped before reading the particle positions 
+                main-v5.10.5.cpp -> New lens plane construction (...)
 	
 -------------------------------------# From this point forward v5.10 bugfix still has to be applyed #--------------------------------
 
