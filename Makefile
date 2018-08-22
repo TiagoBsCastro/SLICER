@@ -1,7 +1,7 @@
 # executable name
-PROG = bin/MapSim-v5.10.4.Pinocchio
+PROG = bin/MapSim-v5.10.5
 
-MAIN = main-v5.10.4.cpp  util.cpp
+MAIN = main-v5.10.5.cpp  util.cpp
 
 LDFLAGS += -Wl,-rpath  -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
 
@@ -10,7 +10,7 @@ ALLFLAGS =  -I/$(SCRATCH)/include/ \
             -I/$(SCRATCH)/include/CCfits/ \
 	    -I./
 
-LIBS = -L$(SCRATCH)/lib/ 
+LIBS = -L$(SCRATCH)/lib/
 
 DEBUG = -g -O3 -fast -Wpedantic
 CC = g++
