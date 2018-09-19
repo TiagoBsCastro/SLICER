@@ -68,14 +68,14 @@ int main(int argc, char** argv){
   MPI_Barrier(MPI_COMM_WORLD);
 
   string inifile=argv[1]; // Paramfile name
-
-  cout << "   ------------------------------------------------------ " << endl;
-  cout << "   -                                                    - " << endl;
-  cout << "   -           2D Mapping Simulation Snapshot           - " << endl;
-  cout << "   -                                                    - " << endl;
-  cout << "   -               collapsing one dimension             - " << endl;
-  cout << "   ------------------------------------------------------ " << endl;
-
+  if (myid==0){
+    cout << "   ------------------------------------------------------ " << endl;
+    cout << "   -                                                    - " << endl;
+    cout << "   -           2D Mapping Simulation Snapshot           - " << endl;
+    cout << "   -                                                    - " << endl;
+    cout << "   -               collapsing one dimension             - " << endl;
+    cout << "   ------------------------------------------------------ " << endl;
+  }
   // ... masses of the different type of particles
   double m0,m1,m2,m3,m4,m5;
   // ******************** to be read in the INPUT file ********************
@@ -151,15 +151,15 @@ int main(int argc, char** argv){
   }
 
   int nsnaps = lsnap.size();
-
-  cout << "  " << endl;
-  cout << " opening path for snapshots: " << endl;
-  cout << pathsnap << endl;
-  cout << " " << endl;
-  cout << " I will look for comoving distance " << endl;
-  cout << "      file = " << idc << endl;
-  cout << " " << endl;
-
+  if (myid==0){
+    cout << "  " << endl;
+    cout << " opening path for snapshots: " << endl;
+    cout << pathsnap << endl;
+    cout << " " << endl;
+    cout << " I will look for comoving distance " << endl;
+    cout << "      file = " << idc << endl;
+    cout << " " << endl;
+  }
   ifstream infiledc;
   vector<double> zl, dl;
   infiledc.open(idc.c_str());
