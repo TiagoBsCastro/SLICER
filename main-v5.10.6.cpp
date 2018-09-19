@@ -10,7 +10,7 @@
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define POS_U 1   // Unit conversion from BoxSize unit lengh to kpc/h
 #define NBLOCKS 1 // Number of blocks to be fastforwarded
-#define numberOfLensPerSnap 2 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
 
 /*****************************************************************************/
 /*                                                                           */
@@ -245,22 +245,23 @@ int main(int argc, char** argv){
   string planes_list;
   planes_list = directory+"planes_list_"+suffix+".txt";
 
-  if (myid==0){
-
+  
+  if (myid==0)
     planelist.open(planes_list.c_str());
 
-    for(int i=0;i<fromsnap.size();i++){
+  for(int i=0;i<fromsnap.size();i++){
 
+    if (myid==0){
       cout << zsimlens[i] << " planes = " << ld[i] << "  " << ld2[i] << "  " << replication[i] << " from snap " << fromsnap[i] << endl;
       planelist <<  i << "   " << zsimlens[i] << "   " << ld[i] << "   " << ld2[i] << "   " << replication[i] << "   " << fromsnap[i]
       << "   " << zfromsnap[i] << "  "<< randomize[i]  << endl;
-      pll.push_back(i);
-
     }
-
-    planelist.close();
+    pll.push_back(i);
 
   }
+
+  if (myid==0)
+    planelist.close();
 
   // randomization of the box realizations :
   int nrandom = replication.back();
@@ -284,7 +285,7 @@ int main(int argc, char** argv){
       srand(seedface+i/numberOfLensPerSnap*5);
       while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
       if (myid==0)
-        cout << " face of the dice " << face[i] << std:: endl;
+        cout << " face of the dice " << face[i] << endl;
       sgnX[i] = 2;
       srand(seedsign+i/numberOfLensPerSnap*8);
       while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
@@ -330,7 +331,7 @@ int main(int argc, char** argv){
     cout << " field view too large ... I will STOP here!!! " << endl;
     cout << " value set is = " << fov << endl;
     cout << " maximum value allowed " << boxl/Ds*180./M_PI << " in degrees " << endl;
-    MPI_Abort(MPI_COMM_WORLD,-1);;
+    MPI_Abort(MPI_COMM_WORLD,-1);
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
@@ -340,13 +341,14 @@ int main(int argc, char** argv){
     cout << " now loop on " << replication.back() << " planes " << endl;
     cout << "  " << endl;
   }
+
   for(int nsnap=0;nsnap<replication.back();nsnap++){
 
     if(ld2[nsnap]-ld[nsnap] < 0 && myid==0){
       cout << " comoving distance of the starting point " << ld[nsnap] << endl;
       cout << " comoving distance of the final    point " << ld2[nsnap] << endl;
       cout << " please check this out! I will STOP here!!! " << endl;
-      MPI_Abort(MPI_COMM_WORLD,-1);;
+      MPI_Abort(MPI_COMM_WORLD,-1);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     //float rcase = ld[nsnap]/boxl*numberOfLensPerSnap; //Number of piled boxes
@@ -485,9 +487,11 @@ int main(int argc, char** argv){
 
       for (int i=0; i < NBLOCKS; i++){
 
-        if (i==0 && myid==0){
-          cout << "Size of Header is " << sizeof(data) << endl;
-          cout << "Should be         " << block.blocksize1 << endl;
+        if (i==0 ){
+          if (myid==0){
+	          cout << "Size of Header is " << sizeof(data) << endl;
+	          cout << "Should be         " << block.blocksize1 << endl;
+          }
         }else{
           fin >> block;
         }
@@ -552,9 +556,11 @@ int main(int argc, char** argv){
 	        zsim = data.redshift;
 	        dlsim = getY(zl,dl,zsim);
 	        h0 = data.h;
+          if (myid==0){
 	        cout << "  " << endl;
 	        cout << "      __________________ COSMOLOGY __________________  " << endl;
 	        cout << " " << endl;
+          }
 	        om0 = data.om0;
 	        omL0 = data.oml;
           if (myid==0){
@@ -1054,14 +1060,18 @@ int main(int argc, char** argv){
       int n4 = xx4.size();
       int n5 = xx5.size();
 
-      cout << "  " << endl;
-      cout << n0 <<"   type (0) particles selected until now"<<endl;
-      cout << n1 <<"   type (1) particles selected until now"<<endl;
-      cout << n2 <<"   type (2) particles selected until now"<<endl;
-      cout << n3 <<"   type (3) particles selected until now"<<endl;
-      cout << n4 <<"   type (4) particles selected until now"<<endl;
-      cout << n5 <<"   type (5) particles selected until now"<<endl;
-      cout << "  " << endl;
+      if (myid==0){
+
+	      cout << "  " << endl;
+	      cout << n0 <<"   type (0) particles selected until now"<<endl;
+	      cout << n1 <<"   type (1) particles selected until now"<<endl;
+	      cout << n2 <<"   type (2) particles selected until now"<<endl;
+	      cout << n3 <<"   type (3) particles selected until now"<<endl;
+	      cout << n4 <<"   type (4) particles selected until now"<<endl;
+	      cout << n5 <<"   type (5) particles selected until now"<<endl;
+	      cout << "  " << endl;
+
+      }
 
       int totPartxy0;
       int totPartxy1;
@@ -1099,7 +1109,8 @@ int main(int argc, char** argv){
 	        cout << "zmin = " << zmin << endl;
 	        cout << "zmax = " << zmax << endl;
 	        cout << "  0 type check this!!! I will STOP here!!! " << endl;
-	        MPI_Abort(MPI_COMM_WORLD,-1);
+	        cout << "Aborting from Rank "<< myid << endl;
+		MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0){
 	         cout << " ... mapping type 0 particles on the grid with " << npix << " pixels" << endl;
@@ -1597,19 +1608,28 @@ int main(int argc, char** argv){
       mapxytot2+=mapxy2;
       mapxytot3+=mapxy3;
       mapxytot4+=mapxy4;
-      mapxytot5+=mapxy5;
-
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot[0],  npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot0[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot1[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot2[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot3[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot4[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-      MPI_Reduce( MPI_IN_PLACE, &mapxytot5[0], npix*npix, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+      mapxytot5+=mapxy5;     
 
       if (myid==0)
         cout << " done map*tot " << endl;
     }
+
+    valarray<float> mapxytotrecv( npix*npix );
+    valarray<float> mapxytot0recv( npix*npix );
+    valarray<float> mapxytot1recv( npix*npix );
+    valarray<float> mapxytot2recv( npix*npix );
+    valarray<float> mapxytot3recv( npix*npix );
+    valarray<float> mapxytot4recv( npix*npix );
+    valarray<float> mapxytot5recv( npix*npix );
+
+    MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot0[0], &mapxytot0recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot1[0], &mapxytot1recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot2[0], &mapxytot2recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot3[0], &mapxytot3recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot4[0], &mapxytot4recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot5[0], &mapxytot5recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
     if (myid==0){
       if(partinplanes=="ALL"){
 	       /*
@@ -1626,7 +1646,7 @@ int main(int argc, char** argv){
 	        naxex[0]=npix;
 	        naxex[1]=npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytot );
+	        phxy->write( 1, npix*npix, mapxytotrecv );
 	        // phxy->addKey ("x0",x0," unit of the boxsize");
 	        // phxy->addKey ("y0",y0," unit of the boxsize");
 	        phxy->addKey ("REDSHIFT",zsim," ");
@@ -1665,7 +1685,7 @@ int main(int argc, char** argv){
 	         naxex[0]=npix;
 	         naxex[1]=npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot0 );
+	         phxy->write( 1, npix*npix, mapxytot0recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
 	         phxy->addKey ("PHYSICALSIZE",fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
@@ -1689,7 +1709,7 @@ int main(int argc, char** argv){
 	        naxex[0]=npix;
 	        naxex[1]=npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytot1 );
+	        phxy->write( 1, npix*npix, mapxytot1recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
 	        phxy->addKey ("PHYSICALSIZE",fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
@@ -1713,7 +1733,7 @@ int main(int argc, char** argv){
 	        naxex[0]=npix;
 	        naxex[1]=npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytot2 );
+	        phxy->write( 1, npix*npix, mapxytot2recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
 	        phxy->addKey ("PHYSICALSIZE",fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
@@ -1737,7 +1757,7 @@ int main(int argc, char** argv){
 	        naxex[0]=npix;
 	        naxex[1]=npix;
 	        PHDU *phxy=&ffxy->pHDU();
-          phxy->write( 1, npix*npix, mapxytot3 );
+          phxy->write( 1, npix*npix, mapxytot3recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
 	        phxy->addKey ("PHYSICALSIZE",fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
@@ -1761,7 +1781,7 @@ int main(int argc, char** argv){
 	         naxex[0]=npix;
 	         naxex[1]=npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot4 );
+	         phxy->write( 1, npix*npix, mapxytot4recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
 	         phxy->addKey ("PHYSICALSIZE",fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
@@ -1785,7 +1805,7 @@ int main(int argc, char** argv){
 	         naxex[0]=npix;
 	         naxex[1]=npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot5 );
+	         phxy->write( 1, npix*npix, mapxytot5recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
 	         phxy->addKey ("PHYSICALSIZE",fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
