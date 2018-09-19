@@ -234,10 +234,10 @@ int main(int argc, char** argv){
   }while(ldbut<dlup);
 
   for ( int i=0; i<nrepi+1; i++ ) replication.push_back(nrep); // Last plane replications
-
-  cout << " Comoving Distance of the last plane " << Ds << endl;
-  cout << " nsnaps = " << nsnaps << endl;
-
+  if (myid==0){
+    cout << " Comoving Distance of the last plane " << Ds << endl;
+    cout << " nsnaps = " << nsnaps << endl;
+  }
   //int pl=0;
   vector<int> pll;
 
@@ -283,7 +283,8 @@ int main(int argc, char** argv){
       face[i] = 7;
       srand(seedface+i/numberOfLensPerSnap*5);
       while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
-      std:: cout << " face of the dice " << face[i] << std:: endl;
+      if (myid==0)
+        cout << " face of the dice " << face[i] << std:: endl;
       sgnX[i] = 2;
       srand(seedsign+i/numberOfLensPerSnap*8);
       while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
@@ -308,7 +309,8 @@ int main(int argc, char** argv){
         cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
       }
       face[i] = face[i-1];
-      std:: cout << " face of the dice " << face[i] << std:: endl;
+      if (myid==0)
+        cout << " face of the dice " << face[i] << endl;
       sgnX[i] = sgnX[i-1];
       sgnY[i] = sgnY[i-1];
       sgnZ[i] = sgnZ[i-1];
