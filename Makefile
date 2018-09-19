@@ -1,19 +1,21 @@
 # executable name
-PROG = bin/MapSim-v5.10.5
+PREFIXDIR = /data/tiago/
+PROG = $(PREFIXDIR)/bin/MapSim-v5.10.6
 
-MAIN = main-v5.10.5.cpp  util.cpp
+MAIN = main-v5.10.6.cpp  util.cpp
 
-LDFLAGS += -Wl,-rpath  -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
+LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio -lcurl
 
-ALLFLAGS =  -I/$(SCRATCH)/include/ \
-            -I/$(SCRATCH)/include/gsl/ \
-            -I/$(SCRATCH)/include/CCfits/ \
+ALLFLAGS =  -I/$(PREFIXDIR)/include/ \
+            -I/$(PREFIXDIR)/include/gsl/ \
+            -I/$(PREFIXDIR)/include/CCfits/ \
+            -I/$(PREFIXDIR)/include/curl/ \
 	    -I./
 
-LIBS = -L$(SCRATCH)/lib/
+LIBS = -L$(PREFIXDIR)/lib/
 
 DEBUG = -g -O3 -fast -Wpedantic
-CC = g++
+CC = mpic++
 RM = rm -f -r
 OBJ = $(SOURCES:.cpp=.o)
 
