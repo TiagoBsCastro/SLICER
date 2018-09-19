@@ -168,7 +168,8 @@ int main(int argc, char** argv){
     while(infiledc >> zi >> dli){
       zl.push_back(zi);
       dl.push_back(dli*speedcunit); // on Mpc/h
-      cout << zi << "  " << dli*speedcunit << endl;
+      if (myid==0)
+        cout << zi << "  " << dli*speedcunit << endl;
     }
     infiledc.close();
   }
