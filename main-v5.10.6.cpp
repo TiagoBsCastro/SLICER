@@ -1594,7 +1594,6 @@ int main(int argc, char** argv){
 	          for(int l=0;l<npix*npix;l++) mapxy5[l]=mapxy5[l]/mtot5*mnorm;
 	        }
       }
-      cout << " maps done! from Rank:" << myid << endl;
 
       if(hydro){
 	      fin.clear();
@@ -1621,6 +1620,8 @@ int main(int argc, char** argv){
     valarray<float> mapxytot3recv( npix*npix );
     valarray<float> mapxytot4recv( npix*npix );
     valarray<float> mapxytot5recv( npix*npix );
+
+    cout << " maps done! from Rank:" << myid << endl;
 
     MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
     MPI_Reduce( &mapxytot0[0], &mapxytot0recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
