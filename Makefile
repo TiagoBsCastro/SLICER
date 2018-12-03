@@ -1,8 +1,8 @@
 # executable name
 PREFIXDIR = /data/tiago/
-PROG = $(PREFIXDIR)/bin/MapSim-v5.10.6
+PROG = $(PREFIXDIR)/bin/MapSim-v6
 
-MAIN = main-v5.10.6.cpp  util.cpp
+MAIN = main-v6.cpp  util.cpp
 
 LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio -lcurl
 
