@@ -1,51 +1,5 @@
 #include "util.h"
 
-/*template <class T>
-int locate (const std::vector<T> &v, const T x){
-  size_t n = v.size ();
-  int jl = -1;
-  int ju = n;
-  bool as = (v[n-1] >= v[0]);
-  while (ju-jl > 1){
-    int jm = (ju+jl)/2;
-    if ((x >= v[jm]) == as)
-      jl=jm;
-    else
-      ju=jm;
-  }
-  if (x == v[0])
-    return 0;
-  else if (x == v[n-1])
-    return n-2;
-  else
-    return jl;
-}
-
-double getY(vector<double> x,vector<double> y,double xi){  // Interpolated routine to calculate y(xi)
-  int nn = x.size();
-  if(x[0]<x[nn-1]){
-    if(xi>x[nn-1]) return y[nn-1];
-    if(xi<x[0]) return y[0];
-  }
-  else{
-    if(xi<x[nn-1]) return y[nn-1];
-    if(xi>x[0]) return y[0];
-  }
-  int i = locate (x,xi);
-  i = min (max (i,0), int (nn)-2);
-  double f=(xi-x[i])/(x[i+1]-x[i]);
-  if(i>1 && i<nn-2){
-    double a0,a1,a2,a3,f2;
-    f2 = f*f;
-    a0 = y[i+2] - y[i+1] - y[i-1] + y[i];
-    a1 = y[i-1] - y[i] - a0;
-    a2 = y[i+1] - y[i-1];
-    a3 = y[i];
-    return a0*f*f2+a1*f2+a2*f+a3;
-  }
-  else return f*y[i+1]+(1-f)*y[i];
-}
-*/
 int getSnap (vector <double> & zsnap, vector <double> & dl, vector <double> & zl, double dlens){
 
   int pos;
@@ -62,18 +16,6 @@ int getSnap (vector <double> & zsnap, vector <double> & dl, vector <double> & zl
   return pos;
 }
 
-float weight (float ixx, float ixh, double dx) {
-  float DD = ixx-ixh;
-  float x=fabs(DD)/dx;
-  float w;
-
-   if(fabs(DD)<=0.5*dx)
-     w=3./4.-x*x;
-   else if(fabs(DD)>0.5*dx && fabs(DD)<=0.5*3.0*dx)
-     w=0.5*((3./2.-x)*(3./2.-x));
-   else w=0.;
-   return w;
-}
 // grid points distribution function with != wheights
 valarray<float> gridist_w (vector<float> x, vector<float> y , vector<float> w, int nn){
   valarray<float> grxy( nn*nn );

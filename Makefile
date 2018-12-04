@@ -2,7 +2,7 @@
 PREFIXDIR = /home/tiago/
 PROG = $(PREFIXDIR)/bin/MapSim-v6
 
-MAIN = main-v6.cpp  util.cpp cosmology.cpp
+MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
 
 LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio # -lcurl
 

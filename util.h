@@ -119,7 +119,7 @@ int getSnap (vector <double> &, vector <double> &, vector <double> &, double );
 template <class T>
 int locate (const std::vector<T> &v, const T);
 
-float weight (float, float, double);
+//float weight (float, float, double);
 
 valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 
