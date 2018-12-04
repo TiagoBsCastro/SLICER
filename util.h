@@ -170,6 +170,8 @@ float weight (float, float, double);
 // grid points distribution function with != wheights
 valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 
+void readInput(struct InputParams *p, std::string name);
+
 void getPolar(double, double, double, double *ra, double *dec, double *d);
 
 template <class ForwardIterator>

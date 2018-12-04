@@ -10,7 +10,7 @@
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define POS_U 1   // Unit conversion from BoxSize unit lengh to kpc/h
 #define NBLOCKS 1 // Number of blocks to be fastforwarded
-#define DO_NGP False // Use NGP as the MAS
+#define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
 
 /*****************************************************************************/
@@ -86,7 +86,7 @@ int main(int argc, char** argv){
   struct InputParams p;
   readInput(&p, inifile);
 
-  if(sn_opt<0 && myid==0){
+  if(p.snopt<0 && myid==0){
     cout << "Impossible value for Shot-Noise option!" << endl;
     MPI_Abort(MPI_COMM_WORLD,-1);;
   }
@@ -94,12 +94,12 @@ int main(int argc, char** argv){
 
   double Omega_matter,Omega_lambda,Omega_baryon,hubble;
   string snpix;
-  bool do_as_t11=(npix<0);
+  bool do_as_t11=(p.npix<0);
   int rgrid;
 
-  if(!do_as_t11) snpix=conv(npix,fINT);
+  if(!do_as_t11) snpix=conv(p.npix,fINT);
   else{
-    int n = -npix;
+    int n = -p.npix;
     snpix=conv(n,fINT);
     snpix+="_kpc";
     rgrid=n;
@@ -108,7 +108,7 @@ int main(int argc, char** argv){
   // ... read the redshift list and the snap_available
   // ... to build up the light-cone
   ifstream redlist;
-  redlist.open(filredshiftlist.c_str());
+  redlist.open(p.filredshiftlist.c_str());
   vector <string> lsnap; //lsnap and lred are the selected snapshots selected (z<zs + the first snapshot deeper than zs)
   vector<double> lred;
 
@@ -118,10 +118,10 @@ int main(int argc, char** argv){
     do{
       redlist >> buta >> butb >> butc;
       if (myid==0)
-        cout << butb << " " << zs << endl;
+        cout << butb << " " << p.zs << endl;
 	    lsnap.push_back(buta); // Selected snapshots number and redshift
 	    lred.push_back(butb);
-    }while(butb<zs);
+    }while(butb<p.zs);
   }else{
     cout << " redshift list file redshift_list.txt does not " << endl;
     cout << " exist in the Code dir ... check this out      " << endl;
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
   if (myid==0){
     cout << "  " << endl;
     cout << " opening path for snapshots: " << endl;
-    cout << pathsnap << endl;
+    cout << p.pathsnap << endl;
   }
 
   /* Read the Snap Header and get Cosmological Values*/
@@ -159,12 +159,12 @@ int main(int argc, char** argv){
   do{
     nrep++;
     nrepi++;
-    ldbut=dllow+nrep*boxl/numberOfLensPerSnap;
-    double dlens=ldbut-0.5*boxl/numberOfLensPerSnap;
+    ldbut=dllow+nrep*p.boxl/numberOfLensPerSnap;
+    double dlens=ldbut-0.5*p.boxl/numberOfLensPerSnap;
     int pos_temp = getSnap(lred, dl, zl, dlens);
     if (myid==0)
       cout << " simulation snapshots = " << ldbut << "  " << getY(dl,zl,ldbut) << "  " << nrep << " from snap " << lsnap[pos_temp] << "  " << getY(dl,zl,dlens) << endl;
-    ld.push_back(ldbut-boxl/numberOfLensPerSnap);
+    ld.push_back(ldbut-p.boxl/numberOfLensPerSnap);
     ld2.push_back(ldbut);
     zfromsnap.push_back(lred[pos_temp]);
     if ( nrep != 1 && pos_temp != pos){
@@ -191,9 +191,9 @@ int main(int argc, char** argv){
 
   ofstream planelist;
   string planes_list;
-  planes_list = directory+"planes_list_"+suffix+".txt";
+  planes_list = p.directory+"planes_list_"+p.suffix+".txt";
 
-  
+
   if (myid==0)
     planelist.open(planes_list.c_str());
 
@@ -221,7 +221,7 @@ int main(int argc, char** argv){
 
     if ( randomize[i] ){
 
-      srand(seedcenter+i/numberOfLensPerSnap*13);
+      srand(p.seedcenter+i/numberOfLensPerSnap*13);
       x0[i] = rand() / float(RAND_MAX);
       y0[i] = rand() / float(RAND_MAX);
       z0[i] = rand() / float(RAND_MAX);
@@ -230,12 +230,12 @@ int main(int argc, char** argv){
         cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
       }
       face[i] = 7;
-      srand(seedface+i/numberOfLensPerSnap*5);
+      srand(p.seedface+i/numberOfLensPerSnap*5);
       while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
       if (myid==0)
         cout << " face of the dice " << face[i] << endl;
       sgnX[i] = 2;
-      srand(seedsign+i/numberOfLensPerSnap*8);
+      srand(p.seedsign+i/numberOfLensPerSnap*8);
       while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
       sgnY[i] = 2;
       while(sgnY[i] > 1 || sgnY[i] < 0) sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
@@ -273,12 +273,12 @@ int main(int argc, char** argv){
     cout << " set the field of view to be square in degrees " << endl;
   double h0,fovradiants;
   double om0, omL0;
-  fovradiants = fov/180.*M_PI;
+  fovradiants = p.fov/180.*M_PI;
   // check if the field of view is too large with respect to the box size
-  if(fovradiants*Ds>boxl && myid==0){
+  if(fovradiants*Ds>p.boxl && myid==0){
     cout << " field view too large ... I will STOP here!!! " << endl;
-    cout << " value set is = " << fov << endl;
-    cout << " maximum value allowed " << boxl/Ds*180./M_PI << " in degrees " << endl;
+    cout << " value set is = " << p.fov << endl;
+    cout << " maximum value allowed " << p.boxl/Ds*180./M_PI << " in degrees " << endl;
     MPI_Abort(MPI_COMM_WORLD,-1);
   }
 
@@ -299,38 +299,38 @@ int main(int argc, char** argv){
       MPI_Abort(MPI_COMM_WORLD,-1);
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    //float rcase = ld[nsnap]/boxl*numberOfLensPerSnap; //Number of piled boxes
-    float rcase = floor(ld[nsnap]/boxl); //Number of piled boxes
+    //float rcase = ld[nsnap]/p.boxl*numberOfLensPerSnap; //Number of piled boxes
+    float rcase = floor(ld[nsnap]/p.boxl); //Number of piled boxes
 
-    if (do_as_t11) npix=int((ld2[nsnap]+ld[nsnap])/2*fovradiants/rgrid*1e3)+1; //Override npix if do_as_t11 is True
+    if (do_as_t11) p.npix=int((ld2[nsnap]+ld[nsnap])/2*fovradiants/rgrid*1e3)+1; //Override p.npix if do_as_t11 is True
 
-    valarray<float> mapxytot( npix*npix );
+    valarray<float> mapxytot( p.npix*p.npix );
     // type 0
     int ntotxy0;
     ntotxy0 = 0;
-    valarray<float> mapxytot0( npix*npix );
+    valarray<float> mapxytot0( p.npix*p.npix );
     // type 1
     int ntotxy1;
     ntotxy1 = 0;
-    valarray<float> mapxytot1( npix*npix );
+    valarray<float> mapxytot1( p.npix*p.npix );
     // type 2
     int ntotxy2;
     ntotxy2 = 0;
-    valarray<float> mapxytot2( npix*npix );
+    valarray<float> mapxytot2( p.npix*p.npix );
     // type 3
     int ntotxy3;
     ntotxy3 = 0;
-    valarray<float> mapxytot3( npix*npix );
+    valarray<float> mapxytot3( p.npix*p.npix );
     // type 4
     int ntotxy4;
     ntotxy4 = 0;
-    valarray<float> mapxytot4( npix*npix );
+    valarray<float> mapxytot4( p.npix*p.npix );
     // type 5
     int ntotxy5;
     ntotxy5 = 0;
-    valarray<float> mapxytot5( npix*npix );
+    valarray<float> mapxytot5( p.npix*p.npix );
 
-    string File = pathsnap+fromsnap[nsnap];
+    string File = p.pathsnap+fromsnap[nsnap];
 
     string snappl;
     if( pll[nsnap]<10) snappl = "00"+conv(pll[nsnap],fINT);
@@ -338,9 +338,9 @@ int main(int argc, char** argv){
     else snappl = conv(pll[nsnap],fINT);
     string Filesub;
 
-    if(ifstream(directory+simulation+"."+snappl+".plane_"+snpix+"_"+suffix+".fits") && partinplanes == "ALL"){
+    if(ifstream(p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits") && p.partinplanes == false){
       if (myid==0)
-        cout << directory+simulation+"."+snappl+".plane_"+snpix+"_"+suffix+".fits" << " "<< "Already exists" <<endl;
+        cout << p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits" << " "<< "Already exists" <<endl;
       continue; // If this lens plane was already created go to the next one
     }
 
@@ -349,9 +349,9 @@ int main(int argc, char** argv){
     // redshift and dl of the simulation
     double zsim, dlsim;
     int intdiv, remaindiv,ffmin,ffmax;
-    //Computing Working Balance
-    intdiv=nfiles/numprocs;
-    remaindiv=nfiles%numprocs;
+    //Computing Working Balance (!!THIS IS A VERY STUPID WORKBALANCE!!)
+    intdiv=p.nfiles/numprocs;
+    remaindiv=p.nfiles%numprocs;
 
     if(myid!=numprocs-1){
       ffmin=myid*intdiv;
@@ -363,12 +363,12 @@ int main(int argc, char** argv){
 
     for (unsigned int ff=ffmin; ff<ffmax; ff++){
       // map for each mass type
-      valarray<float> mapxy0( npix*npix );
-      valarray<float> mapxy1( npix*npix );
-      valarray<float> mapxy2( npix*npix );
-      valarray<float> mapxy3( npix*npix );
-      valarray<float> mapxy4( npix*npix );
-      valarray<float> mapxy5( npix*npix );
+      valarray<float> mapxy0( p.npix*p.npix );
+      valarray<float> mapxy1( p.npix*p.npix );
+      valarray<float> mapxy2( p.npix*p.npix );
+      valarray<float> mapxy3( p.npix*p.npix );
+      valarray<float> mapxy4( p.npix*p.npix );
+      valarray<float> mapxy5( p.npix*p.npix );
 
       // GADGET has 6 different particle type
       vector<float> xx0(0), yy0(0), zz0(0);
@@ -516,9 +516,9 @@ int main(int argc, char** argv){
 	           cout << "           h = " << data.h   << " " << "BoxSize = " << data.boxsize*POS_U << endl;
 	           cout << "      redshift = " << zsim <<   " " << "Dl (comoving) = " << dlsim << endl;
           }
-          if(abs(boxl - data.boxsize*POS_U/1.e+3)>1.e-2 && myid==0){
+          if(abs(p.boxl - data.boxsize*POS_U/1.e+3)>1.e-2 && myid==0){
 	           cout << " set boxl and data.size differ ... check it! " << std:: endl;
-	           cout << "  boxl = " << boxl << "  " << " data.boxsize = " << data.boxsize/1.e+3*POS_U << endl;
+	           cout << "  boxl = " << p.boxl << "  " << " data.boxsize = " << data.boxsize/1.e+3*POS_U << endl;
 	           MPI_Abort(MPI_COMM_WORLD,-1);
 	        }
 
@@ -1061,7 +1061,7 @@ int main(int argc, char** argv){
 		MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0){
-	         cout << " ... mapping type 0 particles on the grid with " << npix << " pixels" << endl;
+	         cout << " ... mapping type 0 particles on the grid with " << p.npix << " pixels" << endl;
            cout << "Min distance: "<< ld[nsnap]/data.boxsize*1.e+3/POS_U<< " "<<ld2[nsnap]/data.boxsize*1.e+3/POS_U << endl;
            cout << "Rcase       : "<< rcase << endl;
 	          // 2Dgrid
@@ -1082,14 +1082,14 @@ int main(int argc, char** argv){
 	          double rai,deci,dd;
 	          getPolar(xx0[l]-0.5,yy0[l]-0.5,zz0[l],&rai,&deci,&dd);
 
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
               xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1099,7 +1099,7 @@ int main(int argc, char** argv){
 	      ntotxy0+=totPartxy0;
 
 	      if(totPartxy0>0){
-          mapxy0 = gridist_w(xs,ys,ms,npix,DO_NGP);
+          mapxy0 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
         }
 
 	      //re-normalize to the total mass!
@@ -1109,11 +1109,11 @@ int main(int argc, char** argv){
           mnorm+=ms[i];
 
 	      if(totPartxy0>0){
-	        for(int l=0;l<npix*npix;l++)
+	        for(int l=0;l<p.npix*p.npix;l++)
             mtot0 += mapxy0[l];
 	        if(mtot0==0.)
             mtot0=1.; //To avoid NaN
-	        for(int l=0;l<npix*npix;l++) mapxy0[l]*=mnorm/mtot0;
+	        for(int l=0;l<p.npix*p.npix;l++) mapxy0[l]*=mnorm/mtot0;
 	      }
       }
 
@@ -1148,7 +1148,7 @@ int main(int argc, char** argv){
 	        MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0){
-	        cout << " ... mapping type 1 particles on the grid with " << npix << " pixels" << endl;
+	        cout << " ... mapping type 1 particles on the grid with " << p.npix << " pixels" << endl;
           cout << "n1:" << n1 << endl;
         }
 	      // 2Dgrid
@@ -1166,14 +1166,14 @@ int main(int argc, char** argv){
 	        if(di>=ld[nsnap] && di<ld2[nsnap]){
 	          double rai,deci,dd;
 	          getPolar(xx1[l]-0.5,yy1[l]-0.5,zz1[l],&rai,&deci,&dd);
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
               xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1182,16 +1182,16 @@ int main(int argc, char** argv){
 	      totPartxy1=xs.size();
 	      ntotxy1+=totPartxy1;
 
-	      if(totPartxy1>0) 	mapxy1 = gridist_w(xs,ys,ms,npix,DO_NGP);
+	      if(totPartxy1>0) 	mapxy1 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot1=0;
 	      double mnorm=accumulate(ms.begin(), ms.end(), 0.);
 
 	      if(totPartxy1>0){
-	        for(int l=0;l<npix*npix;l++) mtot1 += mapxy1[l];
+	        for(int l=0;l<p.npix*p.npix;l++) mtot1 += mapxy1[l];
           if(mtot1==0.) mtot1=1.; //To avoid NaN
-	        for(int l=0;l<npix*npix;l++) mapxy1[l]=mapxy1[l]/mtot1*mnorm;
+	        for(int l=0;l<p.npix*p.npix;l++) mapxy1[l]=mapxy1[l]/mtot1*mnorm;
 	      }
       }
 
@@ -1226,7 +1226,7 @@ int main(int argc, char** argv){
 	        MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0)
-	       cout << " ... mapping type 2 particles on the grid with " << npix << " pixels" << endl;
+	       cout << " ... mapping type 2 particles on the grid with " << p.npix << " pixels" << endl;
 	       // 2Dgrid
 	      vector<float> xs(0),ys(0),ms(0);
 	      for(int l=0;l<n2;l++){
@@ -1241,14 +1241,14 @@ int main(int argc, char** argv){
 	        if(di>=ld[nsnap] && di<ld2[nsnap]){
 	          double rai,deci,dd;
 	          getPolar(xx2[l]-0.5,yy2[l]-0.5,zz2[l],&rai,&deci,&dd);
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
 	            xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1258,14 +1258,14 @@ int main(int argc, char** argv){
 	      // cout << " n2: totPartxy2 " << totPartxy2 << endl;
 	      ntotxy2+=totPartxy2;
 
-	      if(totPartxy2>0) mapxy2 = gridist_w(xs,ys,ms,npix,DO_NGP);
+	      if(totPartxy2>0) mapxy2 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
 	      // re-normalize to the total mass!
 	      double mtot2=0;
 	      double mnorm=accumulate(ms.begin(),ms.end(),0.);
 	      if(totPartxy2>0){
-	        for(int l=0;l<npix*npix;l++) mtot2 += mapxy2[l];
+	        for(int l=0;l<p.npix*p.npix;l++) mtot2 += mapxy2[l];
 	        if(mtot2==0.) mtot2=1.; //To avoid NaN
-          for(int l=0;l<npix*npix;l++) mapxy2[l]=mapxy2[l]/mtot2*mnorm;
+          for(int l=0;l<p.npix*p.npix;l++) mapxy2[l]=mapxy2[l]/mtot2*mnorm;
 
 	      }
       }
@@ -1301,7 +1301,7 @@ int main(int argc, char** argv){
 	        MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0)
-	       cout << " ... mapping type 3 particles on the grid with " << npix << " pixels" << endl;
+	       cout << " ... mapping type 3 particles on the grid with " << p.npix << " pixels" << endl;
 	       // 2Dgrid
 	      vector<float> xs(0),ys(0),ms(0);
 	      for(int l=0;l<n3;l++){
@@ -1317,14 +1317,14 @@ int main(int argc, char** argv){
 	        if(di>=ld[nsnap] && di<ld2[nsnap]){
 	          double rai,deci,dd;
 	          getPolar(xx3[l]-0.5,yy3[l]-0.5,zz3[l],&rai,&deci,&dd);
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
 	            xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1335,15 +1335,15 @@ int main(int argc, char** argv){
 	      // cout << " n3: totPartxy3 " << totPartxy3 << endl;
 	      ntotxy3+=totPartxy3;
 
-	      if(totPartxy3>0) mapxy3 = gridist_w(xs,ys,ms,npix,DO_NGP);
+	      if(totPartxy3>0) mapxy3 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot3=0;
 	      double mnorm=accumulate(ms.begin(),ms.end(),0.);
 	      if(totPartxy3>0){
-	        for(int l=0;l<npix*npix;l++) mtot3 += mapxy3[l];
+	        for(int l=0;l<p.npix*p.npix;l++) mtot3 += mapxy3[l];
           if(mtot3==0.) mtot3=1.; //To avoid NaN
-	        for(int l=0;l<npix*npix;l++) mapxy3[l]=mapxy3[l]/mtot3*mnorm;
+	        for(int l=0;l<p.npix*p.npix;l++) mapxy3[l]=mapxy3[l]/mtot3*mnorm;
 	      }
       }
 
@@ -1377,7 +1377,7 @@ int main(int argc, char** argv){
 	        cout << "  4 type check this!!! I will STOP here!!! " << endl;
 	        MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
-	      cout << " ... mapping type 4 particles on the grid with " << npix << " pixels" << endl;
+	      cout << " ... mapping type 4 particles on the grid with " << p.npix << " pixels" << endl;
 	      // 2Dgrid
 	      vector<float> xs(0),ys(0),ms(0);
 	      // vector<double> ra(0),dec(0);
@@ -1394,14 +1394,14 @@ int main(int argc, char** argv){
 	        if(di>=ld[nsnap] && di<ld2[nsnap]){
 	          double rai,deci,dd;
 	          getPolar(xx4[l]-0.5,yy4[l]-0.5,zz4[l],&rai,&deci,&dd);
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
 	            xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1411,15 +1411,15 @@ int main(int argc, char** argv){
 	      // cout << " n4: totPartxy4 " << totPartxy4 << endl;
 	      ntotxy4+=totPartxy4;
 
-	      if(totPartxy4>0) mapxy4 = gridist_w(xs,ys,ms,npix,DO_NGP);
+	      if(totPartxy4>0) mapxy4 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot4=0;
         double mnorm = accumulate(ms.begin(),ms.end(),0.);
 	      if(totPartxy4>0){
-	        for(int l=0;l<npix*npix;l++) mtot4 += mapxy4[l];
+	        for(int l=0;l<p.npix*p.npix;l++) mtot4 += mapxy4[l];
 	        if(mtot4==0.) mtot4=1.; //To avoid NaN
-          for(int l=0;l<npix*npix;l++) mapxy4[l]=mapxy4[l]/mtot4*mnorm;
+          for(int l=0;l<p.npix*p.npix;l++) mapxy4[l]=mapxy4[l]/mtot4*mnorm;
 	  	  }
       }
 
@@ -1454,7 +1454,7 @@ int main(int argc, char** argv){
 	        MPI_Abort(MPI_COMM_WORLD,-1);
 	      }
         if (myid==0)
-	       cout << " ... mapping type 5 particles on the grid with " << npix << " pixels" << endl;
+	       cout << " ... mapping type 5 particles on the grid with " << p.npix << " pixels" << endl;
 	      // 2Dgrid
 	      vector<float> xs(0),ys(0),ms(0);
 
@@ -1501,14 +1501,14 @@ int main(int argc, char** argv){
 	        if(di>=ld[nsnap] && di<ld2[nsnap]){
 	          double rai,deci,dd;
 	          getPolar(xx5[l]-0.5,yy5[l]-0.5,zz5[l],&rai,&deci,&dd);
-	          if(fabs(rai)<=fovradiants*(1.+2./npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./npix)*0.5){
+	          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
 	            xs.push_back(deci/fovradiants+0.5);
 	            ys.push_back(rai/fovradiants+0.5);
-              if(sn_opt==0){
+              if(p.snopt==0){
                 ms.push_back(num_float1);
               }
               else{
-                if(rand()/ float(RAND_MAX) < 1./pow(2,sn_opt)) ms.push_back(pow(2,sn_opt)*num_float1);
+                if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
                 else ms.push_back(0.);
               }
 	          }
@@ -1518,7 +1518,7 @@ int main(int argc, char** argv){
 	      // cout << " n5: totPartxy5 " << totPartxy5 << endl;
 	      ntotxy5+=totPartxy5;
 
-	      if(totPartxy5>0) mapxy5 = gridist_w(xs,ys,ms,npix,DO_NGP);
+	      if(totPartxy5>0) mapxy5 = gridist_w(xs,ys,ms,p.npix,DO_NGP);
 
 	      if(hydro){
 
@@ -1537,9 +1537,9 @@ int main(int argc, char** argv){
 	      double mtot5=0;
 	      double mnorm = accumulate(ms.begin(),ms.end(),0.);
 	      if(totPartxy5>0){
-	        for(int l=0;l<npix*npix;l++) mtot5 += mapxy5[l];
+	        for(int l=0;l<p.npix*p.npix;l++) mtot5 += mapxy5[l];
           if(mtot5==0.) mtot5=1.; //To avoid NaN
-	          for(int l=0;l<npix*npix;l++) mapxy5[l]=mapxy5[l]/mtot5*mnorm;
+	          for(int l=0;l<p.npix*p.npix;l++) mapxy5[l]=mapxy5[l]/mtot5*mnorm;
 	        }
       }
 
@@ -1555,51 +1555,51 @@ int main(int argc, char** argv){
       mapxytot2+=mapxy2;
       mapxytot3+=mapxy3;
       mapxytot4+=mapxy4;
-      mapxytot5+=mapxy5;     
+      mapxytot5+=mapxy5;
 
       if (myid==0)
         cout << " done map*tot " << endl;
     }
 
-    valarray<float> mapxytotrecv( npix*npix );
-    valarray<float> mapxytot0recv( npix*npix );
-    valarray<float> mapxytot1recv( npix*npix );
-    valarray<float> mapxytot2recv( npix*npix );
-    valarray<float> mapxytot3recv( npix*npix );
-    valarray<float> mapxytot4recv( npix*npix );
-    valarray<float> mapxytot5recv( npix*npix );
+    valarray<float> mapxytotrecv( p.npix*p.npix );
+    valarray<float> mapxytot0recv( p.npix*p.npix );
+    valarray<float> mapxytot1recv( p.npix*p.npix );
+    valarray<float> mapxytot2recv( p.npix*p.npix );
+    valarray<float> mapxytot3recv( p.npix*p.npix );
+    valarray<float> mapxytot4recv( p.npix*p.npix );
+    valarray<float> mapxytot5recv( p.npix*p.npix );
 
     cout << " maps done! from Rank:" << myid << endl;
 
-    MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot0[0], &mapxytot0recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot1[0], &mapxytot1recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot2[0], &mapxytot2recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot3[0], &mapxytot3recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot4[0], &mapxytot4recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce( &mapxytot5[0], &mapxytot5recv[0], npix*npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot0[0], &mapxytot0recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot1[0], &mapxytot1recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot2[0], &mapxytot2recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot3[0], &mapxytot3recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot4[0], &mapxytot4recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce( &mapxytot5[0], &mapxytot5recv[0], p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (myid==0){
-      if(partinplanes=="ALL"){
+      if(p.partinplanes==false){
 	       /*
 	        * write image array(s) to FITS files all particles in a FITS file!
 	        */
 	        long naxis = 2;
-	        long naxes[2]={ npix,npix };
+	        long naxes[2]={ p.npix,p.npix };
 	        string fileoutput;
-	        // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-	        fileoutput = directory+simulation+"."+snappl+".plane_"+snpix+"_"+suffix+".fits";
+	        // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+	        fileoutput = p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits";
           cout << "Saving the maps on: " << fileoutput << endl;
 	        unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	        vector<long> naxex( 2 );
-	        naxex[0]=npix;
-	        naxex[1]=npix;
+	        naxex[0]=p.npix;
+	        naxex[1]=p.npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytotrecv );
+	        phxy->write( 1, p.npix*p.npix, mapxytotrecv );
 	        // phxy->addKey ("x0",x0," unit of the boxsize");
 	        // phxy->addKey ("y0",y0," unit of the boxsize");
 	        phxy->addKey ("REDSHIFT",zsim," ");
-	        phxy->addKey ("PHYSICALSIZE",fov," ");
+	        phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	        phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	        phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1625,18 +1625,18 @@ int main(int argc, char** argv){
 	     // type0
 	      if(ntotxy0>0){
 	         long naxis = 2;
-	         long naxes[2]={ npix,npix };
+	         long naxes[2]={ p.npix,p.npix };
 	         string fileoutput;
-	         // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-           fileoutput = directory+simulation+"."+snappl+".ptype0_plane_"+snpix+"_"+suffix+".fits";
+	         // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+           fileoutput = p.directory+p.simulation+"."+snappl+".ptype0_plane_"+snpix+"_"+p.suffix+".fits";
 	         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	         vector<long> naxex( 2 );
-	         naxex[0]=npix;
-	         naxex[1]=npix;
+	         naxex[0]=p.npix;
+	         naxex[1]=p.npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot0recv );
+	         phxy->write( 1, p.npix*p.npix, mapxytot0recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
-	         phxy->addKey ("PHYSICALSIZE",fov," ");
+	         phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	         phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	         phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1649,18 +1649,18 @@ int main(int argc, char** argv){
 	       // type1
 	       if(ntotxy1>0){
 	         long naxis = 2;
-	         long naxes[2]={ npix,npix };
+	         long naxes[2]={ p.npix,p.npix };
 	         string fileoutput;
-	         // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-          fileoutput = directory+simulation+"."+snappl+".ptype1_plane_"+snpix+"_"+suffix+".fits";
+	         // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+          fileoutput = p.directory+p.simulation+"."+snappl+".ptype1_plane_"+snpix+"_"+p.suffix+".fits";
 	        unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	        vector<long> naxex( 2 );
-	        naxex[0]=npix;
-	        naxex[1]=npix;
+	        naxex[0]=p.npix;
+	        naxex[1]=p.npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytot1recv );
+	        phxy->write( 1, p.npix*p.npix, mapxytot1recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
-	        phxy->addKey ("PHYSICALSIZE",fov," ");
+	        phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	        phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	        phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1673,18 +1673,18 @@ int main(int argc, char** argv){
 	      // type2
 	      if(ntotxy2>0){
 	        long naxis = 2;
-	        long naxes[2]={ npix,npix };
+	        long naxes[2]={ p.npix,p.npix };
 	        string fileoutput;
-	        // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-          fileoutput = directory+simulation+"."+snappl+".ptype2_plane_"+snpix+"_"+suffix+".fits";
+	        // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+          fileoutput = p.directory+p.simulation+"."+snappl+".ptype2_plane_"+snpix+"_"+p.suffix+".fits";
 	        unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	        vector<long> naxex( 2 );
-	        naxex[0]=npix;
-	        naxex[1]=npix;
+	        naxex[0]=p.npix;
+	        naxex[1]=p.npix;
 	        PHDU *phxy=&ffxy->pHDU();
-	        phxy->write( 1, npix*npix, mapxytot2recv );
+	        phxy->write( 1, p.npix*p.npix, mapxytot2recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
-	        phxy->addKey ("PHYSICALSIZE",fov," ");
+	        phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	        phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	        phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1697,18 +1697,18 @@ int main(int argc, char** argv){
 	      // type3
 	      if(ntotxy3>0){
 	        long naxis = 2;
-	        long naxes[2]={ npix,npix };
+	        long naxes[2]={ p.npix,p.npix };
 	        string fileoutput;
-	        // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-          fileoutput = directory+simulation+"."+snappl+".ptype3_plane_"+snpix+"_"+suffix+".fits";
+	        // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+          fileoutput = p.directory+p.simulation+"."+snappl+".ptype3_plane_"+snpix+"_"+p.suffix+".fits";
 	        unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	        vector<long> naxex( 2 );
-	        naxex[0]=npix;
-	        naxex[1]=npix;
+	        naxex[0]=p.npix;
+	        naxex[1]=p.npix;
 	        PHDU *phxy=&ffxy->pHDU();
-          phxy->write( 1, npix*npix, mapxytot3recv );
+          phxy->write( 1, p.npix*p.npix, mapxytot3recv );
 	        phxy->addKey ("REDSHIFT",zsim," ");
-	        phxy->addKey ("PHYSICALSIZE",fov," ");
+	        phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	        phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	        phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	        phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1721,18 +1721,18 @@ int main(int argc, char** argv){
 	      // type4
 	      if(ntotxy4>0){
 	         long naxis = 2;
-	         long naxes[2]={ npix,npix };
+	         long naxes[2]={ p.npix,p.npix };
 	         string fileoutput;
-	         // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-           fileoutput = directory+simulation+"."+snappl+".ptype4_plane_"+snpix+"_"+suffix+".fits";
+	         // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+           fileoutput = p.directory+p.simulation+"."+snappl+".ptype4_plane_"+snpix+"_"+p.suffix+".fits";
 	         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	         vector<long> naxex( 2 );
-	         naxex[0]=npix;
-	         naxex[1]=npix;
+	         naxex[0]=p.npix;
+	         naxex[1]=p.npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot4recv );
+	         phxy->write( 1, p.npix*p.npix, mapxytot4recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
-	         phxy->addKey ("PHYSICALSIZE",fov," ");
+	         phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	         phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	         phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
@@ -1745,18 +1745,18 @@ int main(int argc, char** argv){
 	       // type5
 	       if(ntotxy5>0){
 	         long naxis = 2;
-	         long naxes[2]={ npix,npix };
+	         long naxes[2]={ p.npix,p.npix };
 	         string fileoutput;
-	         // fileoutput = simulation+"."+snapnum+".plane_"+snpix+".fits";
-	         fileoutput = directory+simulation+"."+snappl+".ptype5_plane_"+snpix+"_"+suffix+".fits";
+	         // fileoutput = p.simulation+"."+snapnum+".plane_"+snpix+".fits";
+	         fileoutput = p.directory+p.simulation+"."+snappl+".ptype5_plane_"+snpix+"_"+p.suffix+".fits";
 	         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
 	         vector<long> naxex( 2 );
-	         naxex[0]=npix;
-	         naxex[1]=npix;
+	         naxex[0]=p.npix;
+	         naxex[1]=p.npix;
 	         PHDU *phxy=&ffxy->pHDU();
-	         phxy->write( 1, npix*npix, mapxytot5recv );
+	         phxy->write( 1, p.npix*p.npix, mapxytot5recv );
 	         phxy->addKey ("REDSHIFT",zsim," ");
-	         phxy->addKey ("PHYSICALSIZE",fov," ");
+	         phxy->addKey ("PHYSICALSIZE",p.fov," ");
 	         phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
 	         phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
 	         phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
