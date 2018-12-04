@@ -7,9 +7,13 @@
 #include <valarray>
 #include <CCfits/CCfits>
 #include <string.h>
+#include "cosmology.h"
+#include "utilities.h"
 
 using namespace std;
 using namespace CCfits;
+
+const double speedcunit = 2.99792458e+3; // speed of light x H0/h
 
 // parameters in the input file
 struct InputParams{
@@ -39,8 +43,8 @@ static const char fDP4[] = "%5.4f";
 static const char fDP5[] = "%6.5f";
 static const char ee3[] = "%4.3e";
 
-const int bleft = 14;
-struct HEADER
+const int dummy = 14;
+struct Header
 {
   // long substituted with int32_t
   int32_t npart[6];
@@ -60,33 +64,10 @@ struct HEADER
   int32_t flag_metals;
   int32_t nTotalHW[6];
   int32_t flag_entropy;
-  int32_t la[bleft];
+  int32_t la[dummy];
 };
 
-struct DATA
-{
-  // long substituted with int32_t
-  uint32_t npart[6];
-  double massarr[6];
-  double time;
-  double redshift;
-  int32_t flag_sfr;
-  int32_t flag_feedback;
-  uint32_t npartTotal[6];
-  int32_t flag_cooling;
-  int32_t numfiles;
-  double boxsize;
-  double om0;
-  double oml;
-  double h;
-  int32_t flag_sage;
-  int32_t flag_metals;
-  int32_t nTotalHW[6];
-  int32_t flag_entropy;
-  int32_t la[bleft];
-};
-
-struct BLOCK
+struct Block
 {
   int32_t blocksize1;
   int8_t alignment[4];
@@ -95,25 +76,14 @@ struct BLOCK
   int32_t blocksize2;
 };
 
-/*
-For new versions
-struct BLOCK
-{
-  uint32_t curr_blocksize1;
-  char name[4];
-  uint32_t next_blockpos;
-  uint32_t curr_blocksize2;
-
-};*/
-
-struct RANDOMIZATION
+struct Randomization
 {
   int face;
   int sgnX, sgnY, sgnZ;
   double xc, yc, zc;
-  RANDOMIZATION(){};
+  Randomization(){};
 
-  RANDOMIZATION(int face, int sgnX, int sgnY, int sgnZ, double xc, double yc, double zc)
+  Randomization(int face, int sgnX, int sgnY, int sgnZ, double xc, double yc, double zc)
   {
       this->face = face;
       this->sgnX = sgnX;
@@ -125,41 +95,24 @@ struct RANDOMIZATION
   }
 };
 
-inline istream & operator>>(istream &input, HEADER &header)
+inline istream & operator>>(istream &input, Header &header)
 {
   input.read((char *)&header, sizeof(header));
   return input;
 };
 
-inline istream & operator>>(istream &input, BLOCK &block)
+inline istream & operator>>(istream &input, Block &block)
 {
   input.read((char *)&block, sizeof(block));
   return input;
 };
 
-template <class T> string conv (T &val, const char *fact)
+template <class T>
+string sconv (T &val, const char *fact)
 {
   char VAL[20]; sprintf (VAL, fact, val);
   return string(VAL);
 }
-
-const double speedcunit = 2.99792458e+3; // speed of light x H0/h
-
-class interp_kernel{
-
-  public:
-
-    gsl_spline2d *spline;
-    gsl_interp_accel *racc=gsl_interp_accel_alloc();
-    gsl_interp_accel *hacc=gsl_interp_accel_alloc();
-    const gsl_interp2d_type *T = gsl_interp2d_bilinear;
-
-    interp_kernel (double *, double *, double *, int, int);
-    ~interp_kernel();
-
-};
-
-double getY(vector<double>, vector<double>, double);
 
 int getSnap (vector <double> &, vector <double> &, vector <double> &, double );
 
@@ -167,7 +120,7 @@ template <class T>
 int locate (const std::vector<T> &v, const T);
 
 float weight (float, float, double);
-// grid points distribution function with != wheights
+
 valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 
 void readInput(struct InputParams *p, std::string name);
@@ -195,6 +148,7 @@ void min_element (ForwardIterator *first, ForwardIterator *last,
     }while(first!=last);
   }
 }
+
 template <class ForwardIterator>
 void max_element (ForwardIterator *first, ForwardIterator *last,
   ForwardIterator *max_x, ForwardIterator *max_y, ForwardIterator *max_z){
@@ -236,11 +190,11 @@ void read_dl(string, vector <double> &, vector <double> &, double);
 
 void read_redlist(string, vector <double> &, vector <int> &, double);
 
-void read_particles (ifstream *, HEADER, int, int, float, float *,
+void read_particles (ifstream *, Header, int, int, float, float *,
                       vector<double> &, vector<double> &, vector<double> &, vector<int> &,
                       vector<int> &, vector<int> &, vector<int> &);
 
-void map_particles (float *, double *, int, int, float, HEADER, vector <double> &,
+void map_particles (float *, double *, int, int, float, Header, vector <double> &,
                           vector <double> &, int , valarray <float> & , int * , bool , bool );
 
 void write_map (string ,string , string ,
@@ -248,20 +202,20 @@ void write_map (string ,string , string ,
                       valarray <float> & , valarray <float> *, float , float , vector <double> , vector <double> ,
                       float , float , float , double * );
 
-void read_header (ifstream *, HEADER &);
+int read_header (string , Header *, ifstream &, bool close);
 
-void read_pos (ifstream *,HEADER *, float *, float *, float *, float *, float *, float *);
+void read_pos (ifstream *,Header *, float *, float *, float *, float *, float *, float *);
 
-void rand_pos (float * , HEADER , int , int , float , RANDOMIZATION);
+void rand_pos (float * , Header , int , int , float , Randomization);
 
-void read_mass (ifstream *, HEADER * , double * , double * , double * , double * , double * , double * );
+void read_mass (ifstream *, Header * , double * , double * , double * , double * , double * , double * );
 
-void print_header (HEADER);
+void print_header (Header);
 
 template <class T>
 void read_block (ifstream *fin, T *ptr, string block_str){
 
-  BLOCK block;
+  Block block;
   int32_t blocksize;
 
   string str="NULL";
@@ -275,10 +229,9 @@ void read_block (ifstream *fin, T *ptr, string block_str){
     if (!strcmp(str.c_str(),block_str.c_str()))
       fin->read((char *) ptr, blocksize);
     else
-      cout << "Skiping BLOCK: " << str.c_str() << endl;
+      cout << "Skiping Block: " << str.c_str() << endl;
       fin->seekg(blocksize,ios_base::cur);
     fin->read((char *)&blocksize, sizeof(blocksize));
 
   }
-
 }

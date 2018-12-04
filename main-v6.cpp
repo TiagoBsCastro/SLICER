@@ -6,12 +6,14 @@
 #include <ctime>
 #include <CCfits/CCfits>
 #include <util.h>
+#include <utilities.h>
 #include <cstring>
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define POS_U 1   // Unit conversion from BoxSize unit lengh to kpc/h
 #define NBLOCKS 1 // Number of blocks to be fastforwarded
 #define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
+#define neval 1000
 
 /*****************************************************************************/
 /*                                                                           */
@@ -46,12 +48,6 @@
 
 using namespace std;
 using namespace CCfits;
-
-istream & operator>>(istream &input, DATA &Data)
-{
-  input.read((char *)&Data, sizeof(Data));
-  return input;
-};
 
 int main(int argc, char** argv){
 
@@ -88,7 +84,7 @@ int main(int argc, char** argv){
 
   if(p.snopt<0 && myid==0){
     cout << "Impossible value for Shot-Noise option!" << endl;
-    MPI_Abort(MPI_COMM_WORLD,-1);;
+    MPI_Abort(MPI_COMM_WORLD,-1);
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -97,10 +93,10 @@ int main(int argc, char** argv){
   bool do_as_t11=(p.npix<0);
   int rgrid;
 
-  if(!do_as_t11) snpix=conv(p.npix,fINT);
+  if(!do_as_t11) snpix=sconv(p.npix,fINT);
   else{
     int n = -p.npix;
-    snpix=conv(n,fINT);
+    snpix=sconv(n,fINT);
     snpix+="_kpc";
     rgrid=n;
   }
@@ -137,21 +133,32 @@ int main(int argc, char** argv){
   }
 
   /* Read the Snap Header and get Cosmological Values*/
+  string file_in = p.pathsnap+lsnap[0]+"."+sconv(myid,fINT);
+  Header header;
+  ifstream fin;
+  if( not read_header (file_in, &header, fin, true) )
+    MPI_Abort(MPI_COMM_WORLD,-1);
 
-  vector <int>    replication; // Number of repetitions of the i-th snapshot box
-  vector <string> fromsnap;    // From which snapshot the i-th lens plane were build
-  vector <double> zsimlens;    // z of the i-th lens (z correspodent to d=1/2(ld+ld2))
-  vector <double> ld;          // Start position of the i-th lens
-  vector <double> ld2;         // End position of the i-th lens
-  vector <double> zfromsnap;   // z from the snapshot selected to build the i-th lens
-  vector <bool>   randomize;   // Bool variable to whether the positions should be re-randomized or not
+  cosmology cosmo(header.om0,header.oml,1.0,-1.0);
 
-  double dllow;
-  double dlup;
+  vector <double> zl(neval),dl(neval);   // Redshift and ComovDistance array to be interpolated
+  vector <int>    replication;  // Number of repetitions of the i-th snapshot box
+  vector <string> fromsnap;     // From which snapshot the i-th lens plane were build
+  vector <double> zsimlens;     // z of the i-th lens (z correspodent to d=1/2(ld+ld2))
+  vector <double> ld;           // Start position of the i-th lens
+  vector <double> ld2;          // End position of the i-th lens
+  vector <double> zfromsnap;    // z from the snapshot selected to build the i-th lens
+  vector <bool> randomize;      // Bool variable to whether the positions should be re-randomized or not
 
-  //Building the ligh cone
-  dllow=0;
-  dlup=;
+  for(int i=0;i<neval;i++){
+
+    zl[i] = i * (p.zs+1.0)/(neval-1);
+    dl[i] = cosmo.comovDist(zl[i]);
+
+  }
+
+  double dllow=0.0;
+  double dlup = getY(zl,dl,p.zs);
 
   double ldbut;
   int pos, nrepi=0;
@@ -333,9 +340,9 @@ int main(int argc, char** argv){
     string File = p.pathsnap+fromsnap[nsnap];
 
     string snappl;
-    if( pll[nsnap]<10) snappl = "00"+conv(pll[nsnap],fINT);
-    else if(pll[nsnap]>=10 && pll[nsnap]<100 ) snappl = "0"+conv(pll[nsnap],fINT);
-    else snappl = conv(pll[nsnap],fINT);
+    if( pll[nsnap]<10) snappl = "00"+sconv(pll[nsnap],fINT);
+    else if(pll[nsnap]>=10 && pll[nsnap]<100 ) snappl = "0"+sconv(pll[nsnap],fINT);
+    else snappl = sconv(pll[nsnap],fINT);
     string Filesub;
 
     if(ifstream(p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits") && p.partinplanes == false){
@@ -378,7 +385,7 @@ int main(int argc, char** argv){
       vector<float> xx4(0), yy4(0), zz4(0);
       vector<float> xx5(0), yy5(0), zz5(0);
 
-      string file_in = File+"."+conv(ff,fINT);
+      string file_in = File+"."+sconv(ff,fINT);
 
       ifstream fin(file_in.c_str());
       if (!fin) {cerr <<"Error in opening the file: "<<file_in<<"!\n\a"; MPI_Abort(MPI_COMM_WORLD,-1);}
@@ -388,7 +395,7 @@ int main(int argc, char** argv){
 
       int32_t blockheader[5];
       fin.read((char *)&blockheader, sizeof(blockheader));
-      DATA data; fin >> data;
+      Header data; fin >> data;
 
       if(ff==0){
 
@@ -428,7 +435,7 @@ int main(int argc, char** argv){
 
       }
 
-      BLOCK block;
+      Block block;
       if(NBLOCKS>0){
         fin >> block;
       }
@@ -962,7 +969,7 @@ int main(int argc, char** argv){
 
 	       int tot = (data.npart[0]+data.npart[1]+data.npart[2]+data.npart[3]+data.npart[4]+data.npart[5]);
 
-      	 BLOCK block; fin >> block;
+      	 Block block; fin >> block;
          if (myid==0){
       	    cout << "Size of Next Block is " << block.blocksize1 << endl;
 	          cout << "Should be             " << 3*sizeof(int32_t)*tot << endl;
@@ -988,7 +995,7 @@ int main(int argc, char** argv){
 
          fin.seekg(block.blocksize2/sizeof(int8_t),fin.cur);
 
-         BLOCK block2; fin >> block2;
+         Block block2; fin >> block2;
          if (myid==0){
            cout << "Reading next block. Name: ";
            cout << block2.name[0];

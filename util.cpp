@@ -1,6 +1,6 @@
 #include "util.h"
 
-template <class T>
+/*template <class T>
 int locate (const std::vector<T> &v, const T x){
   size_t n = v.size ();
   int jl = -1;
@@ -45,7 +45,7 @@ double getY(vector<double> x,vector<double> y,double xi){  // Interpolated routi
   }
   else return f*y[i+1]+(1-f)*y[i];
 }
-
+*/
 int getSnap (vector <double> & zsnap, vector <double> & dl, vector <double> & zl, double dlens){
 
   int pos;
@@ -237,57 +237,6 @@ void readInput(struct InputParams *p, std::string name){
 
 }
 
-void readParameters(string file_name,int *npix, double *boxl,
-                    double *zs, double *fov, string *filredshiftlist,
-                    string *filsnaplist, string *pathsnap,string *idc,
-                    int *seedcenter, int *seedface, int *seedsign,
-                    string *simulation, int *nfiles,string *partinplanes,
-                    string *directory,string *suffix,int *sn_opt,bool *do_NGP){
-
-  ifstream ifilin;
-  ifilin.open(file_name.c_str());
-  if(ifilin.is_open()){
-
-    string butstr;
-
-    ifilin >> butstr; // number of pixels
-    ifilin >> *npix;
-    ifilin >> butstr; // boxl
-    ifilin >> *boxl;
-    ifilin >> butstr; // source redshift
-    ifilin >> *zs;
-    ifilin >> butstr; // field of view in degrees
-    ifilin >> *fov;
-    ifilin >> butstr; // file with the redshift list it may contain three columns: snap 1/(1+z) z
-    ifilin >> *filredshiftlist;
-    ifilin >> butstr; // path where the snaphosts are located
-    ifilin >> *pathsnap;
-    ifilin >> butstr; // simulation name (prefix infront at the snap file)
-    ifilin >> *simulation;
-    ifilin >> butstr;  // number of files per snapshot
-    ifilin >> *nfiles;
-    ifilin >> butstr; // path and file name of the comoving distance file (if not available you may use CosmoLib)
-    ifilin >> *idc;
-    ifilin >> butstr; // seed for the random location of the center
-    ifilin >> *seedcenter;
-    ifilin >> butstr; // seed for the random selection of the dice face
-    ifilin >> *seedface;
-    ifilin >> butstr; // seed for the selection of the sign of the coordinates
-    ifilin >> *seedsign;
-    ifilin >> butstr; // which particles in the planes (ALL: one file for all, or NO: one for each)
-    ifilin >> *partinplanes;
-    ifilin >> butstr;//directory to save FITS files
-    ifilin >> *directory;
-    ifilin >> butstr;//Sufix to save FITS files
-    ifilin >> *suffix;
-    ifilin >> butstr;//Shot-noise opt: 0-No random degradation; 1-One half degradation; 2- three quarters degradation...
-    ifilin >> *sn_opt;
-    ifilin >> butstr;//Mass Assignement Scheme - If 0 use TSC (Recomended) if 1 use NGP
-    ifilin >> *do_NGP;
-  }
-  else exit(-1);
-};
-
 void read_redlist(string filredshiftlist, vector <double> & lred, vector <int> & lsnap, double zs){
   ifstream redlist;
   redlist.open(filredshiftlist.c_str());
@@ -303,33 +252,6 @@ void read_redlist(string filredshiftlist, vector <double> & lred, vector <int> &
     cout << " redshift list file redshift_list.txt does not " << endl;
     cout << " exist in the Code dir ... check this out      " << endl;
     cout << "    I will STOP here !!! " << endl;
-    exit(1);
-  }
-}
-
-void read_dl(string idc, vector <double> & zl, vector <double> & dl, double zs){
-  ifstream infiledc;
-  infiledc.open(idc.c_str());
-  if(infiledc.is_open()){
-    double zi,dli;
-    while(infiledc >> zi >> dli){
-      zl.push_back(zi);
-      dl.push_back(dli*speedcunit); // on Mpc/h
-      cout << zi << "  " << dli*speedcunit << endl;
-    }
-    infiledc.close();
-  }
-  else{
-    cout << "  " << endl;
-    cout << " the comoving distance file: " << idc << endl;
-    cout << " does not exists " << endl;
-    cout << " I will STOP here!!! " << endl;
-    exit(1);
-  }
-  if(zs>zl[zl.size()-1]){
-    cout << " source redshift larger than the highest available redshift in the comoving distance file " << endl;
-    cout << "  that is = " << zl[zl.size()-1] << endl;
-    cout << " I will STOP here !!! " << endl;
     exit(1);
   }
 }
@@ -395,7 +317,7 @@ void box_randomize(vector <double> & x0, vector <double> & y0, vector <double> &
   }
 }
 
-void rand_pos (float * xx, HEADER header, int ptype, int nsnap, float rcase, RANDOMIZATION randomization_plan){
+void rand_pos (float * xx, Header header, int ptype, int nsnap, float rcase, Randomization randomization_plan){
 
   int face=randomization_plan.face;
   int sgnX=randomization_plan.sgnX, sgnY=randomization_plan.sgnY, sgnZ=randomization_plan.sgnZ;
@@ -469,7 +391,7 @@ void rand_pos (float * xx, HEADER header, int ptype, int nsnap, float rcase, RAN
   }
 }
 
-void map_particles (float * xx, double * m, int ptype, int sn_opt, float fovradiants, HEADER header, vector <double> &ld,
+void map_particles (float * xx, double * m, int ptype, int sn_opt, float fovradiants, Header header, vector <double> &ld,
     vector <double> &ld2, int nsnap, valarray <float> & mapxy, int * ntotxyptype, bool do_NGP, bool hydro){
 
   float xmin, xmax, ymin, ymax, zmin, zmax;
@@ -626,17 +548,22 @@ void write_map (string partinplanes,string directory, string simulation,
   }
 }
 
-void read_header (ifstream *fin, HEADER &header){
+int read_header (string file_in, Header *header, ifstream & fin, bool close = false){
 
-  BLOCK block;
-  int32_t blocksize;
+  /* Read the Snap Header*/
+  fin.open(file_in.c_str());
+  if (!fin) {cerr <<"Error in opening the file: "<<file_in<<"!\n\a"; return 1;}
 
-  fin->read((char *)&block, sizeof(block));
-  fin->read((char *)&blocksize, sizeof(blocksize));
-  fin->read((char *)&header, sizeof(header));
-  fin->read((char *)&blocksize, sizeof(blocksize));
+  int32_t blockheader[5];
+  fin.read((char *)&blockheader, sizeof(blockheader));
+  fin >> *header;
+
+  if(close)
+    fin.close();
+  return 0;
 }
-void print_header (HEADER header){
+
+void print_header (Header header){
   cout << "Printing Header Data" << endl;
 
   cout << "N. part.: " << header.npart[0] << " "<< header.npart[1] << " "<< header.npart[2] << " "<< header.npart[3] << " "<< header.npart[4] << " "<< header.npart[5]  << endl;
@@ -658,9 +585,9 @@ void print_header (HEADER header){
   cout << "Flag entropy: "<< header.flag_entropy<<endl;
 }
 
-void read_pos (ifstream *fin, HEADER *header, float * xx0, float * xx1, float * xx2, float * xx3, float * xx4, float * xx5){
+void read_pos (ifstream *fin, Header *header, float * xx0, float * xx1, float * xx2, float * xx3, float * xx4, float * xx5){
 
-  BLOCK block;
+  Block block;
   int32_t blocksize;
 
   string str="NULL";
@@ -683,9 +610,9 @@ void read_pos (ifstream *fin, HEADER *header, float * xx0, float * xx1, float * 
   }
 }
 
-void read_mass (ifstream *fin, HEADER *header, double * m0, double * m1, double * m2, double * m3, double * m4, double * m5){
+void read_mass (ifstream *fin, Header *header, double * m0, double * m1, double * m2, double * m3, double * m4, double * m5){
 
-  BLOCK block;
+  Block block;
   int32_t blocksize;
 
   string str="NULL";
@@ -710,5 +637,83 @@ void read_mass (ifstream *fin, HEADER *header, double * m0, double * m1, double 
     }else
       fin->seekg(blocksize,ios_base::cur);
     fin->read((char *)&blocksize, sizeof(blocksize));
+  }
+}
+
+void readParameters(string file_name,int *npix, double *boxl,
+                    double *zs, double *fov, string *filredshiftlist,
+                    string *filsnaplist, string *pathsnap,string *idc,
+                    int *seedcenter, int *seedface, int *seedsign,
+                    string *simulation, int *nfiles,string *partinplanes,
+                    string *directory,string *suffix,int *sn_opt,bool *do_NGP){
+
+  ifstream ifilin;
+  ifilin.open(file_name.c_str());
+  if(ifilin.is_open()){
+
+    string butstr;
+
+    ifilin >> butstr; // number of pixels
+    ifilin >> *npix;
+    ifilin >> butstr; // boxl
+    ifilin >> *boxl;
+    ifilin >> butstr; // source redshift
+    ifilin >> *zs;
+    ifilin >> butstr; // field of view in degrees
+    ifilin >> *fov;
+    ifilin >> butstr; // file with the redshift list it may contain three columns: snap 1/(1+z) z
+    ifilin >> *filredshiftlist;
+    ifilin >> butstr; // path where the snaphosts are located
+    ifilin >> *pathsnap;
+    ifilin >> butstr; // simulation name (prefix infront at the snap file)
+    ifilin >> *simulation;
+    ifilin >> butstr;  // number of files per snapshot
+    ifilin >> *nfiles;
+    ifilin >> butstr; // path and file name of the comoving distance file (if not available you may use CosmoLib)
+    ifilin >> *idc;
+    ifilin >> butstr; // seed for the random location of the center
+    ifilin >> *seedcenter;
+    ifilin >> butstr; // seed for the random selection of the dice face
+    ifilin >> *seedface;
+    ifilin >> butstr; // seed for the selection of the sign of the coordinates
+    ifilin >> *seedsign;
+    ifilin >> butstr; // which particles in the planes (ALL: one file for all, or NO: one for each)
+    ifilin >> *partinplanes;
+    ifilin >> butstr;//directory to save FITS files
+    ifilin >> *directory;
+    ifilin >> butstr;//Sufix to save FITS files
+    ifilin >> *suffix;
+    ifilin >> butstr;//Shot-noise opt: 0-No random degradation; 1-One half degradation; 2- three quarters degradation...
+    ifilin >> *sn_opt;
+    ifilin >> butstr;//Mass Assignement Scheme - If 0 use TSC (Recomended) if 1 use NGP
+    ifilin >> *do_NGP;
+  }
+  else exit(-1);
+};
+
+void read_dl(string idc, vector <double> & zl, vector <double> & dl, double zs){
+  ifstream infiledc;
+  infiledc.open(idc.c_str());
+  if(infiledc.is_open()){
+    double zi,dli;
+    while(infiledc >> zi >> dli){
+      zl.push_back(zi);
+      dl.push_back(dli*speedcunit); // on Mpc/h
+      cout << zi << "  " << dli*speedcunit << endl;
+    }
+    infiledc.close();
+  }
+  else{
+    cout << "  " << endl;
+    cout << " the comoving distance file: " << idc << endl;
+    cout << " does not exists " << endl;
+    cout << " I will STOP here!!! " << endl;
+    exit(1);
+  }
+  if(zs>zl[zl.size()-1]){
+    cout << " source redshift larger than the highest available redshift in the comoving distance file " << endl;
+    cout << "  that is = " << zl[zl.size()-1] << endl;
+    cout << " I will STOP here !!! " << endl;
+    exit(1);
   }
 }

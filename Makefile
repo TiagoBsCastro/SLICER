@@ -1,10 +1,10 @@
 # executable name
-PREFIXDIR = /home/tcastro/
+PREFIXDIR = /home/tiago/
 PROG = $(PREFIXDIR)/bin/MapSim-v6
 
-MAIN = main-v6.cpp  util.cpp
+MAIN = main-v6.cpp  util.cpp cosmology.cpp
 
-LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio -lcurl
+LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio # -lcurl
 
 ALLFLAGS =  -I/$(PREFIXDIR)/include/ \
             -I/$(PREFIXDIR)/include/gsl/ \
