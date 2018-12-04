@@ -171,11 +171,11 @@ void readInput(struct InputParams *p, std::string name){
   std::getline(fin,
        p->directory);//               13. Directory to save FITS files
   std::getline(fin, str);
+  std::getline(fin,
+       p->suffix);//                  14. Suffix to FITS files
   std::getline(fin, str);
-  p->suffix;//                        14. Suffix to FITS files
   std::getline(fin, str);
-  std::getline(fin, str);
-  p->snopt;//                         15. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
+  p->snopt = std::stoi(str);//        15. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
 
 }
 
@@ -579,83 +579,5 @@ void read_mass (ifstream *fin, Header *header, double * m0, double * m1, double 
     }else
       fin->seekg(blocksize,ios_base::cur);
     fin->read((char *)&blocksize, sizeof(blocksize));
-  }
-}
-
-void readParameters(string file_name,int *npix, double *boxl,
-                    double *zs, double *fov, string *filredshiftlist,
-                    string *filsnaplist, string *pathsnap,string *idc,
-                    int *seedcenter, int *seedface, int *seedsign,
-                    string *simulation, int *nfiles,string *partinplanes,
-                    string *directory,string *suffix,int *sn_opt,bool *do_NGP){
-
-  ifstream ifilin;
-  ifilin.open(file_name.c_str());
-  if(ifilin.is_open()){
-
-    string butstr;
-
-    ifilin >> butstr; // number of pixels
-    ifilin >> *npix;
-    ifilin >> butstr; // boxl
-    ifilin >> *boxl;
-    ifilin >> butstr; // source redshift
-    ifilin >> *zs;
-    ifilin >> butstr; // field of view in degrees
-    ifilin >> *fov;
-    ifilin >> butstr; // file with the redshift list it may contain three columns: snap 1/(1+z) z
-    ifilin >> *filredshiftlist;
-    ifilin >> butstr; // path where the snaphosts are located
-    ifilin >> *pathsnap;
-    ifilin >> butstr; // simulation name (prefix infront at the snap file)
-    ifilin >> *simulation;
-    ifilin >> butstr;  // number of files per snapshot
-    ifilin >> *nfiles;
-    ifilin >> butstr; // path and file name of the comoving distance file (if not available you may use CosmoLib)
-    ifilin >> *idc;
-    ifilin >> butstr; // seed for the random location of the center
-    ifilin >> *seedcenter;
-    ifilin >> butstr; // seed for the random selection of the dice face
-    ifilin >> *seedface;
-    ifilin >> butstr; // seed for the selection of the sign of the coordinates
-    ifilin >> *seedsign;
-    ifilin >> butstr; // which particles in the planes (ALL: one file for all, or NO: one for each)
-    ifilin >> *partinplanes;
-    ifilin >> butstr;//directory to save FITS files
-    ifilin >> *directory;
-    ifilin >> butstr;//Sufix to save FITS files
-    ifilin >> *suffix;
-    ifilin >> butstr;//Shot-noise opt: 0-No random degradation; 1-One half degradation; 2- three quarters degradation...
-    ifilin >> *sn_opt;
-    ifilin >> butstr;//Mass Assignement Scheme - If 0 use TSC (Recomended) if 1 use NGP
-    ifilin >> *do_NGP;
-  }
-  else exit(-1);
-};
-
-void read_dl(string idc, vector <double> & zl, vector <double> & dl, double zs){
-  ifstream infiledc;
-  infiledc.open(idc.c_str());
-  if(infiledc.is_open()){
-    double zi,dli;
-    while(infiledc >> zi >> dli){
-      zl.push_back(zi);
-      dl.push_back(dli*speedcunit); // on Mpc/h
-      cout << zi << "  " << dli*speedcunit << endl;
-    }
-    infiledc.close();
-  }
-  else{
-    cout << "  " << endl;
-    cout << " the comoving distance file: " << idc << endl;
-    cout << " does not exists " << endl;
-    cout << " I will STOP here!!! " << endl;
-    exit(1);
-  }
-  if(zs>zl[zl.size()-1]){
-    cout << " source redshift larger than the highest available redshift in the comoving distance file " << endl;
-    cout << "  that is = " << zl[zl.size()-1] << endl;
-    cout << " I will STOP here !!! " << endl;
-    exit(1);
   }
 }

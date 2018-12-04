@@ -9,10 +9,10 @@
 #include <utilities.h>
 #include <cstring>
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
-#define POS_U 1   // Unit conversion from BoxSize unit lengh to kpc/h
+#define POS_U 1.0 // Unit conversion from BoxSize unit lengh to kpc/h
 #define NBLOCKS 1 // Number of blocks to be fastforwarded
 #define DO_NGP false // Use NGP as the MAS
-#define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap  1 // Number of Lens to be builded from a snap
 #define neval 1000
 
 /*****************************************************************************/
@@ -134,9 +134,10 @@ int main(int argc, char** argv){
 
   /* Read the Snap Header and get Cosmological Values*/
   string file_in = p.pathsnap+lsnap[0]+"."+sconv(myid,fINT);
+  cout << file_in << endl;
   Header header;
   ifstream fin;
-  if( not read_header (file_in, &header, fin, true) )
+  if( read_header (file_in, &header, fin, true) )
     MPI_Abort(MPI_COMM_WORLD,-1);
 
   cosmology cosmo(header.om0,header.oml,1.0,-1.0);
@@ -153,12 +154,13 @@ int main(int argc, char** argv){
   for(int i=0;i<neval;i++){
 
     zl[i] = i * (p.zs+1.0)/(neval-1);
-    dl[i] = cosmo.comovDist(zl[i]);
-
+    dl[i] = cosmo.comovDist(zl[i])*speedcunit;
+    cout << zl[i] << " " << dl[i] << endl;
   }
 
   double dllow=0.0;
-  double dlup = getY(zl,dl,p.zs);
+  double dlup = getY(zl,dl,p.zs); 
+  Ds = getY(zl,dl,p.zs);          // comoving distance of the last plane
 
   double ldbut;
   int pos, nrepi=0;
