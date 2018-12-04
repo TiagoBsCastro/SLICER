@@ -1,21 +1,5 @@
 #include "util.h"
 
-interp_kernel::interp_kernel (double *rj, double *h_SPH, double *w, int nr, int nh){
-
-  spline = gsl_spline2d_alloc(T, nr, nh);
-  /* initialize interpolation */
-  gsl_spline2d_init(spline, rj, h_SPH, w, nr, nh);
-  /*Should be called as gsl_spline2d_eval(spline, xi, yj, xacc, yacc);*/
-}
-
-interp_kernel::~interp_kernel(){
-
-  gsl_spline2d_free(spline);
-  gsl_interp_accel_free(racc);
-  gsl_interp_accel_free(hacc);
-
-}
-
 template <class T>
 int locate (const std::vector<T> &v, const T x){
   size_t n = v.size ();
@@ -193,6 +177,64 @@ void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
   *d = sqrt(x*x+y*y+z*z);
   *dec = asin(x/(*d));
   *ra = atan2(y,z);
+}
+
+void readInput(struct InputParams *p, std::string name){
+  // read fileinput
+  std:: ifstream fin (name.c_str());
+  if(fin.is_open());
+  else{
+    std:: cout << " Params.ini file does not exist where you are running the code " << std:: endl;
+    std:: cout << " I will STOP here!!! " << std:: endl;
+    exit(1);
+  }
+  std:: string str;
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->npix = std::stoi(str);//         1. Number of Pixels
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->boxl = std::stof(str);//         2. Box Size
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->zs = std::stof(str);//           3. Redshift Source
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->fov = std::stof(str);//          4. Field of View
+  std::getline(fin, str);
+  std::getline(fin,
+      p->filredshiftlist);//          5. File with the redshift list it may contain three columns: snap 1/(1+z) z
+  std::getline(fin, str);
+  std::getline(fin,
+      p->pathsnap);//                 6. Path where the snaphosts are located
+  std::getline(fin, str);
+  std::getline(fin,
+      p->simulation);//               7. Simulation name
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->nfiles = std::stoi(str);//       8. Number of files on Gadget Snapshot
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->seedcenter = std::stoi(str);//   9. Seed center
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->seedface = std::stoi(str);//     10. Seed Face
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->seedsign = std::stoi(str);//     11. Seed sign
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->partinplanes = std::stoi(str);// 12. True: Each gadget particle type will have its own Map; False: One Map for All
+  std::getline(fin, str);
+  std::getline(fin,
+       p->directory);//               13. Directory to save FITS files
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->suffix;//                        14. Suffix to FITS files
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p->snopt;//                         15. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
+
 }
 
 void readParameters(string file_name,int *npix, double *boxl,

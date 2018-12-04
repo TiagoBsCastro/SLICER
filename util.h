@@ -11,8 +11,24 @@
 using namespace std;
 using namespace CCfits;
 
-// conversion: double or int -> string
+// parameters in the input file
+struct InputParams{
+  int npix; // Number of Pixels
+  double boxl; //Box Size
+  double zs; // Source Redshift
+  double fov; // Field of View in Degrees
+  string filredshiftlist; // File with the redshift list it may contain three columns: snap 1/(1+z) z
+  string pathsnap; // Path where the snaphosts are located
+  string simulation; // Simulation name (prefix infront at the snap file)
+  int nfiles; // Number of files on Gadget Snapshot
+  int seedcenter, seedface, seedsign; // Random Seeds
+  bool partinplanes; // True: Each gadget particle type will have its own Map; False: One Map for All particle types
+  string directory; // Directory to save FITS files
+  string suffix; // Suffix to FITS files
+  int snopt; // Shot-noise option: 0-No random Degradation; 1-Half particles degradation; 2- Three quarters particle degradation ...
+};
 
+// conversion: double or int -> string
 static const char fINT[] = "%i";
 static const char fLONG[] = "%lli";
 static const char fDP0[] = "%1.0f";

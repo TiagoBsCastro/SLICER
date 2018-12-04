@@ -10,6 +10,7 @@
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define POS_U 1   // Unit conversion from BoxSize unit lengh to kpc/h
 #define NBLOCKS 1 // Number of blocks to be fastforwarded
+#define DO_NGP False // Use NGP as the MAS
 #define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
 
 /*****************************************************************************/
@@ -34,9 +35,9 @@
 /*    This code has been adapted to run on Magneticum simulations:           */
 /*    other functionalities removed for simplicity                           */
 /*                                                                           */
-/*      - Proper mass assignment to Hydro particles        		               */
+/*      - Proper mass assignment to Hydro particles        		     */
 /*      - Proper mass assignment to  BH   particles                          */
-/*	    - Bug fixed: Proper construction of light-cones in case of few       */
+/*	- Bug fixed: Proper construction of light-cones in case of few       */
 /*                   snapshots                                               */
 /*      - Parallelization of Map Building algorithm                          */
 /*                                                                           */
@@ -80,34 +81,12 @@ int main(int argc, char** argv){
   double m0,m1,m2,m3,m4,m5;
   // ******************** to be read in the INPUT file ********************
   // ... project - number of pixels
-  int npix;
-  // ... set by hand the redshift of the source and than loop only up to
-  // ... the needed snaphost when creating the light cone!
-  double zs,Ds;
-  string filredshiftlist,filsnaplist;
-  // ... loop on different snapshots
-  string pathsnap; // = "/dati1/cgiocoli/CoDECS/";
-  double boxl; // Mpc/h
-  string idc; // comoving distance file
-  int seedcenter, seedface, seedsign,nfiles;
-  double fov;
-  string simulation; // Simulation Name
-  string partinplanes; // ALL all part in one plane, NO each part type in different planes
-  string directory, suffix;
-  int sn_opt; //Shot-Noise option
-  string FilePath;
-  bool do_NGP;
+  double Ds;
 
-  readParameters(inifile,&npix,&boxl,&zs,&fov,
-                 &filredshiftlist,&filsnaplist,
-                 &pathsnap,&idc,&seedcenter,
-                 &seedface,&seedsign,
-                 &simulation,&nfiles,
-                 &partinplanes,
-                 &directory,&suffix,&sn_opt,&do_NGP);  // Reading the parameters File
+  struct InputParams p;
+  readInput(&p, inifile);
 
-
- if(sn_opt<0 && myid==0){
+  if(sn_opt<0 && myid==0){
     cout << "Impossible value for Shot-Noise option!" << endl;
     MPI_Abort(MPI_COMM_WORLD,-1);;
   }
@@ -155,41 +134,10 @@ int main(int argc, char** argv){
     cout << "  " << endl;
     cout << " opening path for snapshots: " << endl;
     cout << pathsnap << endl;
-    cout << " " << endl;
-    cout << " I will look for comoving distance " << endl;
-    cout << "      file = " << idc << endl;
-    cout << " " << endl;
-  }
-  ifstream infiledc;
-  vector<double> zl, dl;
-  infiledc.open(idc.c_str());
-  if(infiledc.is_open()){
-    double zi,dli;
-    while(infiledc >> zi >> dli){
-      zl.push_back(zi);
-      dl.push_back(dli*speedcunit); // on Mpc/h
-      if (myid==0)
-        cout << zi << "  " << dli*speedcunit << endl;
-    }
-    infiledc.close();
-  }
-  else{
-    cout << "  " << endl;
-    cout << " the comoving distance file: " << idc << endl;
-    cout << " does not exists " << endl;
-    cout << " I will STOP here!!! " << endl;
-    MPI_Abort(MPI_COMM_WORLD,-1);
   }
 
-  if(zs>zl[zl.size()-1]){
-    cout << " source redshift larger than the highest available redshift in the comoving distance file " << endl;
-    cout << "  that is = " << zl[zl.size()-1] << endl;
-    cout << " I will STOP here !!! " << endl;
-    MPI_Abort(MPI_COMM_WORLD,-1);
-  }
+  /* Read the Snap Header and get Cosmological Values*/
 
-
-  Ds = getY(zl,dl,zs);         // comoving distance of the last plane
   vector <int>    replication; // Number of repetitions of the i-th snapshot box
   vector <string> fromsnap;    // From which snapshot the i-th lens plane were build
   vector <double> zsimlens;    // z of the i-th lens (z correspodent to d=1/2(ld+ld2))
@@ -203,7 +151,7 @@ int main(int argc, char** argv){
 
   //Building the ligh cone
   dllow=0;
-  dlup=getY(zl,dl,zs);
+  dlup=;
 
   double ldbut;
   int pos, nrepi=0;
@@ -1151,7 +1099,7 @@ int main(int argc, char** argv){
 	      ntotxy0+=totPartxy0;
 
 	      if(totPartxy0>0){
-          mapxy0 = gridist_w(xs,ys,ms,npix,do_NGP);
+          mapxy0 = gridist_w(xs,ys,ms,npix,DO_NGP);
         }
 
 	      //re-normalize to the total mass!
@@ -1234,7 +1182,7 @@ int main(int argc, char** argv){
 	      totPartxy1=xs.size();
 	      ntotxy1+=totPartxy1;
 
-	      if(totPartxy1>0) 	mapxy1 = gridist_w(xs,ys,ms,npix,do_NGP);
+	      if(totPartxy1>0) 	mapxy1 = gridist_w(xs,ys,ms,npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot1=0;
@@ -1310,7 +1258,7 @@ int main(int argc, char** argv){
 	      // cout << " n2: totPartxy2 " << totPartxy2 << endl;
 	      ntotxy2+=totPartxy2;
 
-	      if(totPartxy2>0) mapxy2 = gridist_w(xs,ys,ms,npix,do_NGP);
+	      if(totPartxy2>0) mapxy2 = gridist_w(xs,ys,ms,npix,DO_NGP);
 	      // re-normalize to the total mass!
 	      double mtot2=0;
 	      double mnorm=accumulate(ms.begin(),ms.end(),0.);
@@ -1387,7 +1335,7 @@ int main(int argc, char** argv){
 	      // cout << " n3: totPartxy3 " << totPartxy3 << endl;
 	      ntotxy3+=totPartxy3;
 
-	      if(totPartxy3>0) mapxy3 = gridist_w(xs,ys,ms,npix,do_NGP);
+	      if(totPartxy3>0) mapxy3 = gridist_w(xs,ys,ms,npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot3=0;
@@ -1463,7 +1411,7 @@ int main(int argc, char** argv){
 	      // cout << " n4: totPartxy4 " << totPartxy4 << endl;
 	      ntotxy4+=totPartxy4;
 
-	      if(totPartxy4>0) mapxy4 = gridist_w(xs,ys,ms,npix,do_NGP);
+	      if(totPartxy4>0) mapxy4 = gridist_w(xs,ys,ms,npix,DO_NGP);
 
 	      // re-normalize to the total mass!
 	      double mtot4=0;
@@ -1570,7 +1518,7 @@ int main(int argc, char** argv){
 	      // cout << " n5: totPartxy5 " << totPartxy5 << endl;
 	      ntotxy5+=totPartxy5;
 
-	      if(totPartxy5>0) mapxy5 = gridist_w(xs,ys,ms,npix,do_NGP);
+	      if(totPartxy5>0) mapxy5 = gridist_w(xs,ys,ms,npix,DO_NGP);
 
 	      if(hydro){
 
