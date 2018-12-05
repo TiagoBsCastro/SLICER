@@ -163,64 +163,14 @@ int main(int argc, char** argv){
 
   build_plans(Ds, &p, numberOfLensPerSnap, nsnaps, lred, zl, dl, lsnap, ld, ld2, replication, zfromsnap, fromsnap, zsimlens,randomize, pll, myid);
 
-  // randomization of the box realizations :
   int nrandom = replication.back();
   vector<double> x0(nrandom), y0(nrandom), z0(nrandom); // ramdomizing the center of the simulation [0,1]
   vector<int> face(nrandom); // face of the dice
   vector<int> sgnX(nrandom), sgnY(nrandom),sgnZ(nrandom); // randomizing the box axis signs
+  
+  // randomization of the box realizations :
+  randomize_box (x0, y0, z0, face, sgnX, sgnY, sgnZ, replication, nrandom, randomize, &p, numberOfLensPerSnap, myid);
 
-  for(int i=0;i<nrandom;i++){
-
-    if ( randomize[i] ){
-
-      srand(p.seedcenter+i/numberOfLensPerSnap*13);
-      x0[i] = rand() / float(RAND_MAX);
-      y0[i] = rand() / float(RAND_MAX);
-      z0[i] = rand() / float(RAND_MAX);
-      if(myid==0){
-        cout << "  " << endl;
-        cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
-      }
-      face[i] = 7;
-      srand(p.seedface+i/numberOfLensPerSnap*5);
-      while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
-      if (myid==0)
-        cout << " face of the dice " << face[i] << endl;
-      sgnX[i] = 2;
-      srand(p.seedsign+i/numberOfLensPerSnap*8);
-      while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
-      sgnY[i] = 2;
-      while(sgnY[i] > 1 || sgnY[i] < 0) sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
-      sgnZ[i] = 2;
-      while(sgnZ[i] > 1 || sgnZ[i] < 0) sgnZ[i] = int(rand() / float(RAND_MAX)+0.5);
-      if(sgnX[i]==0) sgnX[i]=-1;
-      if(sgnY[i]==0) sgnY[i]=-1;
-      if(sgnZ[i]==0) sgnZ[i]=-1;
-      if(myid==0)
-        cout << " signs of the coordinates = " << sgnX[i] << "  " << sgnY[i] << " " << sgnZ[i] << endl;
-
-    }
-    else{
-
-      x0[i] = x0[i-1];
-      y0[i] = y0[i-1];
-      z0[i] = z0[i-1];
-      if(myid==0){
-        cout << "  " << endl;
-        cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
-      }
-      face[i] = face[i-1];
-      if (myid==0)
-        cout << " face of the dice " << face[i] << endl;
-      sgnX[i] = sgnX[i-1];
-      sgnY[i] = sgnY[i-1];
-      sgnZ[i] = sgnZ[i-1];
-      if(myid==0)
-        cout << " signs of the coordinates = " << sgnX[i] << "  " << sgnY[i] << " " << sgnZ[i] << endl;
-
-    }
-
-  }
   if(myid==0)
     cout << " set the field of view to be square in degrees " << endl;
   double h0,fovradiants;

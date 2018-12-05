@@ -257,107 +257,61 @@ void build_plans(double dlup, InputParams *p, int numberOfLensPerSnap, int nsnap
 
 }
 
-void box_randomize(vector <double> & x0, vector <double> & y0, vector <double> & z0,
-  vector <int> & sgnX, vector <int> & sgnY, vector <int> & sgnZ, vector <int> & face,
-  int nrandom, int seedsign, int seedface, int seedcenter){
+void randomize_box (vector <double> & x0, vector <double> & y0, vector <double> & z0, vector<int> & face, vector<int> & sgnX, vector<int> & sgnY, vector<int> & sgnZ, vector <int> & replication, int nrandom, vector <bool> & randomize, InputParams *p, int numberOfLensPerSnap, int myid){
 
   for(int i=0;i<nrandom;i++){
-    srand(seedcenter+i*13);
-    x0[i] = rand() / float(RAND_MAX);
-    y0[i] = rand() / float(RAND_MAX);
-    z0[i] = rand() / float(RAND_MAX);
-    cout << "  " << endl;
-    cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
-    face[i] = 7;
-    srand(seedface+i*5);
-    while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
-    std:: cout << " face of the dice " << face[i] << std:: endl;
-    sgnX[i] = 2;
-    srand(seedsign+i*8);
-    while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
-    sgnY[i] = 2;
-    while(sgnY[i] > 1 || sgnY[i] < 0) sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
-    sgnZ[i] = 2;
-    while(sgnZ[i] > 1 || sgnZ[i] < 0) sgnZ[i] = int(rand() / float(RAND_MAX)+0.5);
-    if(sgnX[i]==0) sgnX[i]=-1;
-    if(sgnY[i]==0) sgnY[i]=-1;
-    if(sgnZ[i]==0) sgnZ[i]=-1;
-    cout << " signs of the coordinates = " << sgnX[i] << "  " << sgnY[i] << " " << sgnZ[i] << endl;
-  }
-}
 
-void rand_pos (float * xx, Header header, int ptype, int nsnap, float rcase, Randomization randomization_plan){
+    if ( randomize[i] ){
 
-  int face=randomization_plan.face;
-  int sgnX=randomization_plan.sgnX, sgnY=randomization_plan.sgnY, sgnZ=randomization_plan.sgnZ;
-  double xc=randomization_plan.xc, yc=randomization_plan.yc, zc=randomization_plan.zc;
+      srand(p->seedcenter+i/numberOfLensPerSnap*13);
+      x0[i] = rand() / float(RAND_MAX);
+      y0[i] = rand() / float(RAND_MAX);
+      z0[i] = rand() / float(RAND_MAX);
+      if(myid==0){
+        cout << "  " << endl;
+        cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
+      }
+      face[i] = 7;
+      srand(p->seedface+i/numberOfLensPerSnap*5);
+      while(face[i]>6 || face[i]<1) face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
+      if (myid==0)
+        cout << " face of the dice " << face[i] << endl;
+      sgnX[i] = 2;
+      srand(p->seedsign+i/numberOfLensPerSnap*8);
+      while(sgnX[i] > 1 || sgnX[i] < 0) sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
+      sgnY[i] = 2;
+      while(sgnY[i] > 1 || sgnY[i] < 0) sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
+      sgnZ[i] = 2;
+      while(sgnZ[i] > 1 || sgnZ[i] < 0) sgnZ[i] = int(rand() / float(RAND_MAX)+0.5);
+      if(sgnX[i]==0) sgnX[i]=-1;
+      if(sgnY[i]==0) sgnY[i]=-1;
+      if(sgnZ[i]==0) sgnZ[i]=-1;
+      if(myid==0)
+        cout << " signs of the coordinates = " << sgnX[i] << "  " << sgnY[i] << " " << sgnZ[i] << endl;
 
-  for (int pp=0; pp<header.npart[ptype]; pp++){
-
-    float x, y, z;
-    float xb, yb, zb;
-
-    xb=xx[3*pp]; yb=xx[3*pp+1]; zb=xx[3*pp+2];
-
-    xb = sgnX*(((xb)/header.boxsize));
-    yb = sgnY*(((yb)/header.boxsize));
-    zb = sgnZ*(((zb)/header.boxsize));
-
-    // wrapping periodic condition
-    if(xb>1.) xb = xb - 1.;
-    if(yb>1.) yb = yb - 1.;
-    if(zb>1.) zb = zb - 1.;
-    if(xb<0.) xb = 1. + xb;
-    if(yb<0.) yb = 1. + yb;
-    if(zb<0.) zb = 1. + zb;
-    switch (face){
-      case(1):
-        x = xb;
-        y = yb;
-        z = zb;
-        break;
-      case(2):
-        x = xb;
-        y = zb;
-        z = yb;
-        break;
-      case(3):
-        x = yb;
-        y = zb;
-        z = xb;
-        break;
-      case(4):
-        x = yb;
-        y = xb;
-        z = zb;
-        break;
-      case(5):
-        x = zb;
-        y = xb;
-        z = yb;
-        break;
-      case(6):
-        x = zb;
-        y = yb;
-        z = xb;
-        break;
     }
-    // recenter
-    x = x - xc;
-    y = y - yc;
-    z = z - zc;
-    // wrapping periodic condition again
-    if(x>1.) x = x - 1.;
-    if(y>1.) y = y - 1.;
-    if(z>1.) z = z - 1.;
-    if(x<0.) x = 1. + x;
-    if(y<0.) y = 1. + y;
-    if(z<0.) z = 1. + z;
-    z+=double(rcase); // pile the cones
-    xx[3*pp]=x;
-    xx[3*pp+1]=y;
-    xx[3*pp+2]=z;
+    else{
+
+      x0[i] = x0[i-1];
+      y0[i] = y0[i-1];
+      z0[i] = z0[i-1];
+      if(myid==0){
+        cout << "  " << endl;
+        cout << " random centers  for the box " << i << " = " << x0[i] << "  " << y0[i] << "  " << z0[i] << endl;
+      }
+      face[i] = face[i-1];
+      if (myid==0)
+        cout << " face of the dice " << face[i] << endl;
+      sgnX[i] = sgnX[i-1];
+      sgnY[i] = sgnY[i-1];
+      sgnZ[i] = sgnZ[i-1];
+      if(myid==0)
+        cout << " signs of the coordinates = " << sgnX[i] << "  " << sgnY[i] << " " << sgnZ[i] << endl;
+
+    }
+
   }
+
 }
 
 void map_particles (float * xx, double * m, int ptype, int sn_opt, float fovradiants, Header header, vector <double> &ld,
