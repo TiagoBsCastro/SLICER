@@ -139,7 +139,7 @@ int main(int argc, char** argv){
   ifstream fin;
   if( read_header (file_in, &header, fin, true) )
     MPI_Abort(MPI_COMM_WORLD,-1);
-
+  /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
   cosmology cosmo(header.om0,header.oml,1.0,-1.0);
 
   vector <double> zl(neval),dl(neval);   // Redshift and ComovDistance array to be interpolated
@@ -158,67 +158,10 @@ int main(int argc, char** argv){
     cout << zl[i] << " " << dl[i] << endl;
   }
 
-  double dllow=0.0;
-  double dlup = getY(zl,dl,p.zs); 
   Ds = getY(zl,dl,p.zs);          // comoving distance of the last plane
-
-  double ldbut;
-  int pos, nrepi=0;
-  int nrep=0;
-  do{
-    nrep++;
-    nrepi++;
-    ldbut=dllow+nrep*p.boxl/numberOfLensPerSnap;
-    double dlens=ldbut-0.5*p.boxl/numberOfLensPerSnap;
-    int pos_temp = getSnap(lred, dl, zl, dlens);
-    if (myid==0)
-      cout << " simulation snapshots = " << ldbut << "  " << getY(dl,zl,ldbut) << "  " << nrep << " from snap " << lsnap[pos_temp] << "  " << getY(dl,zl,dlens) << endl;
-    ld.push_back(ldbut-p.boxl/numberOfLensPerSnap);
-    ld2.push_back(ldbut);
-    zfromsnap.push_back(lred[pos_temp]);
-    if ( nrep != 1 && pos_temp != pos){
-      for ( int i=0; i<nrepi-1; i++ ) replication.push_back(nrep-1);
-      nrepi=1;
-    }
-    pos=pos_temp;
-    zsimlens.push_back(getY(dl,zl,dlens));
-    fromsnap.push_back(lsnap[pos]);
-    if( nrep==1 )
-      randomize.push_back(1);
-    else
-      randomize.push_back( !( (nrep-1)%numberOfLensPerSnap ) );
-
-  }while(ldbut<dlup);
-
-  for ( int i=0; i<nrepi+1; i++ ) replication.push_back(nrep); // Last plane replications
-  if (myid==0){
-    cout << " Comoving Distance of the last plane " << Ds << endl;
-    cout << " nsnaps = " << nsnaps << endl;
-  }
-  //int pl=0;
   vector<int> pll;
 
-  ofstream planelist;
-  string planes_list;
-  planes_list = p.directory+"planes_list_"+p.suffix+".txt";
-
-
-  if (myid==0)
-    planelist.open(planes_list.c_str());
-
-  for(int i=0;i<fromsnap.size();i++){
-
-    if (myid==0){
-      cout << zsimlens[i] << " planes = " << ld[i] << "  " << ld2[i] << "  " << replication[i] << " from snap " << fromsnap[i] << endl;
-      planelist <<  i << "   " << zsimlens[i] << "   " << ld[i] << "   " << ld2[i] << "   " << replication[i] << "   " << fromsnap[i]
-      << "   " << zfromsnap[i] << "  "<< randomize[i]  << endl;
-    }
-    pll.push_back(i);
-
-  }
-
-  if (myid==0)
-    planelist.close();
+  build_plans(Ds, &p, numberOfLensPerSnap, nsnaps, lred, zl, dl, lsnap, ld, ld2, replication, zfromsnap, fromsnap, zsimlens,randomize, pll, myid);
 
   // randomization of the box realizations :
   int nrandom = replication.back();

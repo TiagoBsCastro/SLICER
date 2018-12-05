@@ -198,27 +198,22 @@ void read_redlist(string filredshiftlist, vector <double> & lred, vector <int> &
   }
 }
 
-void plans_builder (vector<double> & zl, vector<double> & dl, double boxl, double zs,
-  vector<int> & lsnap, vector<double> & lred, vector<double> & ld, vector<double> & ld2, vector<double> & zsimlens,
-  vector<int> & fromsnap, vector<int> & replication){
+void build_plans(double dlup, InputParams *p, int numberOfLensPerSnap, int nsnaps, vector <double> & lred, vector <double> & zl, vector <double> & dl, vector <string> & lsnap, vector <double> & ld, vector <double> & ld2, vector <int> & replication, vector <double> & zfromsnap, vector <string> & fromsnap, vector <double> & zsimlens, vector <bool> & randomize, vector <int> & pll,int myid){
 
-  double dllow=0;
-  double dlup=getY(zl,dl,zs);
-
-  double ldbut;
   int pos, nrepi=0;
   int nrep=0;
+  double ldbut;
   do{
     nrep++;
     nrepi++;
-    ldbut=dllow+nrep*boxl;
-    double dlens=ldbut-0.5*boxl;
+    ldbut=nrep*p->boxl/numberOfLensPerSnap;
+    double dlens=ldbut-0.5*p->boxl/numberOfLensPerSnap;
     int pos_temp = getSnap(lred, dl, zl, dlens);
-    cout << " simulation snapshots = " << ldbut << "  " << getY(dl,zl,ldbut) << "  " << nrep << " from snap "
-      << lsnap[pos_temp] << "  " << getY(dl,zl,ldbut-0.5*boxl)
-      << endl;
-      ld.push_back(ldbut-boxl);
-      ld2.push_back(ldbut);
+    if (myid==0)
+      cout << " simulation snapshots = " << ldbut << "  " << getY(dl,zl,ldbut) << "  " << nrep << " from snap " << lsnap[pos_temp] << "  " << getY(dl,zl,dlens) << endl;
+    ld.push_back(ldbut-p->boxl/numberOfLensPerSnap);
+    ld2.push_back(ldbut);
+    zfromsnap.push_back(lred[pos_temp]);
     if ( nrep != 1 && pos_temp != pos){
       for ( int i=0; i<nrepi-1; i++ ) replication.push_back(nrep-1);
       nrepi=1;
@@ -226,8 +221,40 @@ void plans_builder (vector<double> & zl, vector<double> & dl, double boxl, doubl
     pos=pos_temp;
     zsimlens.push_back(getY(dl,zl,dlens));
     fromsnap.push_back(lsnap[pos]);
+    if( nrep==1 )
+      randomize.push_back(1);
+    else
+      randomize.push_back( !( (nrep-1)%numberOfLensPerSnap ) );
+
   }while(ldbut<dlup);
+
   for ( int i=0; i<nrepi+1; i++ ) replication.push_back(nrep); // Last plane replications
+  if (myid==0){
+    cout << " Comoving Distance of the last plane " << dlup << endl;
+    cout << " nsnaps = " << nsnaps << endl;
+  }
+
+  ofstream planelist;
+  string planes_list;
+  planes_list = p->directory+"planes_list_"+p->suffix+".txt";
+
+
+  if (myid==0)
+    planelist.open(planes_list.c_str());
+
+  for(int i=0;i<fromsnap.size();i++){
+
+    if (myid==0){
+      cout << zsimlens[i] << " planes = " << ld[i] << "  " << ld2[i] << "  " << replication[i] << " from snap " << fromsnap[i] << endl;
+      planelist <<  i << "   " << zsimlens[i] << "   " << ld[i] << "   " << ld2[i] << "   " << replication[i] << "   " << fromsnap[i]
+      << "   " << zfromsnap[i] << "  "<< randomize[i]  << endl;
+    }
+    pll.push_back(i);
+  }
+
+  if (myid==0)
+    planelist.close();
+
 }
 
 void box_randomize(vector <double> & x0, vector <double> & y0, vector <double> & z0,

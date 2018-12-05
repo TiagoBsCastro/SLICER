@@ -178,6 +178,8 @@ void readParameters(string file_name,int *npix, double *boxl,
             string *simulation, int *nfiles,string *partinplanes,
             string *directory,string *suffix,int *sn_opt, bool *do_NGP);
 
+void build_plans(double dlup, InputParams *p, int numberOfLensPerSnap, int nsnaps, vector <double> & lred, vector <double> & zl, vector <double> & dl, vector <string> & lsnap, vector <double> & ld, vector <double> & ld2, vector <int> & replication, vector <double> & zfromsnap, vector <string> & fromsnap, vector <double> & zsimlens, vector <bool> & randomize, vector <int> & pll,int myid);
+
 void box_randomize(vector <double> &, vector <double> &, vector <double> &,
             vector <int> &, vector <int> &, vector <int> &, vector <int> &,
             int , int , int , int );
