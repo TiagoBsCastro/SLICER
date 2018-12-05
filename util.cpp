@@ -154,28 +154,25 @@ void readInput(struct InputParams *p, std::string name){
       p->simulation);//               7. Simulation name
   std::getline(fin, str);
   std::getline(fin, str);
-  p->nfiles = std::stoi(str);//       8. Number of files on Gadget Snapshot
+  p->seedcenter = std::stoi(str);//   8. Seed center
   std::getline(fin, str);
   std::getline(fin, str);
-  p->seedcenter = std::stoi(str);//   9. Seed center
+  p->seedface = std::stoi(str);//     9. Seed Face
   std::getline(fin, str);
   std::getline(fin, str);
-  p->seedface = std::stoi(str);//     10. Seed Face
+  p->seedsign = std::stoi(str);//     10. Seed sign
   std::getline(fin, str);
   std::getline(fin, str);
-  p->seedsign = std::stoi(str);//     11. Seed sign
-  std::getline(fin, str);
-  std::getline(fin, str);
-  p->partinplanes = std::stoi(str);// 12. True: Each gadget particle type will have its own Map; False: One Map for All
+  p->partinplanes = std::stoi(str);// 11. True: Each gadget particle type will have its own Map; False: One Map for All
   std::getline(fin, str);
   std::getline(fin,
-       p->directory);//               13. Directory to save FITS files
+       p->directory);//               12. Directory to save FITS files
   std::getline(fin, str);
   std::getline(fin,
-       p->suffix);//                  14. Suffix to FITS files
+       p->suffix);//                  13. Suffix to FITS files
   std::getline(fin, str);
   std::getline(fin, str);
-  p->snopt = std::stoi(str);//        15. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
+  p->snopt = std::stoi(str);//        14. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
 
 }
 
@@ -506,7 +503,162 @@ void print_header (Header header){
   cout << "Flag metals: "<< header.flag_metals<< endl;
   cout << "N. tot HW: "<< header.nTotalHW[0]<<" "<< header.nTotalHW[1]<<" "<< header.nTotalHW[2]<<" "<< header.nTotalHW[3]<<" "<< header.nTotalHW[4]<<" "<< header.nTotalHW[5]<<" "<< endl;
   cout << "Flag entropy: "<< header.flag_entropy<<endl;
+  cout << "  " << endl;
+  cout << "      __________________ COSMOLOGY __________________  " << endl;
+  cout << " " << endl;
+  int dimmass0=0;
+
+  for(int i=0;i<=5;i++){
+     if(header.massarr[i]==0){dimmass0+=header.npart[i];}
+  }
+
+  if(dimmass0==0){
+
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@  !!DM only simulation!!  @" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+  }
+  else{
+
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@  !!Hydro   simulation!!  @" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+  }
+
+  cout << " .......................................................... " << endl;
+  cout << "   number of particles in this snapshot: " << endl;
+  cout << header.npart[0] << " " << header.npart[1] << " " << header.npart[2]
+   << " " << header.npart[3] << " " << header.npart[4] << " " << header.npart[5] << endl;
+
+  cout << "      Omegam = " << header.om0 << " " << "Omegal = " << header.oml << endl;
+  cout << "           h = " << header.h   << " " << "BoxSize = " << header.boxsize << endl;
+
+  cout << "      _______________________________________________  " << endl;
+  cout << " " << endl;
+  cout << "   total number of particles in the simulation: " << endl;
+  cout << header.nTotalHW[0]*pow(2,32)+header.npartTotal[0] << " " << header.nTotalHW[1]*pow(2,32)+header.npartTotal[1] << " " <<
+          header.nTotalHW[2]*pow(2,32)+header.npartTotal[2] << " " << header.nTotalHW[3]*pow(2,32)+header.npartTotal[3] << " " <<
+          header.nTotalHW[4]*pow(2,32)+header.npartTotal[4] << " " << header.nTotalHW[5]*pow(2,32)+header.npartTotal[5] << endl;
+  cout << " " << endl;
+  cout << "   xparticle type mass array: " << endl;
+  cout << header.massarr[0] << " " << header.massarr[1] << " " << header.massarr[2]
+      << " " << header.massarr[3] << " " <<  header.massarr[4] << " " <<  header.massarr[5] << endl;
+
+
 }
+
+void fastforwardToPos (ifstream & fin, int NBLOCKS, int myid,  bool close){
+
+  Block block;
+  fin >> block;
+  for (int i=0; i < NBLOCKS; i++){
+
+    if (i>0){
+
+      fin >> block;
+
+    }
+
+    if (myid==0){
+      cout << "Fast Fowarding next block. Name: ";
+      cout << block.name[0];
+      cout << block.name[1];
+      cout << block.name[2];
+      cout << block.name[3] << endl;
+    }
+
+      fin.seekg(block.blocksize2,ios_base::cur);
+
+  }
+
+  fin >> block;
+  if (myid==0){
+    cout << "reading next block. Name: ";
+    cout << block.name[0];
+    cout << block.name[1];
+    cout << block.name[2];
+    cout << block.name[3] << endl;
+    cout << "Should be                 POS " << endl;
+  }
+
+  if(close)
+    fin.close();
+
+}
+
+void fastforwardToMASS (ifstream & fin, int NBLOCKS, Header *data, int myid){
+
+   int tot = (data->npart[0]+data->npart[1]+data->npart[2]+data->npart[3]+data->npart[4]+data->npart[5]);
+   Block block;
+
+   for(int i=0;i<NBLOCKS-1;i++){
+
+     fin >> block;
+     if (myid==0){
+        cout << "Size of Next Block is " << block.blocksize1 << endl;
+        cout << "Should be             " << 3*sizeof(int32_t)*tot << endl;
+        cout << "Fast Fowarding next block. Name: ";
+        cout << block.name[0];
+        cout << block.name[1];
+        cout << block.name[2];
+        cout << block.name[3] << endl;
+     }
+
+     fin.seekg(block.blocksize2/sizeof(int8_t),fin.cur);
+
+   }
+
+   fin >> block;
+   if (myid==0){
+     cout << "Reading next block. Name: ";
+     cout << block.name[0];
+     cout << block.name[1];
+     cout << block.name[2];
+     cout << block.name[3] << endl;
+     cout << "Should be                 MASS" << endl;
+   }
+
+}
+
+void fastforwardToBHMASS (ifstream & fin, int NBLOCKS, Header *data, int myid){
+
+  Block block;
+  fin.seekg(data->npart[5]*sizeof(int32_t)/sizeof(int8_t),fin.cur);
+  if (myid==0){
+    cout << "\n" <<endl;
+    cout << "Fast Fowarding blocks: ";
+  }
+  for(int i=0;i<NBLOCKS;i++){
+
+    fin >> block;
+    if (myid==0){
+        cout << block.name[0];
+        cout << block.name[1];
+        cout << block.name[2];
+        cout << block.name[3] << ", ";
+    }
+
+    fin.seekg(block.blocksize2/sizeof(int8_t),fin.cur);
+  }
+  if (myid==0)
+    cout<< "\n" << endl;
+  fin >> block;
+  if (myid==0){
+      cout << "Reading BH masses from. Block: ";
+      cout << block.name[0];
+      cout << block.name[1];
+      cout << block.name[2];
+      cout << block.name[3] << endl;
+  }
+}
+
+
 
 void read_pos (ifstream *fin, Header *header, float * xx0, float * xx1, float * xx2, float * xx3, float * xx4, float * xx5){
 

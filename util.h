@@ -24,7 +24,6 @@ struct InputParams{
   string filredshiftlist; // File with the redshift list it may contain three columns: snap 1/(1+z) z
   string pathsnap; // Path where the snaphosts are located
   string simulation; // Simulation name (prefix infront at the snap file)
-  int nfiles; // Number of files on Gadget Snapshot
   int seedcenter, seedface, seedsign; // Random Seeds
   bool partinplanes; // True: Each gadget particle type will have its own Map; False: One Map for All particle types
   string directory; // Directory to save FITS files
@@ -189,6 +188,12 @@ void box_randomize(vector <double> &, vector <double> &, vector <double> &,
 void plans_builder (vector<double> &, vector<double> &, double , double ,
             vector<int> &, vector<double> &, vector<double> &, vector<double> &, vector<double> &,
             vector<int> &, vector<int> &);
+
+void fastforwardToPos(ifstream &,int, int, bool);
+
+void fastforwardToMASS (ifstream &, int, Header *, int);
+
+void fastforwardToBHMASS (ifstream & , int , Header *, int);
 
 void read_dl(string, vector <double> &, vector <double> &, double);
 
