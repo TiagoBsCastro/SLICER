@@ -400,7 +400,6 @@ int main(int argc, char** argv){
       }
 
       int totPartxyi[6];
-      int totPartxy5;
 
       for(int i=0; i<6; i++){
 
@@ -445,11 +444,11 @@ int main(int argc, char** argv){
              cout << "Rcase       : "<< rcase << endl;
 	            // 2Dgrid
           }
-	        vector<float> xs(0),ys(0),ms(0);
 
-	        for(int l=0;l<data.npart[0];l++){
+          vector<float> xs(0),ys(0),ms(0);
+	        for(int l=0;l<data.npart[i];l++){
 
-            if(hydro && data.massarr[0]==0){
+            if(hydro && data.massarr[i]==0){
 
               if(l==0 && i==5)
                 fastforwardToBHMASS (fin, NBLOCKSTOBHMASS, &data, myid);
@@ -463,8 +462,9 @@ int main(int argc, char** argv){
 
 	          double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2))*data.boxsize/1.e+3*POS_U;
 	          if(di>=ld[nsnap] && di<ld2[nsnap]){
+
   	          double rai,deci,dd;
-	            getPolar(xx[i][0][l]-0.5,xx[i][0][l]-0.5,zz0[l],&rai,&deci,&dd);
+	            getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd);
 
 	            if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
                 xs.push_back(deci/fovradiants+0.5);
@@ -503,6 +503,16 @@ int main(int argc, char** argv){
       }
 
       if(hydro){
+        Block block;
+        fin >> block;
+        if (myid==0){
+          cout << endl << "If masses were read correctly next box should be BHMD " << endl;
+          cout << "Name:                                            ";
+          cout << block.name[0];
+          cout << block.name[1];
+          cout << block.name[2];
+          cout << block.name[3] << endl;
+        }
 	      fin.clear();
 	      fin.close(); // Close file here
       }
@@ -524,7 +534,7 @@ int main(int argc, char** argv){
 
     MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
     for(int i=0; i<6; i++)
-      MPI_Reduce( &mapxytoti[i],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+      MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (myid==0){
       if(p.partinplanes==false){
