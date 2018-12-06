@@ -197,7 +197,7 @@ void fastforwardToBHMASS (ifstream & , int , Header *, int);
 
 void read_dl(string, vector <double> &, vector <double> &, double);
 
-void read_redlist(string, vector <double> &, vector <int> &, double);
+int read_redlist(string, vector <double> &, vector <string> &, double);
 
 void read_particles (ifstream *, Header, int, int, float, float *,
                       vector<double> &, vector<double> &, vector<double> &, vector<int> &,

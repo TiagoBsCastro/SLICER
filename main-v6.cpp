@@ -76,8 +76,6 @@ int main(int argc, char** argv){
     cout << "   -               collapsing one dimension             - " << endl;
     cout << "   ------------------------------------------------------ " << endl;
   }
-  // ... masses of the different type of particles
-  double m0,m1,m2,m3,m4,m5;
   // ******************** to be read in the INPUT file ********************
   // ... project - number of pixels
   double Ds;
@@ -91,11 +89,9 @@ int main(int argc, char** argv){
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
-  double Omega_matter,Omega_lambda,Omega_baryon,hubble;
   string snpix;
   bool do_as_t11=(p.npix<0);
   int rgrid;
-
   if(!do_as_t11) snpix=sconv(p.npix,fINT);
   else{
     int n = -p.npix;
@@ -106,27 +102,10 @@ int main(int argc, char** argv){
 
   // ... read the redshift list and the snap_available
   // ... to build up the light-cone
-  ifstream redlist;
-  redlist.open(p.filredshiftlist.c_str());
   vector <string> lsnap; //lsnap and lred are the selected snapshots selected (z<zs + the first snapshot deeper than zs)
   vector<double> lred;
-
-  if(redlist.is_open()){
-    string buta; //snapshot number
-    double butb,butc; // snapshots redshift and scale factor
-    do{
-      redlist >> buta >> butb >> butc;
-      if (myid==0)
-        cout << butb << " " << p.zs << endl;
-	    lsnap.push_back(buta); // Selected snapshots number and redshift
-	    lred.push_back(butb);
-    }while(butb<p.zs);
-  }else{
-    cout << " redshift list file redshift_list.txt does not " << endl;
-    cout << " exist in the Code dir ... check this out      " << endl;
-    cout << "    I will STOP here !!! " << endl;
+  if( read_redlist(p.filredshiftlist, lred, lsnap, p.zs) )
     MPI_Abort(MPI_COMM_WORLD,-1);
-  }
 
   int nsnaps = lsnap.size();
   if (myid==0){
@@ -157,13 +136,13 @@ int main(int argc, char** argv){
   vector <double> zfromsnap;    // z from the snapshot selected to build the i-th lens
   vector <bool> randomize;      // Bool variable to whether the positions should be re-randomized or not
 
+  /* Creating a table with redshifts and comovingdistances to be interpolated*/
   for(int i=0;i<neval;i++){
 
     zl[i] = i * (p.zs+1.0)/(neval-1);
     dl[i] = cosmo.comovDist(zl[i])*speedcunit;
 
   }
-
   Ds = getY(zl,dl,p.zs);          // comoving distance of the last plane
   vector<int> pll;
 
@@ -206,10 +185,10 @@ int main(int argc, char** argv){
       MPI_Abort(MPI_COMM_WORLD,-1);
     }
     MPI_Barrier(MPI_COMM_WORLD);
+
     float rcase = floor(ld[nsnap]/p.boxl); //Number of piled boxes
-
-    if (do_as_t11) p.npix=int((ld2[nsnap]+ld[nsnap])/2*fovradiants/rgrid*1e3)+1; //Override p.npix if do_as_t11 is True
-
+    if (do_as_t11)
+      p.npix=int((ld2[nsnap]+ld[nsnap])/2*fovradiants/rgrid*1e3)+1; //Override p.npix if do_as_t11 is True
     valarray<float> mapxytot( p.npix*p.npix );
     int ntotxyi[6];
     valarray<float> mapxytoti[6];
@@ -217,13 +196,14 @@ int main(int argc, char** argv){
       ntotxyi[i]=0;
       mapxytoti[i].resize( p.npix*p.npix );
     }
-
     string File = p.pathsnap+fromsnap[nsnap];
-
     string snappl;
-    if( pll[nsnap]<10) snappl = "00"+sconv(pll[nsnap],fINT);
-    else if(pll[nsnap]>=10 && pll[nsnap]<100 ) snappl = "0"+sconv(pll[nsnap],fINT);
-    else snappl = sconv(pll[nsnap],fINT);
+    if( pll[nsnap]<10)
+      snappl = "00"+sconv(pll[nsnap],fINT);
+    else if(pll[nsnap]>=10 && pll[nsnap]<100 )
+      snappl = "0"+sconv(pll[nsnap],fINT);
+    else
+      snappl = sconv(pll[nsnap],fINT);
     string Filesub;
 
     if(ifstream(p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits") && p.partinplanes == false){
@@ -236,8 +216,9 @@ int main(int argc, char** argv){
 
     // redshift and dl of the simulation
     double zsim, dlsim;
-    int intdiv, remaindiv,ffmin,ffmax;
+
     //Computing Working Balance (!!THIS IS A VERY STUPID WORKBALANCE!!)
+    int intdiv, remaindiv,ffmin,ffmax;
     intdiv=header.numfiles/numprocs;
     remaindiv=header.numfiles%numprocs;
 
@@ -378,7 +359,7 @@ int main(int argc, char** argv){
            xx[i][2][pp] = z;
 	      }
       }
-
+      /* If Hydro run I have to read the masses, otherwise close the snapshot*/
       if(hydro)
          fastforwardToMASS (fin, NBLOCKSTOMASS, &data, myid);
       else{
@@ -400,7 +381,6 @@ int main(int argc, char** argv){
       }
 
       int totPartxyi[6];
-
       for(int i=0; i<6; i++){
 
         size_t n = data.npart[i];
@@ -442,7 +422,6 @@ int main(int argc, char** argv){
 	           cout << " ... mapping type "<< i <<" particles on the grid with " << p.npix << " pixels" << endl;
              cout << "Min distance: "<< ld[nsnap]/data.boxsize*1.e+3/POS_U<< " "<<ld2[nsnap]/data.boxsize*1.e+3/POS_U << endl;
              cout << "Rcase       : "<< rcase << endl;
-	            // 2Dgrid
           }
 
           vector<float> xs(0),ys(0),ms(0);
@@ -598,7 +577,7 @@ int main(int argc, char** argv){
   	       phxy->addKey ("HUBBLE",h0," ");
   	       phxy->addKey ("OMEGAMATTER",om0," ");
   	       phxy->addKey ("OMEGALAMBDA",omL0," ");
-  	       phxy->addKey ("m0",m0," ");
+  	       phxy->addKey ("m0",data.massarr[i]," ");
   	     }
        }
       }

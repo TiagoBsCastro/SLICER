@@ -176,23 +176,24 @@ void readInput(struct InputParams *p, std::string name){
 
 }
 
-void read_redlist(string filredshiftlist, vector <double> & lred, vector <int> & lsnap, double zs){
+int read_redlist(string filredshiftlist, vector <double> & lred, vector <string> & lsnap, double zs){
   ifstream redlist;
   redlist.open(filredshiftlist.c_str());
   if(redlist.is_open()){
-    int buta; //snapshot number
+    string buta; //snapshot number
     double butb,butc; // snapshots scale factor and redshift
     do{
       redlist >> buta >> butb >> butc;
       lsnap.push_back(buta); // Selected snapshots number and redshift
-      lred.push_back(butc);
-    }while(butc<zs);
+      lred.push_back(butb);
+    }while(butb<zs);
   }else{
-    cout << " redshift list file redshift_list.txt does not " << endl;
-    cout << " exist in the Code dir ... check this out      " << endl;
-    cout << "    I will STOP here !!! " << endl;
-    exit(1);
+    cerr << " redshift list file redshift_list.txt does not " << endl;
+    cerr << " exist in the Code dir ... check this out      " << endl;
+    cerr << "    I will STOP here !!! " << endl;
+    return 1;
   }
+  return 0;
 }
 
 void build_plans(double dlup, InputParams *p, int numberOfLensPerSnap, int nsnaps, vector <double> & lred, vector <double> & zl, vector <double> & dl, vector <string> & lsnap, vector <double> & ld, vector <double> & ld2, vector <int> & replication, vector <double> & zfromsnap, vector <string> & fromsnap, vector <double> & zsimlens, vector <bool> & randomize, vector <int> & pll,int myid){
