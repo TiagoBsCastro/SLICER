@@ -186,7 +186,7 @@ int main(int argc, char** argv){
     }
     MPI_Barrier(MPI_COMM_WORLD);
 
-    float rcase = floor(ld[nsnap]/p.boxl); //Number of piled boxes
+    float rcase = floor(ld[nsnap]/p.boxl);
     if (do_as_t11)
       p.npix=int((ld2[nsnap]+ld[nsnap])/2*fovradiants/rgrid*1e3)+1; //Override p.npix if do_as_t11 is True
     valarray<float> mapxytot( p.npix*p.npix );

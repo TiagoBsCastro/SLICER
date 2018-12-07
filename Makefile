@@ -1,17 +1,16 @@
 # executable name
-PREFIXDIR = /home/$(USER)/
+PREFIXDIR = /home/$(USER)
 PROG = $(PREFIXDIR)/bin/MapSim-v7
 
 #MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
 MAIN = main-v7.cpp util_new.cpp utilities.cpp cosmology.cpp
 
-LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio #-lcurl
+LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
 
-ALLFLAGS =  -I/$(PREFIXDIR)/include/ \
-            -I/$(PREFIXDIR)/include/gsl/ \
-            -I/$(PREFIXDIR)/include/CCfits/ \
-            -I/$(PREFIXDIR)/include/curl/ \
-	    -I./
+ALLFLAGS =  -I$(PREFIXDIR)/include/ \
+            -I$(PREFIXDIR)/include/gsl/ \
+            -I$(PREFIXDIR)/include/CCfits/ \
+	          -I./
 
 LIBS = -L$(PREFIXDIR)/lib/
 

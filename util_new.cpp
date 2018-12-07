@@ -50,6 +50,11 @@ int readInput(struct InputParams *p, string name, string & snpix, bool *physical
   std::getline(fin, str);
   p->snopt = std::stoi(str);//        13. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
 
+  if(p->npix==0)
+    p->simType = "SubFind";
+  else
+    p->simType = "Gadget";
+
   *physical = (p->npix<0);
   if(!physical)
     snpix=sconv(p->npix,fINT);
@@ -57,6 +62,7 @@ int readInput(struct InputParams *p, string name, string & snpix, bool *physical
     int n = -p->npix;
     snpix=sconv(n,fINT);
     snpix+="_kpc";
+    p->rgrid=n;
   }
 
   if(p->snopt<0){
@@ -72,6 +78,7 @@ int read_redlist(string filredshiftlist, vector <double> & snapred, vector <stri
 
   ifstream redlist;
   redlist.open(filredshiftlist.c_str());
+  double zlast=-999.9;
 
   if(redlist.is_open()){
     ifstream fin; // snap file
@@ -85,6 +92,12 @@ int read_redlist(string filredshiftlist, vector <double> & snapred, vector <stri
         cerr << name << " not found!" << endl;
         return 1;
       }
+      if(header.redshift<zlast){
+        cerr << " Snapshots on "<< filredshiftlist << " are not sorted!" << endl;
+        return 1;
+      }
+      else
+        zlast = header.redshift;
       snapred.push_back(header.redshift);
     }while(header.redshift<p->zs);
   }else{
@@ -192,6 +205,8 @@ void build_planes(InputParams *p, Header *header, Lens &lens, vector <double> & 
 
   if (myid==0)
     planelist.close();
+
+  lens.nplanes = lens.replication.back();
 }
 
 void randomize_box (Random & random, Lens *lens, InputParams *p, int numberOfLensPerSnap, int myid){
@@ -253,5 +268,144 @@ void randomize_box (Random & random, Lens *lens, InputParams *p, int numberOfLen
     }
 
   }
+
+}
+
+int test_fov(double fov, double boxl, double Ds, int myid, double *fovradiants){
+  if(myid==0)
+    cout << " Setting the field of view to be square in degrees " << endl;
+
+  *fovradiants = fov/180.*M_PI;
+  /* check if the field of view is too large with respect to the box size */
+  if( (*fovradiants)*Ds>boxl && myid==0 ){
+    cerr << " !!Field view too large!!\n !!!I will STOP here!!! " << endl;
+    cerr << " Value set is = " << fov << endl;
+    cerr << " Maximum value allowed " << boxl/Ds*180./M_PI << " in degrees " << endl;
+    return 1;
+  }
+  return 0;
+}
+
+void test_hydro(InputParams *p, Header *data){
+
+  if( p->simType.compare("Gadget")==0 ){
+
+    int dim = data->npart[0]+data->npart[1]+data->npart[2]+data->npart[3]+data->npart[4]+data->npart[5];
+    int dimmass0=0;
+    for(int i=0;i<=5;i++){
+       if(data->massarr[i]==0)
+         dimmass0+=data->npart[i];
+    }
+    p->hydro=bool(dimmass0);
+  }
+
+}
+
+void print_header (Header header){
+  cout << "Printing Header Data" << endl;
+
+  cout << "N. part.: " << header.npart[0] << " "<< header.npart[1] << " "<< header.npart[2] << " "<< header.npart[3] << " "<< header.npart[4] << " "<< header.npart[5]  << endl;
+  cout << "Mass Array: "<< header.massarr[0]<< " "<< header.massarr[1]<< " "<< header.massarr[2]<< " "<< header.massarr[3]<< " "<< header.massarr[4]<< " "<< header.massarr[5]<< " "<< endl;
+  cout << "Time: "<< header.time<< endl;
+  cout << "Z: "<< header.redshift<< endl;
+  cout << "Flag SFR.: "<< header.flag_sfr<< endl;
+  cout << "Flag Feedback: "<< header.flag_feedback<< endl;
+  cout << "N. tot.: "<< header.npartTotal[0]<<" "<< header.npartTotal[1]<<" "<< header.npartTotal[2]<<" "<< header.npartTotal[3]<<" "<< header.npartTotal[4]<<" "<< header.npartTotal[5]<<" "<< endl;
+  cout << "Flag cooling: "<< header.flag_cooling<< endl;
+  cout << "N. files: "<< header.numfiles<< endl;
+  cout << "Box size: "<< header.boxsize<< endl;
+  cout << "Omega_matter: "<< header.om0<< endl;
+  cout << "Omega_DE: "<< header.oml<< endl;
+  cout << "h: "<< header.h<< endl;
+  cout << "Flag sage: "<< header.flag_sage<< endl;
+  cout << "Flag metals: "<< header.flag_metals<< endl;
+  cout << "N. tot HW: "<< header.nTotalHW[0]<<" "<< header.nTotalHW[1]<<" "<< header.nTotalHW[2]<<" "<< header.nTotalHW[3]<<" "<< header.nTotalHW[4]<<" "<< header.nTotalHW[5]<<" "<< endl;
+  cout << "Flag entropy: "<< header.flag_entropy<<endl;
+  cout << "  " << endl;
+  cout << "      __________________ COSMOLOGY __________________  " << endl;
+  cout << " " << endl;
+  int dimmass0=0;
+
+  for(int i=0;i<=5;i++){
+     if(header.massarr[i]==0){dimmass0+=header.npart[i];}
+  }
+
+  if(dimmass0==0){
+
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@  !!DM only simulation!!  @" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+  }
+  else{
+
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@  !!Hydro   simulation!!  @" << endl;
+    cout << "		@                          @" << endl;
+    cout << "		@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
+
+  }
+
+  cout << " .......................................................... " << endl;
+  cout << "   number of particles in this snapshot: " << endl;
+  cout << header.npart[0] << " " << header.npart[1] << " " << header.npart[2]
+   << " " << header.npart[3] << " " << header.npart[4] << " " << header.npart[5] << endl;
+
+  cout << "      Omegam = " << header.om0 << " " << "Omegal = " << header.oml << endl;
+  cout << "           h = " << header.h   << " " << "BoxSize = " << header.boxsize << endl;
+
+  cout << "      _______________________________________________  " << endl;
+  cout << " " << endl;
+  cout << "   total number of particles in the simulation: " << endl;
+  cout << header.nTotalHW[0]*pow(2,32)+header.npartTotal[0] << " " << header.nTotalHW[1]*pow(2,32)+header.npartTotal[1] << " " <<
+          header.nTotalHW[2]*pow(2,32)+header.npartTotal[2] << " " << header.nTotalHW[3]*pow(2,32)+header.npartTotal[3] << " " <<
+          header.nTotalHW[4]*pow(2,32)+header.npartTotal[4] << " " << header.nTotalHW[5]*pow(2,32)+header.npartTotal[5] << endl;
+  cout << " " << endl;
+  cout << "   xparticle type mass array: " << endl;
+  cout << header.massarr[0] << " " << header.massarr[1] << " " << header.massarr[2]
+      << " " << header.massarr[3] << " " <<  header.massarr[4] << " " <<  header.massarr[5] << endl;
+
+
+}
+
+void fastforwardToPos (ifstream & fin, int NBLOCKS, int myid,  bool close){
+
+  Block block;
+  fin >> block;
+  for (int i=0; i < NBLOCKS; i++){
+
+    if (i>0){
+
+      fin >> block;
+
+    }
+
+    if (myid==0){
+      cout << "Fast Fowarding next block. Name: ";
+      cout << block.name[0];
+      cout << block.name[1];
+      cout << block.name[2];
+      cout << block.name[3] << endl;
+    }
+
+      fin.seekg(block.blocksize2,ios_base::cur);
+
+  }
+
+  fin >> block;
+  if (myid==0){
+    cout << "reading next block. Name: ";
+    cout << block.name[0];
+    cout << block.name[1];
+    cout << block.name[2];
+    cout << block.name[3] << endl;
+    cout << "Should be                 POS " << endl;
+  }
+
+  if(close)
+    fin.close();
 
 }

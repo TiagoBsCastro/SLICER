@@ -35,7 +35,10 @@ struct InputParams{
   int npix; // Number of Pixels
   double zs; // Source Redshift
   double Ds; // Comoving Distance at zs (Will not be read from InputFiles)
-  double fov; // Field of View in Degrees
+  double fov; // Field of View in Degrees (Will not be read from InputFiles)
+  bool hydro; // Hydro or DM only sim (Will not be read from InputFiles)
+  string simType; // Gadget or SubFind
+  double rgrid; // Physical grid for matter density (Will not be read from InputFiles)
   string filredshiftlist; // File with the redshift list it may contain three columns: snap 1/(1+z) z
   string pathsnap; // Path where the snaphosts are located
   string simulation; // Simulation name (prefix infront at the snap file)
@@ -79,7 +82,7 @@ struct Block
 };
 
 struct Lens{
-  int nsnaps;                   // Number of lens planes
+  int nplanes;                   // Number of lens planes
   vector <int>    replication;  // Number of repetitions of the i-th snapshot box
   vector <int>    pll;          // Lens Plane indice
   vector <string> fromsnap;     // From which snapshot the i-th lens plane were build
@@ -94,6 +97,19 @@ struct Random{
   vector<double> x0, y0, z0;   // ramdomizing the center of the simulation [0,1]
   vector<int> face;            // face of the dice
   vector<int> sgnX, sgnY,sgnZ; // randomizing the box axis signs
+};
+struct Gadget{
+  // GADGET has 6 different particle type
+  vector<float> xx0, yy0, zz0;
+  vector<float> xx1, yy1, zz1;
+  vector<float> xx2, yy2, zz2;
+  vector<float> xx3, yy3, zz3;
+  vector<float> xx4, yy4, zz4;
+  vector<float> xx5, yy5, zz5;
+};
+struct SubFind{
+  // SubFind has 1 particle type
+  vector<float> xx0, yy0, zz0;
 };
 // Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
@@ -113,3 +129,7 @@ int read_redlist(string, vector <double> &, vector <string> &, InputParams *);
 void build_planes(InputParams *, Header *, Lens &, vector <double> &, vector <string> &, gsl_spline *,
                               gsl_interp_accel *, gsl_spline *, gsl_interp_accel *, int, int);
 void randomize_box (Random &, Lens *, InputParams *, int, int);
+int test_fov(double , double , double , int , double *);
+void test_hydro(InputParams *, Header *);
+void fastforwardToPos (ifstream &, int, int,  bool);
+void print_header (Header);
