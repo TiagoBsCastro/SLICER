@@ -7,17 +7,17 @@
 #include <gsl/gsl_linalg.h>
 #include "utilities.h"
 
-void error (const std::string s){                                                            
-  std::cerr << "error: " << s << std::endl;                         
-  exit (-1);                                                                           
+void error (const std::string s){
+  std::cerr << "error: " << s << std::endl;
+  exit (-1);
 }
 
-void error (const bool f, const std::string s){ 
-  if (f){    
-    std::cerr << "error: " << s << std::endl;        
-    exit (-1);                        
-  }                                                                      
-}   
+void error (const bool f, const std::string s){
+  if (f){
+    std::cerr << "error: " << s << std::endl;
+    exit (-1);
+  }
+}
 
 void gsl_error_handler (const char * reason, const char * file, int line, int gsl_errno){
   std::cerr
@@ -26,16 +26,16 @@ void gsl_error_handler (const char * reason, const char * file, int line, int gs
     << reason << std::endl;
 }
 
-void warning (const std::string s){ 
-  std::cout << "warning: " << s << std::endl; 
+void warning (const std::string s){
+  std::cout << "warning: " << s << std::endl;
 }
 
-double sign (const double a, const double b){ 
-  return b>0?fabs(a):-fabs(a); 
+double sign (const double a, const double b){
+  return b>0?fabs(a):-fabs(a);
 }
 
-int nint (const double x){ 
-  return (x<0)?int(x-0.5):int(x+0.5); 
+int nint (const double x){
+  return (x<0)?int(x-0.5):int(x+0.5);
 }
 
 void swap (double &a, double &b){
@@ -127,16 +127,16 @@ double median(std:: vector<double> vec){
   return size % 2 == 0 ? (vec[mid] + vec[mid-1]) / 2 : vec[mid];
 }
 
-float weight (float ixx, float ixh, double dx) {                                
+float weight (float ixx, float ixh, double dx) {
   float DD = ixx-ixh;
   float x=fabs(DD)/dx;
-  float w;                                                                                         
-  if(fabs(DD)<=0.5*dx)         
+  float w;
+  if(fabs(DD)<=0.5*dx)
     w=3./4.-x*x;
   else if(fabs(DD)>0.5*dx && fabs(DD)<=0.5*3.0*dx)
     w=0.5*((3./2.-x)*(3./2.-x));
   else w=0.;
-  return w;             
+  return w;
 }
 
 double get_ellipticity(double e11,double e12,double e21,double e22){
@@ -215,75 +215,75 @@ void InertialT(std:: valarray<float> f,std:: vector<double> x,int n,double f1, d
   for(int i=0;i<n;i++) for(int j=0;j<n;j++){
       if(pcase==0){
 	if(f[i+n*j] >= f1){
-	  e111 += x[j]*x[j]; 
-	  e112 += x[i]*x[j]; 
+	  e111 += x[j]*x[j];
+	  e112 += x[i]*x[j];
 	  e121 += x[j]*x[i];
-	  e122 += x[i]*x[i];  
+	  e122 += x[i]*x[i];
 	}
-	
+
 	if(f[i+n*j] >= f2){
-	  e211 += x[j]*x[j]; 
-	  e212 += x[i]*x[j]; 
+	  e211 += x[j]*x[j];
+	  e212 += x[i]*x[j];
 	  e221 += x[j]*x[i];
-	  e222 += x[i]*x[i];  
-	} 
-	
+	  e222 += x[i]*x[i];
+	}
+
 	if(f[i+n*j] >= f3){
-	  e311 += x[j]*x[j]; 
-	  e312 += x[i]*x[j]; 
+	  e311 += x[j]*x[j];
+	  e312 += x[i]*x[j];
 	  e321 += x[j]*x[i];
-	  e322 += x[i]*x[i];  
-	} 
-	
+	  e322 += x[i]*x[i];
+	}
+
 	if(f[i+n*j] >= f4){
-	  e411 += x[j]*x[j]; 
-	  e412 += x[i]*x[j]; 
+	  e411 += x[j]*x[j];
+	  e412 += x[i]*x[j];
 	  e421 += x[j]*x[i];
-	  e422 += x[i]*x[i];  
-	} 
+	  e422 += x[i]*x[i];
+	}
 
 	if(f[i+n*j] >= f5){
-	  e511 += x[j]*x[j]; 
-	  e512 += x[i]*x[j]; 
+	  e511 += x[j]*x[j];
+	  e512 += x[i]*x[j];
 	  e521 += x[j]*x[i];
-	  e522 += x[i]*x[i];  
-	} 
+	  e522 += x[i]*x[i];
+	}
       }
       if(pcase==1){
-	if(f[i+n*j] <= f1){ 
-	  e111 += x[j]*x[j]; 
-	  e112 += x[i]*x[j]; 
+	if(f[i+n*j] <= f1){
+	  e111 += x[j]*x[j];
+	  e112 += x[i]*x[j];
 	  e121 += x[j]*x[i];
-	  e122 += x[i]*x[i];  
+	  e122 += x[i]*x[i];
 	}
-	
-	if(f[i+n*j] <= f2){ 
-	  e211 += x[j]*x[j]; 
-	  e212 += x[i]*x[j]; 
-	  e221 += x[j]*x[i];
-	  e222 += x[i]*x[i];  
-	} 
-	
-	if(f[i+n*j] <= f3){ 
-	  e311 += x[j]*x[j]; 
-	  e312 += x[i]*x[j]; 
-	  e321 += x[j]*x[i];
-	  e322 += x[i]*x[i];  
-	} 
-	
-	if(f[i+n*j] <= f4){ 
-	  e411 += x[j]*x[j]; 
-	  e412 += x[i]*x[j]; 
-	  e421 += x[j]*x[i];
-	  e422 += x[i]*x[i];  
-	} 
 
-	if(f[i+n*j] <= f5){ 
-	  e511 += x[j]*x[j]; 
-	  e512 += x[i]*x[j]; 
+	if(f[i+n*j] <= f2){
+	  e211 += x[j]*x[j];
+	  e212 += x[i]*x[j];
+	  e221 += x[j]*x[i];
+	  e222 += x[i]*x[i];
+	}
+
+	if(f[i+n*j] <= f3){
+	  e311 += x[j]*x[j];
+	  e312 += x[i]*x[j];
+	  e321 += x[j]*x[i];
+	  e322 += x[i]*x[i];
+	}
+
+	if(f[i+n*j] <= f4){
+	  e411 += x[j]*x[j];
+	  e412 += x[i]*x[j];
+	  e421 += x[j]*x[i];
+	  e422 += x[i]*x[i];
+	}
+
+	if(f[i+n*j] <= f5){
+	  e511 += x[j]*x[j];
+	  e512 += x[i]*x[j];
 	  e521 += x[j]*x[i];
-	  e522 += x[i]*x[i];  
-	} 
+	  e522 += x[i]*x[i];
+	}
       }
     }
   e1 = get_ellipticity(e111,e112,e121,e122);
@@ -294,31 +294,31 @@ void InertialT(std:: valarray<float> f,std:: vector<double> x,int n,double f1, d
 }
 
 double getY(std:: vector<double> x, std:: vector<double> y,double xi){
-  int nn = x.size();                                                               
-  if(x[0]<x[nn-1]){                                                                                     
+  int nn = x.size();
+  if(x[0]<x[nn-1]){
     if(xi>x[nn-1]) return y[nn-1];
     if(xi<x[0]) return y[0];
-  }      
-  else{                                                                                                            
+  }
+  else{
     if(xi<x[nn-1]) return y[nn-1];
-    if(xi>x[0]) return y[0];        
-  }                                    
-  int i = locate (x,xi);           
+    if(xi>x[0]) return y[0];
+  }
+  int i = locate (x,xi);
   i = std::min (std::max (i,0), int (nn)-2);
   double f=(xi-x[i])/(x[i+1]-x[i]);
   if(i>1 && i<nn-2){
-    double a0,a1,a2,a3,f2;                                                       
-    f2 = f*f;                                                    
-    a0 = y[i+2] - y[i+1] - y[i-1] + y[i];            
-    a1 = y[i-1] - y[i] - a0;                                                                              
-    a2 = y[i+1] - y[i-1];                                                              
-    a3 = y[i];                                                                                     
-    return a0*f*f2+a1*f2+a2*f+a3;                                                    
-  }                                                                      
-  else return f*y[i+1]+(1-f)*y[i];           
-} 
+    double a0,a1,a2,a3,f2;
+    f2 = f*f;
+    a0 = y[i+2] - y[i+1] - y[i-1] + y[i];
+    a1 = y[i-1] - y[i] - a0;
+    a2 = y[i+1] - y[i-1];
+    a3 = y[i];
+    return a0*f*f2+a1*f2+a2*f+a3;
+  }
+  else return f*y[i+1]+(1-f)*y[i];
+}
 
-double getZ(std::valarray<float> map,int npix,double x,double y, std:: vector<double> xi,std:: vector<double> yi){  
+double getZ(std::valarray<float> map,int npix,double x,double y, std:: vector<double> xi,std:: vector<double> yi){
   size_t i=locate (xi,x);
   size_t j=locate (yi,y);
   size_t tnpix = npix;
@@ -328,10 +328,10 @@ double getZ(std::valarray<float> map,int npix,double x,double y, std:: vector<do
   double fQ22 = map[(i+1)+tnpix*(j+1)];
   //double fR1 = (xi[i+1] - x)/(xi[i+1]-xi[i])*fQ11+(x-xi[i])/(xi[i+1]-xi[i])*fQ21;
   //double fR2 = (xi[i+1] - x)/(xi[i+1]-xi[i])*fQ12+(x-xi[i])/(xi[i+1]-xi[i])*fQ22;
-  // double fP = (yi[j+1] - y)/(yi[j+1]-yi[j])*fR1 + (y - yi[j])/(yi[j+1]-yi[j])*fR2; 
-  double fxy = fQ11*(xi[i+1]-x)*(yi[j+1]-y)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) + 
-    fQ21*(x-xi[i])*(yi[j+1]-y)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) + 
-    fQ12*(xi[i+1]-x)*(y-yi[j])/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) + 
+  // double fP = (yi[j+1] - y)/(yi[j+1]-yi[j])*fR1 + (y - yi[j])/(yi[j+1]-yi[j])*fR2;
+  double fxy = fQ11*(xi[i+1]-x)*(yi[j+1]-y)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) +
+    fQ21*(x-xi[i])*(yi[j+1]-y)/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) +
+    fQ12*(xi[i+1]-x)*(y-yi[j])/((xi[i+1]-xi[i])*(yi[j+1]-yi[j])) +
     fQ22*(x-xi[i])*(y-yi[j])/((xi[i+1]-xi[i])*(yi[j+1]-yi[j]));
   return fxy;
 }
@@ -374,320 +374,320 @@ double nCubicInterpolate (int n, double* p, double coordinates[]) {
   }
 }
 
-double * estprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		 double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){     
-  int nbin = int(xmax/dr0); 
-  std:: cout << " nbins (in estprof) = " << nbin << std:: endl;                                    
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){                                                                        
-    int contapx=0;                                                     
-    kr[k] = 0;                            
+double * estprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		 double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){
+  int nbin = int(xmax/dr0);
+  std:: cout << " nbins (in estprof) = " << nbin << std:: endl;
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
 	if(r[bvi+ny*bvj]>dr0*double(k) && r[bvi+ny*bvj]<=dr0*double(k+1)){
-	  contapx = contapx + 1;                  
+	  contapx = contapx + 1;
 	  kr[k] = kr[k] + q[bvi+ny*bvj];
-	}                                                                                          
-      }                                                                                            
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){                                                                   
-	  if(r[i+ny*j]>dr0*double(k) && r[i+ny*j]<=dr0*double(k+1)){                                 
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = kr[k] + q[i+ny*j];                                                               
-	  }                                                                                          
-	}                                                                                            
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]>dr0*double(k) && r[i+ny*j]<=dr0*double(k+1)){
+	    contapx = contapx + 1;
+	    kr[k] = kr[k] + q[i+ny*j];
+	  }
+	}
     }
-    kr[k] = kr[k]/double(contapx);                                                                 
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+    kr[k] = kr[k]/double(contapx);
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-double * estprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		  std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){     
+double * estprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		  std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){
   int nbin = rbin.size()-1;
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){                                                                        
-    int contapx=0;                                                     
-    kr[k] = 0;                            
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
 	if(r[bvi+ny*bvj]>rbin[k] && r[bvi+ny*bvj]<=rbin[k+1]){
-	  contapx = contapx + 1;                  
+	  contapx = contapx + 1;
 	  kr[k] = kr[k] + q[bvi+ny*bvj];
-	}                                                                                          
-      }                                                                                            
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){                                                                   
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
 	  if(r[i+ny*j]>rbin[k] && r[i+ny*j]<=rbin[k+1]){
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = kr[k] + q[i+ny*j];                                                               
-	  }                                                                                          
-	}                                                                                            
+	    contapx = contapx + 1;
+	    kr[k] = kr[k] + q[i+ny*j];
+	  }
+	}
     }
-    kr[k] = kr[k]/double(contapx);                                                                 
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+    kr[k] = kr[k]/double(contapx);
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// variance of the profile                                                                         
-double * estsigmaprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, double dr0, 
-		      double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){                                                                                      
-  int nbin = int(xmax/dr0);                                                                        
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){                                                                        
-    int contapx=0;                                                                                 
-    kr[k] = 0;                      
+// variance of the profile
+double * estsigmaprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, double dr0,
+		      double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){
+  int nbin = int(xmax/dr0);
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
-	if(r[bvi+ny*bvj]>dr0*double(k) && r[bvi+ny*bvj]<=dr0*double(k+1)){                                 
-	  contapx = contapx + 1;                                                                   
-	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];                                              
-	  if(kr[k]<0) {                                                                            
-	    std:: cout << "negative " << kr[k] << std:: endl;                                      
-	    exit(1);                                                                               
-	  }                                                                                        
-	}                                                                                          
-      }                   
+	if(r[bvi+ny*bvj]>dr0*double(k) && r[bvi+ny*bvj]<=dr0*double(k+1)){
+	  contapx = contapx + 1;
+	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];
+	  if(kr[k]<0) {
+	    std:: cout << "negative " << kr[k] << std:: endl;
+	    exit(1);
+	  }
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                  
-	for( int j=0; j<ny; j++ ){                                                                   
-	  if(r[i+ny*j]>dr0*double(k) && r[i+ny*j]<=dr0*double(k+1)){                                 
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];                                              
-	    if(kr[k]<0) {                                                                            
-	      std:: cout << "negative " << kr[k] << std:: endl;                                      
-	      exit(1);                                                                               
-	    }                                                                                        
-	  }                                                                                          
-	}                   
-    }                                                                         
-    kr[k] = sqrt(kr[k]/double(contapx));                                                           
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]>dr0*double(k) && r[i+ny*j]<=dr0*double(k+1)){
+	    contapx = contapx + 1;
+	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];
+	    if(kr[k]<0) {
+	      std:: cout << "negative " << kr[k] << std:: endl;
+	      exit(1);
+	    }
+	  }
+	}
+    }
+    kr[k] = sqrt(kr[k]/double(contapx));
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// variance of the profile                                                                         
-double * estsigmaprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin, 
-		      std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){                                                                                      
+// variance of the profile
+double * estsigmaprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
+		      std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){
   int nbin = rbin.size()-1;
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){                                                                        
-    int contapx=0;                                                                                 
-    kr[k] = 0;                      
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
 	if(r[bvi+ny*bvj]>rbin[k] && r[bvi+ny*bvj]<=rbin[k+1]){
-	  contapx = contapx + 1;                                                                   
-	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];                                              
-	  if(kr[k]<0) {                                                                            
-	    std:: cout << "negative " << kr[k] << std:: endl;                                      
-	    exit(1);                                                                               
-	  }                                                                                        
-	}                                                                                          
-      }                   
+	  contapx = contapx + 1;
+	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];
+	  if(kr[k]<0) {
+	    std:: cout << "negative " << kr[k] << std:: endl;
+	    exit(1);
+	  }
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                  
-	for( int j=0; j<ny; j++ ){                                                                   
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
 	if(r[i+ny*j]>rbin[k] && r[i+ny*j]<=rbin[k+1]){
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];                                              
-	    if(kr[k]<0) {                                                                            
-	      std:: cout << "negative " << kr[k] << std:: endl;                                      
-	      exit(1);                                                                               
-	    }                                                                                        
-	  }                                                                                          
-	}                   
-    }                                                                         
-    kr[k] = sqrt(kr[k]/double(contapx));                                                           
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+	    contapx = contapx + 1;
+	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];
+	    if(kr[k]<0) {
+	      std:: cout << "negative " << kr[k] << std:: endl;
+	      exit(1);
+	    }
+	  }
+	}
+    }
+    kr[k] = sqrt(kr[k]/double(contapx));
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// create cumulative profile of the maps for each lensing component - spherical simmetry is assumed          
-double * estcprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		  double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){     
-  int nbin = int(xmax/dr0);                                                                        
-  std:: cout << " nbins (in estprof) = " << nbin << std:: endl;                                    
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){                                                                        
+// create cumulative profile of the maps for each lensing component - spherical simmetry is assumed
+double * estcprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		  double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){
+  int nbin = int(xmax/dr0);
+  std:: cout << " nbins (in estprof) = " << nbin << std:: endl;
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
     double ranulus = dr0*(double(k)+double(k+1))*0.5;
-    int contapx=0;                                                                                 
-    kr[k] = 0;                                                                                     
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
-	if(r[bvi+ny*bvj]<=ranulus){                                 
-	  contapx = contapx + 1;                                                                   
-	  kr[k] = kr[k] + q[bvi+ny*bvj];                                                               
-	}                                                                                          
-      }                                                                                            
+	if(r[bvi+ny*bvj]<=ranulus){
+	  contapx = contapx + 1;
+	  kr[k] = kr[k] + q[bvi+ny*bvj];
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){                                                         
-	  if(r[i+ny*j]<=ranulus){                                 
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = kr[k] + q[i+ny*j];                                                               
-	  }                                                                                          
-	}  
-    }                                                                                          
-    kr[k] = kr[k]/double(contapx);                                                                 
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]<=ranulus){
+	    contapx = contapx + 1;
+	    kr[k] = kr[k] + q[i+ny*j];
+	  }
+	}
+    }
+    kr[k] = kr[k]/double(contapx);
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// variance of the profile                                                                         
-double * estsigmacprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		       double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){               
-  int nbin = int(xmax/dr0);                                                                        
-  double *kr = new double[nbin];                                                                   
-  for (int k=0;k<nbin;k++){    
-    double ranulus = dr0*(double(k)+double(k+1))*0.5;                                                                    
-    int contapx=0;                                                                                 
-    kr[k] = 0;                                                                                     
+// variance of the profile
+double * estsigmacprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		       double dr0, double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){
+  int nbin = int(xmax/dr0);
+  double *kr = new double[nbin];
+  for (int k=0;k<nbin;k++){
+    double ranulus = dr0*(double(k)+double(k+1))*0.5;
+    int contapx=0;
+    kr[k] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
-	if(r[bvi+ny*bvj]<=ranulus){                                                                                           
-	  contapx = contapx + 1;                                                                   
-	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];                                              
-	  if(kr[k]<0) {                                                                            
-	    std:: cout << "negative " << kr[k] << std:: endl;                                      
-	    exit(1);                                                                               
-	  }                                                                                        
-	}                                                                                          
-      }                      
+	if(r[bvi+ny*bvj]<=ranulus){
+	  contapx = contapx + 1;
+	  kr[k] = gsl_pow_2(q[bvi+ny*bvj]-qm[k]) + kr[k];
+	  if(kr[k]<0) {
+	    std:: cout << "negative " << kr[k] << std:: endl;
+	    exit(1);
+	  }
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){         
-	  if(r[i+ny*j]<=ranulus){                                                                                           
-	    contapx = contapx + 1;                                                                   
-	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];                                              
-	    if(kr[k]<0) {                                                                            
-	      std:: cout << "negative " << kr[k] << std:: endl;                                      
-	      exit(1);                                                                               
-	    }                                                                                        
-	  }                                                                                          
-	}                      
-    }                                                                      
-    kr[k] = sqrt(kr[k]/double(contapx));                                                           
-    if(contapx==0) kr[k]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]<=ranulus){
+	    contapx = contapx + 1;
+	    kr[k] = gsl_pow_2(q[i+ny*j]-qm[k]) + kr[k];
+	    if(kr[k]<0) {
+	      std:: cout << "negative " << kr[k] << std:: endl;
+	      exit(1);
+	    }
+	  }
+	}
+    }
+    kr[k] = sqrt(kr[k]/double(contapx));
+    if(contapx==0) kr[k]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// create cumulative profile of the maps for each lensing component - spherical simmetry is assumed          
-double * estcprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		   std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){     
-  int nbin = rbin.size()-1;                                                            
-  double *kr = new double[nbin];                                                                   
-  for (int k=1;k<nbin+1;k++){                                                                        
+// create cumulative profile of the maps for each lensing component - spherical simmetry is assumed
+double * estcprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		   std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal){
+  int nbin = rbin.size()-1;
+  double *kr = new double[nbin];
+  for (int k=1;k<nbin+1;k++){
     double ranulus = rbin[k];
-    int contapx=0;                                                                                 
-    kr[k-1] = 0;                                                                                     
+    int contapx=0;
+    kr[k-1] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
-	if(r[bvi+ny*bvj]<=ranulus){                                 
-	  contapx = contapx + 1;                                                                   
-	  kr[k-1] = kr[k-1] + q[bvi+ny*bvj];                                                               
-	}                                                                                          
-      }                                                                                            
+	if(r[bvi+ny*bvj]<=ranulus){
+	  contapx = contapx + 1;
+	  kr[k-1] = kr[k-1] + q[bvi+ny*bvj];
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){                                                         
-	  if(r[i+ny*j]<=ranulus){                                 
-	    contapx = contapx + 1;                                                                   
-	    kr[k-1] = kr[k-1] + q[i+ny*j];                                                               
-	  }                                                                                          
-	}  
-    }                                                                                          
-    kr[k-1] = kr[k-1]/double(contapx);                                                                 
-    if(contapx==0) kr[k-1]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]<=ranulus){
+	    contapx = contapx + 1;
+	    kr[k-1] = kr[k-1] + q[i+ny*j];
+	  }
+	}
+    }
+    kr[k-1] = kr[k-1]/double(contapx);
+    if(contapx==0) kr[k-1]=0.;
+  }
+  return kr; // return the pointer
 }
 
-// variance of the profile                                                                         
-double * estsigmacprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, 
-		       std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){               
-  int nbin = rbin.size()-1;                                                            
-  double *kr = new double[nbin];                                                                   
-  for (int k=1;k<nbin+1;k++){    
+// variance of the profile
+double * estsigmacprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r,
+		       std:: vector<double> rbin, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm){
+  int nbin = rbin.size()-1;
+  double *kr = new double[nbin];
+  for (int k=1;k<nbin+1;k++){
     double ranulus = rbin[k];
-    int contapx=0;                                                                                 
-    kr[k-1] = 0;                                                                                     
+    int contapx=0;
+    kr[k-1] = 0;
     if(ngal>0){
       int bvi,bvj;
       for( int i=0; i<ngal; i++ ){
 	bvi=vi[i];
 	bvj=vj[i];
-	if(r[bvi+ny*bvj]<=ranulus){                                                                                           
-	  contapx = contapx + 1;                                                                   
-	  kr[k-1] = gsl_pow_2(q[bvi+ny*bvj]-qm[k-1]) + kr[k-1];                                              
-	  if(kr[k-1]<0) {                                                                            
-	    std:: cout << "negative " << kr[k-1] << std:: endl;                                      
-	    exit(1);                                                                               
-	  }                                                                                        
-	}                                                                                          
-      }                      
+	if(r[bvi+ny*bvj]<=ranulus){
+	  contapx = contapx + 1;
+	  kr[k-1] = gsl_pow_2(q[bvi+ny*bvj]-qm[k-1]) + kr[k-1];
+	  if(kr[k-1]<0) {
+	    std:: cout << "negative " << kr[k-1] << std:: endl;
+	    exit(1);
+	  }
+	}
+      }
     }
     else{
-      // for each bin in r estimate the mean value                                                   
-      for( int i=0; i<nx; i++ )                                                                      
-	for( int j=0; j<ny; j++ ){         
-	  if(r[i+ny*j]<=ranulus){                                                                                           
-	    contapx = contapx + 1;                                                                   
-	    kr[k-1] = gsl_pow_2(q[i+ny*j]-qm[k-1]) + kr[k-1];                                              
-	    if(kr[k-1]<0) {                                                                            
-	      std:: cout << "negative " << kr[k-1] << std:: endl;                                      
-	      exit(1);                                                                               
-	    }                                                                                        
-	  }                                                                                          
-	}                      
-    }                                                                      
-    kr[k-1] = sqrt(kr[k-1]/double(contapx));                                                           
-    if(contapx==0) kr[k-1]=0.;                                                                       
-  }                                                                                                
-  return kr; // return the pointer                                                                 
+      // for each bin in r estimate the mean value
+      for( int i=0; i<nx; i++ )
+	for( int j=0; j<ny; j++ ){
+	  if(r[i+ny*j]<=ranulus){
+	    contapx = contapx + 1;
+	    kr[k-1] = gsl_pow_2(q[i+ny*j]-qm[k-1]) + kr[k-1];
+	    if(kr[k-1]<0) {
+	      std:: cout << "negative " << kr[k-1] << std:: endl;
+	      exit(1);
+	    }
+	  }
+	}
+    }
+    kr[k-1] = sqrt(kr[k-1]/double(contapx));
+    if(contapx==0) kr[k-1]=0.;
+  }
+  return kr; // return the pointer
 }
 
 double fcos(double x){
@@ -699,7 +699,7 @@ double fcos(double x){
   //compute cosine: sin(x + PI/2) = cos(x)
   x += 1.57079632;
   if (x >  pi) x -= twopi;
-  
+
   if (x < 0){
     fastcos = 1.27323954 * x + 0.405284735 * x * x;
     if (fastcos < 0)
@@ -722,7 +722,7 @@ double fsin(double x){
   //always wrap input angle to -PI..PI
   if (x < -pi) x += twopi;
   else if (x > pi){x -= twopi;}
-  
+
   //compute sine
   if (x < 0){
     fastsin = 1.27323954 * x + .405284735 * x * x;

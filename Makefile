@@ -1,11 +1,11 @@
 # executable name
 PREFIXDIR = /home/tiago/
-PROG = $(PREFIXDIR)/bin/MapSim-v6
+PROG = $(PREFIXDIR)/bin/MapSim-v7
 
-MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
-#MAIN = util.cpp cosmology.cpp utilities.cpp #For debug only
+#MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
+MAIN = main-v7.cpp util_new.cpp utilities.cpp cosmology.cpp
 
-LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio # -lcurl
+LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio #-lcurl
 
 ALLFLAGS =  -I/$(PREFIXDIR)/include/ \
             -I/$(PREFIXDIR)/include/gsl/ \

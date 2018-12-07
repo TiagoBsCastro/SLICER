@@ -26,8 +26,10 @@ main-v5.cpp -> Checking if the map was already created allowing to continue quit
 		main-v5.10.6.cpp -> Parallelization of the Map building algorithm
 
 main-v6.cpp -> New parameter's file style
-            -> New readgadget routines
-            -> PLC builder for Sub-Finder halos
+            -> Renewed structure: more modular
+
+main-v7.cpp -> Fully rewritten
+            -> SubFind PLC 
 
 
 
