@@ -117,7 +117,7 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl, gsl_interp_accel *accGe
   double aux=99999;
 
   for(int i=0;i<zsnap.size();i++){
-      float test = abs( gsl_spline_eval (GetDl, zsnap[i], accGetDl)-dlens );
+    float test = abs( gsl_spline_eval (GetDl, zsnap[i], accGetDl)-dlens );
     if( test < aux ){
       aux = test;
       pos = i;
@@ -139,7 +139,6 @@ void build_planes(InputParams *p, Header *header, Lens &lens, vector <double> & 
     nrepi++;
     ldbut = nrep*header->boxsize/1e3/numberOfLensPerSnap;
     zdbut = gsl_spline_eval (GetZl, ldbut, accGetZl);
-    cout << zdbut << endl;
     double dlens = ldbut-0.5*header->boxsize/1e3/numberOfLensPerSnap;
     double zlens = gsl_spline_eval (GetZl, dlens, accGetZl);
     int pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
@@ -167,7 +166,7 @@ void build_planes(InputParams *p, Header *header, Lens &lens, vector <double> & 
   for ( int i=0; i<nrepi+1; i++ ) lens.replication.push_back(nrep); // Last plane replications
   if (myid==0){
     cout << " Comoving Distance of the last plane " << p->Ds << endl;
-    cout << " nsnaps = " << nsnaps << endl;
+    cout << " nsnaps = " << nsnaps << "\n" << endl;
   }
 
   ofstream planelist;
@@ -200,7 +199,7 @@ void randomize_box (Random & random, Lens *lens, InputParams *p, int numberOfLen
   size_t nrandom = lens->replication.back();
   /* Inflating Random Structure */
   random.x0.resize(nrandom); random.y0.resize(nrandom); random.z0.resize(nrandom);
-  random.sgnX.resize(nrandom); random.sgnY.resize(nrandom); random.sgnz.resize(nrandom);
+  random.sgnX.resize(nrandom); random.sgnY.resize(nrandom); random.sgnZ.resize(nrandom);
   random.face.resize(nrandom);
   for(int i=0;i<nrandom;i++){
 

@@ -94,7 +94,7 @@ struct Random{
   vector<double> x0, y0, z0;   // ramdomizing the center of the simulation [0,1]
   vector<int> face;            // face of the dice
   vector<int> sgnX, sgnY,sgnZ; // randomizing the box axis signs
-}
+};
 // Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
 {

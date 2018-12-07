@@ -1,5 +1,5 @@
 # executable name
-PREFIXDIR = /home/tiago/
+PREFIXDIR = /home/$(USER)/
 PROG = $(PREFIXDIR)/bin/MapSim-v7
 
 #MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
