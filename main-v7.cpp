@@ -139,6 +139,14 @@ int main(int argc, char** argv){
       ffmax=(myid+1)*intdiv+remaindiv;
     }
 
+    /* Starting the loop on different Snapshot subfiles */
+    valarray<float> mapxytot( p.npix*p.npix );
+    int ntotxyi[6];
+    valarray<float> mapxytoti[6];
+    for(int i=0;i<6;i++){
+      ntotxyi[i]=0;
+      mapxytoti[i].resize( p.npix*p.npix );
+    }
     for (unsigned int ff=ffmin; ff<ffmax; ff++){
 
       Header data;
@@ -178,6 +186,38 @@ int main(int argc, char** argv){
         xx[5][0]=&gadget->xx5[0]; xx[5][1]=&gadget->yy5[0]; xx[5][2]=&gadget->zz5[0];
       }
 
+      ReadPos (fin,  &data, &p, &random, isnap, xx, rcase, myid);
+
+      /* If Hydro run I have to read the masses, otherwise close the snapshot*/
+      if(p.hydro)
+         fastforwardToBlock (fin, "MASS", myid);
+      else{
+        fin.clear();
+        fin.close();
+      }
+
+      // map for each mass type
+      valarray<float> mapxyi[6];
+      int ntotxyi[6];
+      for(int i=0; i<6; i++)
+        mapxyi[i].resize(p.npix*p.npix);
+
+      if(MapParticles(fin, &data, &p, &lens, xx, fovradiants, isnap, mapxyi,
+                                                     ntotxyi, myid))
+        MPI_Abort(MPI_COMM_WORLD,-1);
+
+      if(p.hydro){
+        fin.clear();
+        fin.close();
+      }
+
+      mapxytot+=mapxyi[0]+mapxyi[1]+mapxyi[2]+mapxyi[3]+mapxyi[4]+mapxyi[5];
+      for(int i=0; i<6; i++)
+        mapxytoti[i]+=mapxyi[i];
+
+      if (myid==0)
+        cout << " done map*tot " << endl;
+
       if( p.simType.compare("SubFind") == 0 )
         delete subfind;
       else
@@ -185,10 +225,25 @@ int main(int argc, char** argv){
 
     }
 
+    valarray<float> mapxytotrecv( p.npix*p.npix );
+    valarray<float> mapxytotirecv[6];
+    for(int i=0; i<6; i++)
+      mapxytotirecv[i].resize( p.npix*p.npix );
+
+    cout << " maps done! from Rank:" << myid << endl;
+
+    MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    for(int i=0; i<6; i++)
+      MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
   }
 
   gsl_spline_free (GetDl);gsl_spline_free (GetZl);
   gsl_interp_accel_free (accGetDl);gsl_interp_accel_free (accGetZl);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Finalize();
+  cout << " end of work ... ;)  " << endl;
 
   return 0;
 }

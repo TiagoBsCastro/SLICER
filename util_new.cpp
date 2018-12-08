@@ -1,5 +1,8 @@
 #include "util_new.h"
 
+#define MAX_M 1e3    // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
+#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
+#define DO_NGP false // Use NGP as the MAS
 int readInput(struct InputParams *p, string name, string & snpix, bool *physical){
   // read fileinput
   std:: ifstream fin (name.c_str());
@@ -408,4 +411,354 @@ void fastforwardToPos (ifstream & fin, int NBLOCKS, int myid,  bool close){
   if(close)
     fin.close();
 
+}
+
+void fastforwardToBlock (ifstream & fin, string BLOCK, int myid){
+
+  Block block;
+  char nullchar = '\0';
+  char blockStringLike [5];
+  bool iterate = true;
+
+  cout << blockStringLike << endl;
+
+  while(iterate){
+
+    fin >> block;
+    for(int i=0; i<4; i++)
+      blockStringLike[i] = block.name[i];
+
+    iterate = strcmp(blockStringLike, &BLOCK[0]);
+    if(iterate){
+      if (myid==0)
+        cout << "Fast Fowarding next block. Name: "<< blockStringLike << endl;
+        fin.seekg(block.blocksize2,ios_base::cur);
+      }
+
+  }
+
+  for(int i=0; i<4; i++)
+    blockStringLike[i] = block.name[i];
+  if (myid==0){
+    cout << "reading next block. Name: "<< blockStringLike << endl;
+    cout << "Should be                 "<< BLOCK << endl;
+  }
+
+}
+
+void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
+                              int isnap, float* xx[6][3], float rcase,int myid){
+
+  float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z
+  int imax = (p->simType == "Gadget") ? 6 : 1;
+  fastforwardToBlock (fin, "POS ", myid);
+  /* Loop on different types */
+  for (int i = 0; i<imax; i++){
+
+    for (int pp=0; pp<data->npart[i]; pp++){
+
+      float x, y, z;
+      float xb, yb, zb;
+
+      fin.read((char *)&num_float1, sizeof(num_float1));
+      fin.read((char *)&num_float2, sizeof(num_float2));
+      fin.read((char *)&num_float3, sizeof(num_float3));
+
+      xb = random->sgnX[isnap]*(((num_float1)/data->boxsize));
+      yb = random->sgnY[isnap]*(((num_float2)/data->boxsize));
+      zb = random->sgnZ[isnap]*(((num_float3)/data->boxsize));
+
+      // wrapping periodic condition
+      if(xb>1.) xb = xb - 1.;
+      if(yb>1.) yb = yb - 1.;
+      if(zb>1.) zb = zb - 1.;
+      if(xb<0.) xb = 1. + xb;
+      if(yb<0.) yb = 1. + yb;
+      if(zb<0.) zb = 1. + zb;
+      switch (random->face[isnap]){
+        case(1):
+          x = xb;
+          y = yb;
+          z = zb;
+          break;
+        case(2):
+          x = xb;
+          y = zb;
+          z = yb;
+          break;
+        case(3):
+          x = yb;
+          y = zb;
+          z = xb;
+          break;
+        case(4):
+          x = yb;
+          y = xb;
+          z = zb;
+          break;
+        case(5):
+          x = zb;
+          y = xb;
+          z = yb;
+          break;
+        case(6):
+          x = zb;
+          y = yb;
+          z = xb;
+        break;
+      }
+      // recenter
+      x = x - random->x0[isnap];
+      y = y - random->y0[isnap];
+      z = z - random->z0[isnap];
+      // wrapping periodic condition again
+      if(x>1.) x = x - 1.;
+      if(y>1.) y = y - 1.;
+      if(z>1.) z = z - 1.;
+      if(x<0.) x = 1. + x;
+      if(y<0.) y = 1. + y;
+      if(z<0.) z = 1. + z;
+      z+=double(rcase); // pile the cones
+      xx[i][0][pp] = x;
+      xx[i][1][pp] = y;
+      xx[i][2][pp] = z;
+    }
+  }
+}
+
+int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
+    float* xx[6][3], double fovradiants, int isnap, valarray<float>(& mapxyi)[6],
+    int(& ntotxyi)[6], int myid){
+
+  int imax = (p->simType == "Gadget") ? 6 : 1;
+  float num_float1;
+  int totPartxyi[6];
+  for(int i=0; i<imax; i++){
+
+    size_t n = data->npart[i];
+
+    if(n>0){
+      // quadrate box
+      double xmin=double(*min_element(xx[i][0], &xx[i][0][n]));
+      double xmax=double(*max_element(xx[i][0], &xx[i][0][n]));
+      double ymin=double(*min_element(xx[i][1], &xx[i][1][n]));
+      double ymax=double(*max_element(xx[i][1], &xx[i][1][n]));
+      double zmin=double(*min_element(xx[i][2], &xx[i][2][n]));
+      double zmax=double(*max_element(xx[i][2], &xx[i][2][n]));
+
+      if (myid==0){
+       cout << " " << endl;
+       cout << " n"<<i<<" particles " << endl;
+       cout << "xmin = " << xmin << endl;
+       cout << "xmax = " << xmax << endl;
+       cout << "ymin = " << ymin << endl;
+       cout << "ymax = " << ymax << endl;
+       cout << "zmin = " << zmin << endl;
+       cout << "zmax = " << zmax << endl;
+       cout << "  " << endl;
+      }
+
+      if(xmin<0 || ymin<0 || zmin< 0){
+        cerr << "xmin = " << xmin << endl;
+        cerr << "xmax = " << xmax << endl;
+        cerr << "ymin = " << ymin << endl;
+        cerr << "ymax = " << ymax << endl;
+        cerr << "zmin = " << zmin << endl;
+        cerr << "zmax = " << zmax << endl;
+        cerr << "  0 type check this!!! I will STOP here!!! " << endl;
+        cerr << "Aborting from Rank "<< myid << endl;
+        return 1;
+      }
+      if (myid==0){
+         cout << " Mapping type "<< i <<" particles on the grid with " << p->npix << " pixels" << endl;
+         cout << "Min distance: "<< lens->ld[isnap]/data->boxsize*1.e+3/POS_U<< " "<<lens->ld2[isnap]/data->boxsize*1.e+3/POS_U << endl;
+      }
+
+      vector<float> xs(0),ys(0),ms(0);
+      for(int l=0;l<data->npart[i];l++){
+
+        if(p->hydro && data->massarr[i]==0){
+
+          if(l==0 && i==5)
+            fastforwardToBlock (fin, "BHMA", myid);
+
+          fin.read((char *)&num_float1, sizeof(num_float1));
+          if (num_float1>MAX_M)
+            num_float1=0;
+        }
+        else
+          num_float1=data->massarr[i];
+
+        double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2))*data->boxsize/1.e+3*POS_U;
+        if(di>=lens->ld[isnap] && di<lens->ld2[isnap]){
+
+          double rai,deci,dd;
+          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd);
+
+          if(fabs(rai)<=fovradiants*(1.+2./p->npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p->npix)*0.5){
+            xs.push_back(deci/fovradiants+0.5);
+            ys.push_back(rai/fovradiants+0.5);
+            if(p->snopt==0){
+              ms.push_back(num_float1);
+            }
+            else{
+              if(rand()/ float(RAND_MAX) < 1./pow(2,p->snopt)) ms.push_back(pow(2,p->snopt)*num_float1);
+              else ms.push_back(0.);
+            }
+          }
+        }
+      }
+      totPartxyi[i]=xs.size();
+      ntotxyi[i]+=totPartxyi[i];
+
+      if(totPartxyi[i]>0){
+        mapxyi[i] = gridist_w(xs,ys,ms,p->npix,DO_NGP);
+      }
+
+      //re-normalize to the total mass!
+      double mtot=0.;
+      double mnorm=0.;
+      for(int i=0;i<ms.size();i++)
+        mnorm+=ms[i];
+
+      if(totPartxyi[i]>0){
+        for(int l=0;l<p->npix*p->npix;l++)
+          mtot += mapxyi[i][l];
+        if(mtot==0.)
+          mtot=1.; //To avoid NaN
+        for(int l=0;l<p->npix*p->npix;l++) mapxyi[i][l]*=mnorm/mtot;
+      }
+    }
+  }
+
+  return 0;
+
+}
+
+void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
+  *d = sqrt(x*x+y*y+z*z);
+  *dec = asin(x/(*d));
+  *ra = atan2(y,z);
+}
+
+// grid points distribution function with != wheights
+valarray<float> gridist_w (vector<float> x, vector<float> y , vector<float> w, int nn, bool do_NGP){
+  valarray<float> grxy( nn*nn );
+  int n0 = x.size();
+  if(n0!=y.size()){cout << "x and y positions don't match!" << endl; exit(-1);}
+  if(n0!=w.size()){cout << "positions and wheights don't match!" << endl; exit(-1);}
+
+  double dl = 1./double(nn);
+  // --- - - - - - - - - - - - - - - - - - - - - - - ---
+  //                               _ _ _ _ _ _
+  //  The order of the points is: |_7_|_8_|_9_|
+  //                              |_4_|_5_|_6_|
+  //                              |_1_|_2_|_3_|
+  // coordinate between 0 and 1 and mass particle = 1
+  //
+  // --- - - - - - - - - - - - - - - - - - - - - - - ---
+  for (int i=0; i<n0; i++){
+
+    int grx=floor(x[i]/dl)+1;
+    int gry=floor(y[i]/dl)+1;
+
+    int   gridpointx[9], gridpointy[9];
+    float posgridx[9], posgridy[9];
+    float wfx[9], wfy[9];
+
+    gridpointx[0] = grx;
+    gridpointy[0] = gry;
+
+    if(do_NGP){
+      if(grx>=0 && grx<nn && gry>=0 && gry<nn) grxy[grx+nn*gry] = grxy[grx+nn*gry] + w[i];
+    }
+    else{
+      for (int j=0; j<9; j++){
+        gridpointx[j]=gridpointx[0]+(j%3)-1;
+        gridpointy[j]=gridpointy[0]+(j/3)-1;
+
+        posgridx[j]=(gridpointx[j]+0.5)*dl;
+        posgridy[j]=(gridpointy[j]+0.5)*dl;
+
+        wfx[j] = sqrt(w[i])*weight(x[i],posgridx[j],dl);
+        wfy[j] = sqrt(w[i])*weight(y[i],posgridy[j],dl);
+
+        int grxc = gridpointx[j];
+        int gryc = gridpointy[j];
+
+        if(grxc>=0 && grxc<nn && gryc>=0 && gryc<nn) grxy[grxc+nn*gryc] = grxy[grxc+nn*gryc] + float(wfx[j])*float(wfy[j]);
+      }
+    }
+  }
+  return grxy;
+}
+
+int write_maps(InputParams *p, Header *data, ){
+
+  if (myid==0){
+    if(p.partinplanes==false){
+     /*
+      * write image array(s) to FITS files all particles in a FITS file!
+      */
+      long naxis = 2;
+      long naxes[2]={ p.npix,p.npix };
+      string fileoutput;
+      fileoutput = p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits";
+      cout << "Saving the maps on: " << fileoutput << endl;
+      unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+      vector<long> naxex( 2 );
+      naxex[0]=p.npix;
+      naxex[1]=p.npix;
+      PHDU *phxy=&ffxy->pHDU();
+      phxy->write( 1, p.npix*p.npix, mapxytotrecv );
+      phxy->addKey ("REDSHIFT",zsim," ");
+      phxy->addKey ("PHYSICALSIZE",p.fov," ");
+      phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
+      phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
+      phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
+      phxy->addKey ("nparttype0",ntotxyi[0]," ");
+      phxy->addKey ("nparttype1",ntotxyi[1]," ");
+      phxy->addKey ("nparttype2",ntotxyi[2]," ");
+      phxy->addKey ("nparttype3",ntotxyi[3]," ");
+      phxy->addKey ("nparttype4",ntotxyi[4]," ");
+      phxy->addKey ("nparttype5",ntotxyi[5]," ");
+      phxy->addKey ("HUBBLE",h0," ");
+      phxy->addKey ("OMEGAMATTER",om0," ");
+      phxy->addKey ("OMEGALAMBDA",omL0," ");
+      phxy->addKey ("m0",data.massarr[0]," ");
+      phxy->addKey ("m1",data.massarr[1]," ");
+      phxy->addKey ("m2",data.massarr[2]," ");
+      phxy->addKey ("m3",data.massarr[3]," ");
+      phxy->addKey ("m4",data.massarr[4]," ");
+      phxy->addKey ("m5",data.massarr[5]," ");
+    }else{
+    /**
+    * write image array(s) to FITS files each particle type in different planes
+    */
+   for(int i=0; i<6; i++){
+
+     if(ntotxyi[i]>0){
+       long naxis = 2;
+       long naxes[2]={ p.npix,p.npix };
+       string fileoutput;
+       fileoutput = p.directory+p.simulation+"."+snappl+".ptype"+sconv(i,fINT)+"_plane_"+snpix+"_"+p.suffix+".fits";
+       unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+       vector<long> naxex( 2 );
+       naxex[0]=p.npix;
+       naxex[1]=p.npix;
+       PHDU *phxy=&ffxy->pHDU();
+       phxy->write( 1, p.npix*p.npix, mapxytotirecv[i] );
+       phxy->addKey ("REDSHIFT",zsim," ");
+       phxy->addKey ("PHYSICALSIZE",p.fov," ");
+       phxy->addKey ("PIXELUNIT",1.e+10/h0,"Mass unit in M_Sun");
+       phxy->addKey ("DlLOW",ld[nsnap]/h0,"comoving distance in Mpc");
+       phxy->addKey ("DlUP",ld2[nsnap]/h0,"comoving distance in Mpc");
+       phxy->addKey ("nparttype0",ntotxyi[i]," ");
+       phxy->addKey ("HUBBLE",h0," ");
+       phxy->addKey ("OMEGAMATTER",om0," ");
+       phxy->addKey ("OMEGALAMBDA",omL0," ");
+       phxy->addKey ("m0",data.massarr[i]," ");
+     }
+   }
+  }
 }

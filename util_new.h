@@ -9,6 +9,7 @@
 #include "cosmology.h"
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
+#include <CCfits/CCfits>
 
 using namespace std;
 const double speedcunit = 2.99792458e+3; // speed of light x H0/h
@@ -133,3 +134,10 @@ int test_fov(double , double , double , int , double *);
 void test_hydro(InputParams *, Header *);
 void fastforwardToPos (ifstream &, int, int,  bool);
 void print_header (Header);
+void fastforwardToBlock (ifstream &, string, int);
+void ReadPos (ifstream &, Header *, InputParams *, Random *, int, float* xx[6][3], float rcase, int);
+void getPolar(double, double, double, double *, double *, double *);
+valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
+int MapParticles(ifstream &, Header *, InputParams *, Lens *,
+    float* xx[6][3], double, int, valarray<float>(& mapxyi)[6],
+    int(& ntotxyi)[6], int);
