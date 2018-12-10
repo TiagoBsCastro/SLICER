@@ -1,5 +1,5 @@
-#include <gsl/gsl_interp2d.h>
-#include <gsl/gsl_spline2d.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -9,27 +9,13 @@
 #include <string.h>
 #include "cosmology.h"
 #include "utilities.h"
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
 
 using namespace std;
-using namespace CCfits;
-
 const double speedcunit = 2.99792458e+3; // speed of light x H0/h
-
-// parameters in the input file
-struct InputParams{
-  int npix; // Number of Pixels
-  double boxl; //Box Size
-  double zs; // Source Redshift
-  double fov; // Field of View in Degrees
-  string filredshiftlist; // File with the redshift list it may contain three columns: snap 1/(1+z) z
-  string pathsnap; // Path where the snaphosts are located
-  string simulation; // Simulation name (prefix infront at the snap file)
-  int seedcenter, seedface, seedsign; // Random Seeds
-  bool partinplanes; // True: Each gadget particle type will have its own Map; False: One Map for All particle types
-  string directory; // Directory to save FITS files
-  string suffix; // Suffix to FITS files
-  int snopt; // Shot-noise option: 0-No random Degradation; 1-Half particles degradation; 2- Three quarters particle degradation ...
-};
 
 // conversion: double or int -> string
 static const char fINT[] = "%i";
@@ -41,11 +27,35 @@ static const char fDP3[] = "%4.3f";
 static const char fDP4[] = "%5.4f";
 static const char fDP5[] = "%6.5f";
 static const char ee3[] = "%4.3e";
+template <class T>
+string sconv (T &val, const char *fact)
+{
+  char VAL[20]; sprintf (VAL, fact, val);
+  return string(VAL);
+}
+
+// parameters in the input file
+struct InputParams{
+  int npix; // Number of Pixels
+  double zs; // Source Redshift
+  double Ds; // Comoving Distance at zs (Will not be read from InputFiles)
+  double fov; // Field of View in Degrees (Will not be read from InputFiles)
+  bool hydro; // Hydro or DM only sim (Will not be read from InputFiles)
+  string simType; // Gadget or SubFind
+  double rgrid; // Physical grid for matter density (Will not be read from InputFiles)
+  string filredshiftlist; // File with the redshift list it may contain three columns: snap 1/(1+z) z
+  string pathsnap; // Path where the snaphosts are located
+  string simulation; // Simulation name (prefix infront at the snap file)
+  int seedcenter, seedface, seedsign; // Random Seeds
+  bool partinplanes; // True: Each gadget particle type will have its own Map; False: One Map for All particle types
+  string directory; // Directory to save FITS files
+  string suffix; // Suffix to FITS files
+  int snopt; // Shot-noise option: 0-No random Degradation; 1-Half particles degradation; 2- Three quarters particle degradation ...
+};
 
 const int dummy = 14;
 struct Header
 {
-  // long substituted with int32_t
   int32_t npart[6];
   double massarr[6];
   double time;
@@ -75,172 +85,65 @@ struct Block
   int32_t blocksize2;
 };
 
-struct Randomization
-{
-  int face;
-  int sgnX, sgnY, sgnZ;
-  double xc, yc, zc;
-  Randomization(){};
+struct Lens{
+  int nplanes;                   // Number of lens planes
+  vector <int>    replication;  // Number of repetitions of the i-th snapshot box
+  vector <int>    pll;          // Lens Plane indice
+  vector <string> fromsnap;     // From which snapshot the i-th lens plane were build
+  vector <double> zsimlens;     // z of the i-th lens (z correspodent to d=1/2(ld+ld2))
+  vector <double> ld;           // Start position of the i-th lens
+  vector <double> ld2;          // End position of the i-th lens
+  vector <double> zfromsnap;    // z from the snapshot selected to build the i-th lens
+  vector <bool>   randomize;    // Bool variable to whether the positions should be re-randomized or not
 
-  Randomization(int face, int sgnX, int sgnY, int sgnZ, double xc, double yc, double zc)
-  {
-      this->face = face;
-      this->sgnX = sgnX;
-      this->sgnY = sgnY;
-      this->sgnZ = sgnZ;
-      this->xc = xc;
-      this->yc = yc;
-      this->zc = zc;
-  }
 };
-
+struct Random{
+  vector<double> x0, y0, z0;   // ramdomizing the center of the simulation [0,1]
+  vector<int> face;            // face of the dice
+  vector<int> sgnX, sgnY,sgnZ; // randomizing the box axis signs
+};
+struct Gadget{
+  // GADGET has 6 different particle type
+  vector<float> xx0, yy0, zz0;
+  vector<float> xx1, yy1, zz1;
+  vector<float> xx2, yy2, zz2;
+  vector<float> xx3, yy3, zz3;
+  vector<float> xx4, yy4, zz4;
+  vector<float> xx5, yy5, zz5;
+};
+struct SubFind{
+  // SubFind has 1 particle type
+  vector<float> xx0, yy0, zz0;
+};
+// Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
 {
   input.read((char *)&header, sizeof(header));
   return input;
 };
-
 inline istream & operator>>(istream &input, Block &block)
 {
   input.read((char *)&block, sizeof(block));
   return input;
 };
 
-template <class T>
-string sconv (T &val, const char *fact)
-{
-  char VAL[20]; sprintf (VAL, fact, val);
-  return string(VAL);
-}
-
-int getSnap (vector <double> &, vector <double> &, vector <double> &, double );
-
-template <class T>
-int locate (const std::vector<T> &v, const T);
-
-//float weight (float, float, double);
-
-valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
-
-void readInput(struct InputParams *p, std::string name);
-
-void getPolar(double, double, double, double *ra, double *dec, double *d);
-
-template <class ForwardIterator>
-void min_element (ForwardIterator *first, ForwardIterator *last,
-  ForwardIterator *min_x, ForwardIterator *min_y, ForwardIterator *min_z){
-  *min_x=*first; *min_y=*(first+1); *min_z=*(first+2);
-  if (first==last) {}
-  else if ((last-first)%3){
-    cout << "Bad pointers" << endl;
-    exit(-1);
-  }
-  else{
-    do{
-      if (*first<*min_x)
-          *min_x=*first;
-        if (*(first+1)<*min_y)
-          *min_y=*(first+1);
-        if (*(first+2)<*min_z)
-          *min_z=*(first+2);
-        first+=3;
-    }while(first!=last);
-  }
-}
-
-template <class ForwardIterator>
-void max_element (ForwardIterator *first, ForwardIterator *last,
-  ForwardIterator *max_x, ForwardIterator *max_y, ForwardIterator *max_z){
-  *max_x=*first; *max_y=*(first+1); *max_z=*(first+2);
-  if (first==last) {}
-  else if ((last-first)%3){
-    cout << "Bad pointers" << endl;
-    exit(-1);
-  }
-  else{
-  do{
-    if (*first>*max_x)
-      *max_x=*first;
-    if (*(first+1)>*max_y)
-      *max_y=*(first+1);
-    if (*(first+2)>*max_z)
-      *max_z=*(first+2);
-    first+=3;
-  }while(first!=last);
-  }
-}
-
-void readParameters(string file_name,int *npix, double *boxl,
-            double *zs, double *fov, string *filredshiftlist,
-            string *filsnaplist, string *pathsnap,string *idc,
-            int *seedcenter, int *seedface, int *seedsign,
-            string *simulation, int *nfiles,string *partinplanes,
-            string *directory,string *suffix,int *sn_opt, bool *do_NGP);
-
-void build_plans(double dlup, InputParams *p, int numberOfLensPerSnap, int nsnaps, vector <double> & lred, vector <double> & zl, vector <double> & dl, vector <string> & lsnap, vector <double> & ld, vector <double> & ld2, vector <int> & replication, vector <double> & zfromsnap, vector <string> & fromsnap, vector <double> & zsimlens, vector <bool> & randomize, vector <int> & pll,int myid);
-
-void randomize_box (vector <double> & x0, vector <double> & y0, vector <double> & z0, vector<int> & face, vector<int> & sgnX, vector<int> & sgnY, vector<int> & sgnZ, vector <int> & replication, int nrandom, vector <bool> & randomize, InputParams *p, int numberOfLensPerSnap, int myid);
-
-void box_randomize(vector <double> &, vector <double> &, vector <double> &,
-            vector <int> &, vector <int> &, vector <int> &, vector <int> &,
-            int , int , int , int );
-
-void plans_builder (vector<double> &, vector<double> &, double , double ,
-            vector<int> &, vector<double> &, vector<double> &, vector<double> &, vector<double> &,
-            vector<int> &, vector<int> &);
-
-void fastforwardToPos(ifstream &,int, int, bool);
-
-void fastforwardToMASS (ifstream &, int, Header *, int);
-
-void fastforwardToBHMASS (ifstream & , int , Header *, int);
-
-void read_dl(string, vector <double> &, vector <double> &, double);
-
-int read_redlist(string, vector <double> &, vector <string> &, double);
-
-void read_particles (ifstream *, Header, int, int, float, float *,
-                      vector<double> &, vector<double> &, vector<double> &, vector<int> &,
-                      vector<int> &, vector<int> &, vector<int> &);
-
-void map_particles (float *, double *, int, int, float, Header, vector <double> &,
-                          vector <double> &, int , valarray <float> & , int * , bool , bool );
-
-void write_map (string ,string , string ,
-                      string , string , string , int , int * ,
-                      valarray <float> & , valarray <float> *, float , float , vector <double> , vector <double> ,
-                      float , float , float , double * );
-
+int readInput(struct InputParams *, string, string &, bool *);
 int read_header (string , Header *, ifstream &, bool close);
-
-void read_pos (ifstream *,Header *, float *, float *, float *, float *, float *, float *);
-
-void rand_pos (float * , Header , int , int , float , Randomization);
-
-void read_mass (ifstream *, Header * , double * , double * , double * , double * , double * , double * );
-
+int read_redlist(string, vector <double> &, vector <string> &, InputParams *);
+void build_planes(InputParams *, Header *, Lens &, vector <double> &, vector <string> &, gsl_spline *,
+                              gsl_interp_accel *, gsl_spline *, gsl_interp_accel *, int, int);
+void randomize_box (Random &, Lens *, InputParams *, int, int);
+int test_fov(double , double , double , int , double *);
+void test_hydro(InputParams *, Header *);
+void fastforwardToPos (ifstream &, int, int,  bool);
+void fastforwardNVars (ifstream &, size_t, size_t, int);
 void print_header (Header);
-
-template <class T>
-void read_block (ifstream *fin, T *ptr, string block_str){
-
-  Block block;
-  int32_t blocksize;
-
-  string str="NULL";
-
-  while(strcmp(str.c_str(),block_str.c_str())){
-
-    fin->read((char *)&block, sizeof(block));
-    str={block.name[0],block.name[1],block.name[2],block.name[3]};
-    fin->read((char *)&blocksize, sizeof(blocksize));
-    cout << blocksize << endl;
-    if (!strcmp(str.c_str(),block_str.c_str()))
-      fin->read((char *) ptr, blocksize);
-    else
-      cout << "Skiping Block: " << str.c_str() << endl;
-      fin->seekg(blocksize,ios_base::cur);
-    fin->read((char *)&blocksize, sizeof(blocksize));
-
-  }
-}
+void fastforwardToBlock (ifstream &, string, int);
+void ReadPos (ifstream &, Header *, InputParams *, Random *, int, float* xx[6][3], float rcase, int);
+void getPolar(double, double, double, double *, double *, double *);
+valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
+int MapParticles(ifstream &, Header *, InputParams *, Lens *,
+    float* xx[6][3], double, int, valarray<float>(& mapxyi)[6],
+    int(& ntotxyi)[6], int);
+void write_maps (InputParams *, Header *, Lens *, int, double, string, string,
+  valarray<float>&, valarray<float>(& mapxytotirecv)[6], int(& ntotxyi)[6], int);

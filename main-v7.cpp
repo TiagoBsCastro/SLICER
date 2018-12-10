@@ -1,10 +1,7 @@
 #include "mpi.h"
-#include "util_new.h"
+#include "util.h"
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define POS_U 1.0 // Unit conversion from BoxSize unit lengh to kpc/h
-#define NBLOCKSTOPOS 1 // Number of blocks to be fastforwarded to get to POS
-#define NBLOCKSTOMASS 3 // Number of blocks to be fastforwarded from POS to get to MASS
-#define NBLOCKSTOBHMASS 9 // Number of blocks to be fastforwarded from MASS to get to BHMASS
 #define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap  1 // Number of Lens to be builded from a snap
 #define neval 1000
@@ -70,7 +67,6 @@ int main(int argc, char** argv){
     MPI_Abort(MPI_COMM_WORLD,-1);
   test_hydro(&p, &simdata);
 
-
   /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
   cosmology cosmo(simdata.om0,simdata.oml,1.0,-1.0);
   /* Creating a table with redshifts and comovingdistances to be interpolated*/
@@ -105,10 +101,12 @@ int main(int argc, char** argv){
   }
   for(int isnap=0; isnap < lens.nplanes; isnap++){
 
-    float rcase = floor(lens.ld[nsnap]/simdata.boxsize*1e3);
+    float rcase = floor(lens.ld[isnap]/simdata.boxsize*1e3);
+
     /* Override p.npix if physical is True */
     if (physical)
-      p.npix=int( (lens.ld2[nsnap]+lens.ld[nsnap])/2*fovradiants/p.rgrid*1e3 )+1;
+      p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3 )+1;
+
     /* Get the Snapshot Name */
     string File = p.pathsnap+lens.fromsnap[isnap];
     string snappl;
@@ -235,6 +233,9 @@ int main(int argc, char** argv){
     MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
     for(int i=0; i<6; i++)
       MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+    double zsim = gsl_spline_eval (GetZl, (lens.ld2[isnap]+lens.ld[isnap])/2.0, accGetZl);
+    write_maps (&p, &simdata, &lens, isnap, zsim, snappl, snpix, mapxytotrecv,
+                       mapxytotirecv, ntotxyi,  myid);
 
   }
 

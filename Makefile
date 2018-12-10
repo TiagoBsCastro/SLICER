@@ -3,14 +3,14 @@ PREFIXDIR = /home/$(USER)
 PROG = $(PREFIXDIR)/bin/MapSim-v7
 
 #MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
-MAIN = main-v7.cpp util_new.cpp utilities.cpp cosmology.cpp
+MAIN = main-v7.cpp util.cpp utilities.cpp cosmology.cpp
 
 LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
 
 ALLFLAGS =  -I$(PREFIXDIR)/include/ \
             -I$(PREFIXDIR)/include/gsl/ \
             -I$(PREFIXDIR)/include/CCfits/ \
-	          -I./
+            -I./
 
 LIBS = -L$(PREFIXDIR)/lib/
 
