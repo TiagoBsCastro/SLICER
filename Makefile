@@ -1,9 +1,8 @@
 # executable name
 PREFIXDIR = /home/$(USER)
-PROG = $(PREFIXDIR)/bin/MapSim-v7
+PROG = $(PREFIXDIR)/bin/SLICER.EXE
 
-#MAIN = main-v6.cpp  util.cpp cosmology.cpp utilities.cpp
-MAIN = main-v7.cpp util.cpp utilities.cpp cosmology.cpp
+MAIN = slicer-v1.cpp util.cpp utilities.cpp cosmology.cpp
 
 LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
 
