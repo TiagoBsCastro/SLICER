@@ -112,8 +112,16 @@ struct Gadget{
   vector<float> xx5, yy5, zz5;
 };
 struct SubFind{
-  // SubFind has 1 particle type
-  vector<float> xx0, yy0, zz0;
+  // SubFind has 1 particle type (Pinocchio PLC like structure)
+  vector<int> id; //             1) Group ID
+  vector<int> truez;//           2) True Redshift
+  vector<float> xx0, yy0, zz0;// 3-5) comoving position (Mpc/h)
+  vector<float> vx0, vy0, vz0;// 6-8) velocity (km/s)
+  vector<float> m;//             9) Mass (m200 crit. for Halos MSUB for subhalos)
+  vector<float> theta;//         10) theta (degree)
+  vector<float> phi;//           11) phi (degree)
+  vector<float> vel;//           12) peculiar velocity along the line-of-sight (km/s)
+  vector<float> obsz;//          13) observed redshift
 };
 // Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
@@ -140,6 +148,7 @@ void fastforwardNVars (ifstream &, size_t, size_t, int);
 void print_header (Header);
 void fastforwardToBlock (ifstream &, string, int);
 void ReadPos (ifstream &, Header *, InputParams *, Random *, int, float* xx[6][3], float rcase, int);
+void ReadVel (ifstream &, Header *, InputParams *, Random *, int , float* vv[6][3], int);
 void getPolar(double, double, double, double *, double *, double *);
 valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 int MapParticles(ifstream &, Header *, InputParams *, Lens *,

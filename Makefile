@@ -2,7 +2,7 @@
 PREFIXDIR = /home/$(USER)
 PROG = $(PREFIXDIR)/bin/SLICER.EXE
 
-MAIN = slicer-v1.cpp util.cpp utilities.cpp cosmology.cpp
+MAIN = slicer-v1.cpp util.cpp utilities.cpp cosmology.cpp densitymaps.cpp
 
 LDFLAGS += -Wl,-rpath -lstdc++ -lgsl -lgslcblas -lm -lCCfits -lcfitsio
 

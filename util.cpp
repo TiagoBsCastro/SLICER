@@ -417,7 +417,10 @@ void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
 
   float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z
   int imax = (p->simType == "Gadget") ? 6 : 1;
-  fastforwardToBlock (fin, "POS ", myid);
+  if(p->simType == "Gadget")
+    fastforwardToBlock (fin, "POS ", myid);
+  else
+    fastforwardToBlock (fin, "GPOS", myid);
   /* Loop on different types */
   for (int i = 0; i<imax; i++){
 
@@ -492,11 +495,73 @@ void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
   }
 }
 
+void ReadVel (ifstream & fin, Header *data, InputParams *p, Random *random,
+                              int isnap, float* vv[6][3], int myid){
+
+  float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z velocities
+  int imax = (p->simType == "Gadget") ? 6 : 1;
+  fastforwardToBlock (fin, "VEL ", myid);
+  /* Loop on different types */
+  for (int i = 0; i<imax; i++){
+
+    for (int pp=0; pp<data->npart[i]; pp++){
+
+      float x, y, z;
+      float xb, yb, zb;
+
+      fin.read((char *)&num_float1, sizeof(num_float1));
+      fin.read((char *)&num_float2, sizeof(num_float2));
+      fin.read((char *)&num_float3, sizeof(num_float3));
+
+      xb = random->sgnX[isnap]*num_float1;
+      yb = random->sgnY[isnap]*num_float2;
+      zb = random->sgnZ[isnap]*num_float3;
+
+      // wrapping periodic condition
+      switch (random->face[isnap]){
+        case(1):
+          x = xb;
+          y = yb;
+          z = zb;
+          break;
+        case(2):
+          x = xb;
+          y = zb;
+          z = yb;
+          break;
+        case(3):
+          x = yb;
+          y = zb;
+          z = xb;
+          break;
+        case(4):
+          x = yb;
+          y = xb;
+          z = zb;
+          break;
+        case(5):
+          x = zb;
+          y = xb;
+          z = yb;
+          break;
+        case(6):
+          x = zb;
+          y = yb;
+          z = xb;
+        break;
+      }
+      vv[i][0][pp] = x;
+      vv[i][1][pp] = y;
+      vv[i][2][pp] = z;
+    }
+  }
+}
+
 int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
     float* xx[6][3], double fovradiants, int isnap, valarray<float>(& mapxyi)[6],
     int(& ntotxyi)[6], int myid){
 
-  int imax = (p->simType == "Gadget") ? 6 : 1;
+  int imax = 6;
   float num_float1;
   int totPartxyi[6];
   for(int i=0; i<imax; i++){
