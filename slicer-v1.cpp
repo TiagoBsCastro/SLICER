@@ -207,7 +207,7 @@ int main(int argc, char** argv){
         GetAngular(*subhalos);
 
         CreatePLC (*halos, &data,  &p, "groups."+snappl, myid);
-        CreatePLC (*halos, &data, &p, "subgroups."+snappl, myid);
+        CreatePLC (*subhalos, &data, &p, "subgroups."+snappl, myid);
 
         fin.clear();
         fin.close();
