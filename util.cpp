@@ -1,6 +1,6 @@
 #include "util.h"
 #define MAX_M 1e3    // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
-#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
+#define POS_U 1000.0 // Unit conversion from BoxSize unit lengh to kpc/h
 #define DO_NGP false // Use NGP as the MAS
 
 using namespace CCfits;
@@ -103,6 +103,7 @@ int read_redlist(string filredshiftlist, vector <double> & snapred, vector <stri
       }
       else
         zlast = header.redshift;
+      cout << zlast << endl;
       snapred.push_back(header.redshift);
     }while(header.redshift<p->zs);
   }else{
@@ -417,10 +418,11 @@ void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
 
   float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z
   int imax = (p->simType == "Gadget") ? 6 : 1;
-  if(p->simType == "Gadget")
+  if(p->simType == "Gadget"){
     fastforwardToBlock (fin, "POS ", myid);
-  else
+  }else{
     fastforwardToBlock (fin, "GPOS", myid);
+  }
   /* Loop on different types */
   for (int i = 0; i<imax; i++){
 

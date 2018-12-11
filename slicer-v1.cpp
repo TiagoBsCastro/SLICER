@@ -1,7 +1,7 @@
 #include "mpi.h"
 #include "densitymaps.h"
 #define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
-#define POS_U 1.0 // Unit conversion from BoxSize unit lengh to kpc/h
+#define POS_U 1000.0 // Unit conversion from BoxSize unit lengh to kpc/h
 #define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap  1 // Number of Lens to be builded from a snap
 #define neval 1000
@@ -136,7 +136,6 @@ int main(int argc, char** argv){
       ffmin=myid*intdiv;
       ffmax=(myid+1)*intdiv+remaindiv;
     }
-
     /* Starting the loop on different Snapshot subfiles */
     if(p.simType == "Gadget"){
       valarray<float> mapxytot;
