@@ -103,7 +103,6 @@ int read_redlist(string filredshiftlist, vector <double> & snapred, vector <stri
       }
       else
         zlast = header.redshift;
-      cout << zlast << endl;
       snapred.push_back(header.redshift);
     }while(header.redshift<p->zs);
   }else{
@@ -417,7 +416,7 @@ void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
                               int isnap, float* xx[6][3], float rcase,int myid){
 
   float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z
-  int imax = (p->simType == "Gadget") ? 6 : 1;
+  int imax = (p->simType == "Gadget") ? 6 : 2;
   if(p->simType == "Gadget"){
     fastforwardToBlock (fin, "POS ", myid);
   }else{
@@ -425,6 +424,9 @@ void ReadPos (ifstream & fin, Header *data, InputParams *p, Random *random,
   }
   /* Loop on different types */
   for (int i = 0; i<imax; i++){
+
+    if(p->simType=="SubFind" & i==1)
+      fastforwardToBlock (fin, "SPOS", myid);
 
     for (int pp=0; pp<data->npart[i]; pp++){
 
@@ -501,10 +503,14 @@ void ReadVel (ifstream & fin, Header *data, InputParams *p, Random *random,
                               int isnap, float* vv[6][3], int myid){
 
   float num_float1,num_float2, num_float3; // Dummy vars to read x,y, and z velocities
-  int imax = (p->simType == "Gadget") ? 6 : 1;
-  fastforwardToBlock (fin, "VEL ", myid);
+  int imax = (p->simType == "Gadget") ? 6 : 2;
+  int imin = (p->simType == "Gadget") ? 0 : 1;
+  if(p->simType == "Gadget")
+    fastforwardToBlock (fin, "VEL ", myid);
+  else
+    fastforwardToBlock (fin, "SVEL", myid);
   /* Loop on different types */
-  for (int i = 0; i<imax; i++){
+  for (int i = imin; i<imax; i++){
 
     for (int pp=0; pp<data->npart[i]; pp++){
 
@@ -552,9 +558,9 @@ void ReadVel (ifstream & fin, Header *data, InputParams *p, Random *random,
           z = xb;
         break;
       }
-      vv[i][0][pp] = x;
-      vv[i][1][pp] = y;
-      vv[i][2][pp] = z;
+      vv[i-imin][0][pp] = x;
+      vv[i-imin][1][pp] = y;
+      vv[i-imin][2][pp] = z;
     }
   }
 }
@@ -799,4 +805,46 @@ void write_maps (InputParams *p, Header *data, Lens *lens, int isnap, double zsi
      }
     }
   }
+}
+
+SubFind::SubFind(int n){
+  this->id.resize(n);
+  this->truez.resize(n);
+  this->xx0.resize(n); this->yy0.resize(n); this->zz0.resize(n);
+  this->vx0.resize(n); this->vy0.resize(n); this->vz0.resize(n);
+  this->m.resize(n);
+  this->theta.resize(n);
+  this->phi.resize(n);
+  this->vel.resize(n);
+  this->obsz.resize(n);
+  this->nsub.resize(n);
+};
+
+void GetGVel(SubFind &halos, SubFind *subhalos){
+
+  int nhalos=halos.m.size();
+
+  for(int i=0; i<nhalos; i++){
+
+    double gvelx=0; double gvely=0; double gvelz=0;
+    double msubtot=0;
+    int lastsub = 0;
+
+    for(int isub=0; isub<halos.nsub[i]; isub++){
+
+      gvelx += subhalos->m[isub+lastsub]*subhalos->vx0[isub+lastsub];
+      gvely += subhalos->m[isub+lastsub]*subhalos->vy0[isub+lastsub];
+      gvelz += subhalos->m[isub+lastsub]*subhalos->vz0[isub+lastsub];
+      msubtot += subhalos->m[isub+lastsub];
+
+    }
+    if(msubtot == 0){
+      halos.vx0[i] = gvelx/msubtot;
+      halos.vy0[i] = gvely/msubtot;
+      halos.vz0[i] = gvelz/msubtot;
+    }
+    lastsub += halos.nsub[i];
+
+  }
+
 }

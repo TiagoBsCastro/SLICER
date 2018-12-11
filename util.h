@@ -122,6 +122,10 @@ struct SubFind{
   vector<float> phi;//           11) phi (degree)
   vector<float> vel;//           12) peculiar velocity along the line-of-sight (km/s)
   vector<float> obsz;//          13) observed redshift
+  vector<int> nsub; //             1) Group ID
+
+  SubFind(int); //Constructor declaration
+
 };
 // Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
@@ -156,3 +160,19 @@ int MapParticles(ifstream &, Header *, InputParams *, Lens *,
     int(& ntotxyi)[6], int);
 void write_maps (InputParams *, Header *, Lens *, int, double, string, string,
   valarray<float>&, valarray<float>(& mapxytotirecv)[6], int(& ntotxyi)[6], int);
+template<typename T>
+void ReadBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
+
+  T dummy; // Dummy vars to read x,y, and z
+  fastforwardToBlock (fin, block, myid);
+  /* Loop on different types */
+  for (int pp=0; pp<num; pp++){
+
+    fin.read((char *)&dummy, sizeof(dummy));
+    scalar[pp] = dummy;
+
+  }
+
+};
+
+void GetGVel(SubFind & , SubFind *);

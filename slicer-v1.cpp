@@ -157,6 +157,7 @@ int main(int argc, char** argv){
       double zsim = gsl_spline_eval (GetZl, (lens.ld2[isnap]+lens.ld[isnap])/2.0, accGetZl);
       write_maps (&p, &simdata, &lens, isnap, zsim, snappl, snpix, mapxytotrecv,
                        mapxytotirecv, ntotxyi,  myid);
+
     }else{
 
       for (unsigned int ff=ffmin; ff<ffmax; ff++){
@@ -166,28 +167,38 @@ int main(int argc, char** argv){
         ifstream fin;
         if (read_header (file_in, &data, fin, false))
           return 1;
+        int fastforwardheader = fin.tellg();
         if(ff==0)
           print_header(data);
         /* Creating the pointers for the Data structures */
         SubFind *halos;
         SubFind *subhalos;
         float *xx[6][3];
+        float *vv[6][3];
 
-        halos = new SubFind;
-        subhalos = new SubFind;
-        halos->xx0.resize(data.npart[0]); halos->yy0.resize(data.npart[0]); halos->zz0.resize(data.npart[0]);
-        halos->vz0.resize(data.npart[0]); halos->vy0.resize(data.npart[0]); halos->vz0.resize(data.npart[0]);
-        subhalos->xx0.resize(data.npart[1]); subhalos->yy0.resize(data.npart[1]); subhalos->zz0.resize(data.npart[1]);
-        subhalos->vx0.resize(data.npart[1]); subhalos->vy0.resize(data.npart[1]); subhalos->vz0.resize(data.npart[1]);
+        halos = new SubFind(data.npart[0]);
+        subhalos = new SubFind(data.npart[1]);
         xx[0][0]=&halos->xx0[0]; xx[0][1]=&halos->yy0[0]; xx[0][2]=&halos->zz0[0];
-        xx[1][0]=nullptr; xx[1][1]=nullptr; xx[1][2]=nullptr;
-        xx[2][0]=nullptr; xx[2][1]=nullptr; xx[2][2]=nullptr;
-        xx[3][0]=nullptr; xx[3][1]=nullptr; xx[3][2]=nullptr;
-        xx[4][0]=nullptr; xx[4][1]=nullptr; xx[4][2]=nullptr;
-        xx[5][0]=nullptr; xx[5][1]=nullptr; xx[5][2]=nullptr;
+        xx[1][0]=&subhalos->xx0[0]; xx[1][1]=&subhalos->yy0[0]; xx[1][2]=&subhalos->zz0[0];
+        vv[0][0]=&subhalos->vx0[0]; vv[0][1]=&subhalos->vy0[0]; vv[0][2]=&subhalos->vz0[0];
+        for(int i=1; i<6;i++){
+          for(int j=0;j<3;j++){
+            if(i>1)
+              xx[i][j]=nullptr;
+            vv[i][j]=nullptr;
+          }
+        }
 
         ReadPos (fin,  &data, &p, &random, isnap, xx, rcase, myid);
+        fin.seekg(fastforwardheader);
+        ReadBlock(fin, data.npart[0], "MCRI", &halos->m[0], myid);
+        ReadBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);
+        ReadBlock(fin, data.npart[1], "MSUB", &subhalos->m[0], myid);
+        ReadVel (fin, &data, &p, &random, isnap, vv, myid);
+        GetGVel(*halos, subhalos);
 
+        fin.clear();
+        fin.close();
         delete halos;
         delete subhalos;
 
