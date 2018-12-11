@@ -195,7 +195,19 @@ int main(int argc, char** argv){
         ReadBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);
         ReadBlock(fin, data.npart[1], "MSUB", &subhalos->m[0], myid);
         ReadVel (fin, &data, &p, &random, isnap, vv, myid);
+        ReadBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
+
         GetGVel(*halos, subhalos);
+        GetGID(*halos, subhalos);
+        GetTrueZ(*halos, &data, GetZl, accGetZl);
+        GetTrueZ(*subhalos, &data, GetZl, accGetZl);
+        GetLOSVel(*halos);
+        GetLOSVel(*subhalos);
+        GetAngular(*halos);
+        GetAngular(*subhalos);
+
+        CreatePLC (*halos, &data,  &p, "groups."+snappl, myid);
+        CreatePLC (*halos, &data, &p, "subgroups."+snappl, myid);
 
         fin.clear();
         fin.close();

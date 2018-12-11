@@ -848,3 +848,119 @@ void GetGVel(SubFind &halos, SubFind *subhalos){
   }
 
 }
+
+void GetGID(SubFind &halos, SubFind *subhalos){
+
+  int nhalos=halos.m.size();
+  int lastsub=0;
+
+  for(int i=0; i<nhalos; i++){
+
+    halos.id[i]=subhalos->id[lastsub];
+    lastsub += halos.nsub[i];
+
+  }
+
+}
+
+void GetLOSVel(SubFind &halos){
+
+  int nhalos=halos.m.size();
+  double x,y,z,r;
+
+  for(int i=0; i<nhalos; i++){
+
+    x = halos.xx0[i]-0.5;
+    y = halos.yy0[i]-0.5;
+    z = halos.zz0[i];
+    r = sqrt(x*x + y*y + z*z);
+    x /= r; y /= r; z /= r;
+
+    halos.vel[i] = halos.vx0[i]*x + halos.vy0[i]*y + halos.vz0[i]*z;
+    halos.obsz[i] = halos.truez[i] + halos.vel[i]/speedcunit/100.0;
+
+  }
+
+}
+
+void GetTrueZ(SubFind &halos, Header *data, gsl_spline *GetZl, gsl_interp_accel *accGetZl){
+
+  int nhalos=halos.m.size();
+  double x,y,z,r;
+
+  for(int i=0; i<nhalos; i++){
+
+    x = halos.xx0[i]-0.5;
+    y = halos.yy0[i]-0.5;
+    z = halos.zz0[i];
+    r = sqrt(x*x + y*y + z*z);
+
+    halos.truez[i]=gsl_spline_eval (GetZl, r*data->boxsize/1e3, accGetZl);
+
+  }
+
+}
+
+void GetAngular(SubFind &halos){
+
+  int nhalos=halos.m.size();
+  double x,y,z;
+  double r;
+  double phi;
+  double theta;
+
+  for(int i=0; i<nhalos; i++){
+
+    x = halos.xx0[i]-0.5;
+    y = halos.yy0[i]-0.5;
+    z = halos.zz0[i];
+
+    getPolar(x, y, z, &phi, &theta , &r);
+    halos.phi[i] = phi;
+    halos.theta[i] = theta;
+
+  }
+
+}
+
+void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int myid){
+
+  fstream fileoutput ( p->directory+p->simulation+"."+snappl+".plane_"+sconv(p->fov,fDP1)+"_"+p->suffix+".plc."+sconv(myid,fINT), ios::out | ios::binary );
+  double fovradiants = p->fov/180.*M_PI;
+
+  int nhalos = halos.m.size();
+
+  for(int i=0; i<nhalos; i++){
+
+    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0)){
+      /* Explicitly casting the variables as in Pinocchio PLC*/
+      long long unsigned int id = halos.id[i];
+      double xx0 = (halos.xx0[i] - 0.5)*data->boxsize/1e3;
+      double yy0 = (halos.yy0[i] - 0.5)*data->boxsize/1e3;
+      double zz0 = halos.zz0[i]*data->boxsize/1e3;
+      double vx0 = halos.vx0[i];
+      double vy0 = halos.vy0[i];
+      double vz0 = halos.vz0[i];
+      double m = halos.m[i];
+
+      fileoutput.write((char*)&id, sizeof (id));
+      fileoutput.write((char*)&halos.truez[i], sizeof (halos.truez[i]));
+      fileoutput.write((char*)&xx0, sizeof (double));
+      fileoutput.write((char*)&yy0, sizeof (double));
+      fileoutput.write((char*)&zz0, sizeof (double));
+      fileoutput.write((char*)&vx0, sizeof (double));
+      fileoutput.write((char*)&vy0, sizeof (double));
+      fileoutput.write((char*)&vz0, sizeof (double));
+      fileoutput.write((char*)&m, sizeof (double));
+      fileoutput.write((char*)&halos.theta[i], sizeof (halos.theta[i]));
+      fileoutput.write((char*)&halos.phi[i], sizeof (halos.phi[i]));
+      fileoutput.write((char*)&halos.vel[i], sizeof (halos.vel[i]));
+      fileoutput.write((char*)&halos.obsz[i], sizeof (halos.obsz[i]));
+
+    }
+
+  }
+
+  fileoutput.close();
+
+}

@@ -113,16 +113,16 @@ struct Gadget{
 };
 struct SubFind{
   // SubFind has 1 particle type (Pinocchio PLC like structure)
-  vector<int> id; //             1) Group ID
-  vector<int> truez;//           2) True Redshift
-  vector<float> xx0, yy0, zz0;// 3-5) comoving position (Mpc/h)
-  vector<float> vx0, vy0, vz0;// 6-8) velocity (km/s)
-  vector<float> m;//             9) Mass (m200 crit. for Halos MSUB for subhalos)
-  vector<float> theta;//         10) theta (degree)
-  vector<float> phi;//           11) phi (degree)
-  vector<float> vel;//           12) peculiar velocity along the line-of-sight (km/s)
-  vector<float> obsz;//          13) observed redshift
-  vector<int> nsub; //             1) Group ID
+  vector<uint32_t> id; //                 1) Group ID
+  vector<double> truez;//                 2) True Redshift
+  vector<float> xx0, yy0, zz0;//          3-5) comoving position (Mpc/h)
+  vector<float> vx0, vy0, vz0;//          6-8) velocity (km/s)
+  vector<float> m;//                      9) Mass (m200 crit. for Halos MSUB for subhalos)
+  vector<double> theta;//                 10) Theta (degree)
+  vector<double> phi;//                   11) Phi (degree)
+  vector<double> vel;//                   12) Peculiar velocity along the line-of-sight (km/s)
+  vector<double> obsz;//                  13) Observed redshift
+  vector<uint32_t> nsub; //               14) Number of Subhalos
 
   SubFind(int); //Constructor declaration
 
@@ -176,3 +176,8 @@ void ReadBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
 };
 
 void GetGVel(SubFind & , SubFind *);
+void GetGID(SubFind &, SubFind *);
+void GetTrueZ(SubFind &, Header *, gsl_spline *, gsl_interp_accel *);
+void GetLOSVel(SubFind &);
+void GetAngular(SubFind &);
+void CreatePLC (SubFind &, Header *, InputParams *, string, int);
