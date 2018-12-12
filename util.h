@@ -176,7 +176,7 @@ void ReadBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
 };
 
 void GetGVel(SubFind & , SubFind *);
-void GetGID(SubFind &, SubFind *);
+int GetGID(SubFind &, string, int);
 void GetTrueZ(SubFind &, Header *, gsl_spline *, gsl_interp_accel *);
 void GetLOSVel(SubFind &);
 void GetAngular(SubFind &);

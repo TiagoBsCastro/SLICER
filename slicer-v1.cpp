@@ -166,7 +166,7 @@ int main(int argc, char** argv){
         string file_in = File+"."+sconv(ff,fINT);
         ifstream fin;
         if (read_header (file_in, &data, fin, false))
-          return 1;
+          MPI_Abort(MPI_COMM_WORLD,-1);
         int fastforwardheader = fin.tellg();
         if(ff==0)
           print_header(data);
@@ -198,7 +198,8 @@ int main(int argc, char** argv){
         ReadBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
 
         GetGVel(*halos, subhalos);
-        GetGID(*halos, subhalos);
+        if(GetGID(*halos, File, ff))
+          MPI_Abort(MPI_COMM_WORLD,-1);
         GetTrueZ(*halos, &data, GetZl, accGetZl);
         GetTrueZ(*subhalos, &data, GetZl, accGetZl);
         GetLOSVel(*halos);
@@ -206,7 +207,7 @@ int main(int argc, char** argv){
         GetAngular(*halos);
         GetAngular(*subhalos);
 
-        CreatePLC (*halos, &data,  &p, "groups."+snappl, myid);
+        CreatePLC (*halos,    &data, &p,    "groups."+snappl, myid);
         CreatePLC (*subhalos, &data, &p, "subgroups."+snappl, myid);
 
         fin.clear();

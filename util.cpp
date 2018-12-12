@@ -823,13 +823,12 @@ SubFind::SubFind(int n){
 void GetGVel(SubFind &halos, SubFind *subhalos){
 
   int nhalos=halos.m.size();
+  int lastsub=0;
 
   for(int i=0; i<nhalos; i++){
 
     double gvelx=0; double gvely=0; double gvelz=0;
     double msubtot=0;
-    int lastsub = 0;
-
     for(int isub=0; isub<halos.nsub[i]; isub++){
 
       gvelx += subhalos->m[isub+lastsub]*subhalos->vx0[isub+lastsub];
@@ -838,29 +837,35 @@ void GetGVel(SubFind &halos, SubFind *subhalos){
       msubtot += subhalos->m[isub+lastsub];
 
     }
+    lastsub += halos.nsub[i];
     if(msubtot > 0){
       halos.vx0[i] = gvelx/msubtot;
       halos.vy0[i] = gvely/msubtot;
       halos.vz0[i] = gvelz/msubtot;
     }
-    lastsub += halos.nsub[i];
 
   }
 
 }
 
-void GetGID(SubFind &halos, SubFind *subhalos){
+int GetGID(SubFind &halos, string File, int ff){
 
-  int nhalos=halos.m.size();
-  int lastsub=0;
-
-  for(int i=0; i<nhalos; i++){
-
-    halos.id[i]=subhalos->id[lastsub];
-    lastsub += halos.nsub[i];
-
+  int nhalos=0;
+  for(int i=0; i<ff; i++){
+    Header data;
+    ifstream fin;
+    if(read_header (File+"."+sconv(i,fINT), &data, fin, true))
+      return 1;
+    nhalos += data.npart[0];
+    fin.clear();
+    fin.close();
   }
-
+  
+  int nlocal=halos.m.size();
+  for(int i=nhalos; i<nhalos+nlocal; i++){
+    halos.id[i-nhalos]=i;
+  }
+  return 0;
 }
 
 void GetLOSVel(SubFind &halos){
@@ -932,8 +937,8 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
 
   for(int i=0; i<nhalos; i++){
 
-    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0)){
-      /* Explicitly casting the variables as in Pinocchio PLC and byte swapping them */
+    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0) & (halos.m[i]>0) ){
+      /* Explicitly casting the variables as in Pinocchio PLC */
       int dummy;
       long long unsigned int id = halos.id[i];
       double xx0 = (halos.xx0[i] - 0.5)*data->boxsize/1e3;
@@ -942,29 +947,13 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
       double vx0 = halos.vx0[i];
       double vy0 = halos.vy0[i];
       double vz0 = halos.vz0[i];
-      double m = halos.m[i];
+      double m = 1e10*halos.m[i];
       double obsz = halos.obsz[i];
       double truez = halos.truez[i];
       double vel = halos.vel[i];
-      double theta = halos.theta[i];
-      double phi = halos.phi[i];
+      double theta = halos.theta[i]*180.0/M_PI;
+      double phi = halos.phi[i]*180.0/M_PI;
 
-      /*
-      reverse( (char*)&id, &((char*)&id)[sizeof (unsigned long long int)] );
-      reverse( (char*)&truez, &((char*)&truez)[sizeof (double)] );
-      reverse( (char*)&xx0, &((char*)&xx0)[sizeof (double)] );
-      reverse( (char*)&yy0, &((char*)&yy0)[sizeof (double)] );
-      reverse( (char*)&zz0, &((char*)&zz0)[sizeof (double)] );
-      reverse( (char*)&vx0, &((char*)&vx0)[sizeof (double)] );
-      reverse( (char*)&vy0, &((char*)&vy0)[sizeof (double)] );
-      reverse( (char*)&vz0, &((char*)&vz0)[sizeof (double)] );
-      reverse( (char*)&m, &((char*)&m)[sizeof (double)] );
-      reverse( (char*)&theta, &((char*)&theta)[sizeof (double)] );
-      reverse( (char*)&phi, &((char*)&phi)[sizeof (double)] );
-      reverse( (char*)&vel, &((char*)&vel)[sizeof (double)] );
-      reverse( (char*)&obsz, &((char*)&obsz)[sizeof (double)] ); */
-
-      //cout << id << " " << truez << " " << xx0 << " " << yy0 << " " << zz0 << " " << vx0 << " " << vy0 << " " << vz0 << " " << m << " " << theta << " " << phi << " " << vel << " " << obsz <<endl;
       fileoutput.write((char*)&dummy, sizeof (int));
       fileoutput.write((char*)&id, sizeof (unsigned long long int));
       fileoutput.write((char*)&truez, sizeof (double));
