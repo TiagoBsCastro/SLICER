@@ -820,32 +820,47 @@ SubFind::SubFind(int n){
   this->nsub.resize(n);
 };
 
-void GetGVel(SubFind &halos, SubFind *subhalos){
+void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, string FILE, int ff, int isnap){
 
-  int nhalos=halos.m.size();
-  int lastsub=0;
+  size_t nhalos = halos.m.size();
+  vector <unsigned int>::iterator it;
+  vector <unsigned int> id;
+  vector <float> vx0, vy0, vz0;
 
   for(int i=0; i<nhalos; i++){
 
-    double gvelx=0; double gvely=0; double gvelz=0;
-    double msubtot=0;
-    for(int isub=0; isub<halos.nsub[i]; isub++){
+    it = find( subhalos->id.begin(), subhalos->id.end(), halos.id[i]);
+    if( it  == subhalos->id.end()){
 
-      gvelx += subhalos->m[isub+lastsub]*subhalos->vx0[isub+lastsub];
-      gvely += subhalos->m[isub+lastsub]*subhalos->vy0[isub+lastsub];
-      gvelz += subhalos->m[isub+lastsub]*subhalos->vz0[isub+lastsub];
-      msubtot += subhalos->m[isub+lastsub];
+      Header data;
 
+      ifstream fin;
+      float *vv[6][3];
+      read_header (FILE+"."+sconv(ff,fINT), &data, fin, false);
+      id.resize(data.npart[1]);
+      vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
+      vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
+      for(int i=1; i<6;i++){
+        for(int j=0;j<3;j++){
+          vv[i][j]=nullptr;
+        }
+      }
+      ReadVel (fin, &data, p, random, isnap, vv, 999);
+      ReadBlock(fin, data.npart[1], "GRNR", &id[0], 999);
+
+      it = find( id.begin(), id.end(), halos.id[i]);
+      int isub = it-id.begin();
+      halos.vx0[i] = vx0[isub];
+      halos.vy0[i] = vy0[isub];
+      halos.vz0[i] = vz0[isub];
+
+    }else{
+      int isub = it-subhalos->id.begin();
+      halos.vx0[i] = subhalos->vx0[isub];
+      halos.vy0[i] = subhalos->vy0[isub];
+      halos.vz0[i] = subhalos->vz0[isub];
     }
-    lastsub += halos.nsub[i];
-    if(msubtot > 0){
-      halos.vx0[i] = gvelx/msubtot;
-      halos.vy0[i] = gvely/msubtot;
-      halos.vz0[i] = gvelz/msubtot;
-    }
-
   }
-
 }
 
 int GetGID(SubFind &halos, string File, int ff){
@@ -860,7 +875,7 @@ int GetGID(SubFind &halos, string File, int ff){
     fin.clear();
     fin.close();
   }
-  
+
   int nlocal=halos.m.size();
   for(int i=nhalos; i<nhalos+nlocal; i++){
     halos.id[i-nhalos]=i;
@@ -928,9 +943,9 @@ void GetAngular(SubFind &halos){
 
 }
 
-void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int myid){
+void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int ff){
 
-  fstream fileoutput ( p->directory+p->simulation+"."+snappl+".plane_"+sconv(p->fov,fDP1)+"_"+p->suffix+".plc."+sconv(myid,fINT), ios::out | ios::binary );
+  fstream fileoutput ( p->directory+p->simulation+"."+snappl+".plane_"+sconv(p->fov,fDP1)+"_"+p->suffix+".plc."+sconv(ff,fINT), ios::out | ios::binary );
   double fovradiants = p->fov/180.*M_PI;
 
   int nhalos = halos.m.size();
@@ -947,12 +962,12 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
       double vx0 = halos.vx0[i];
       double vy0 = halos.vy0[i];
       double vz0 = halos.vz0[i];
-      double m = 1e10*halos.m[i];
+      double m = halos.m[i];
       double obsz = halos.obsz[i];
       double truez = halos.truez[i];
       double vel = halos.vel[i];
-      double theta = halos.theta[i]*180.0/M_PI;
-      double phi = halos.phi[i]*180.0/M_PI;
+      double theta = 90+halos.theta[i]*180.0/M_PI;
+      double phi = 90+halos.phi[i]*180.0/M_PI;
 
       fileoutput.write((char*)&dummy, sizeof (int));
       fileoutput.write((char*)&id, sizeof (unsigned long long int));

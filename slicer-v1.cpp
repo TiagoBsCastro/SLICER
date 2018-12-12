@@ -1,10 +1,7 @@
 #include "mpi.h"
 #include "densitymaps.h"
-#define MAX_M 1e3 // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
-#define POS_U 1000.0 // Unit conversion from BoxSize unit lengh to kpc/h
-#define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap  1 // Number of Lens to be builded from a snap
-#define neval 1000
+#define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
 /*                                                                           */
@@ -197,9 +194,9 @@ int main(int argc, char** argv){
         ReadVel (fin, &data, &p, &random, isnap, vv, myid);
         ReadBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
 
-        GetGVel(*halos, subhalos);
         if(GetGID(*halos, File, ff))
           MPI_Abort(MPI_COMM_WORLD,-1);
+        GetGVel(*halos, subhalos, &p, &random, File, ff-1, isnap);
         GetTrueZ(*halos, &data, GetZl, accGetZl);
         GetTrueZ(*subhalos, &data, GetZl, accGetZl);
         GetLOSVel(*halos);
@@ -207,8 +204,8 @@ int main(int argc, char** argv){
         GetAngular(*halos);
         GetAngular(*subhalos);
 
-        CreatePLC (*halos,    &data, &p,    "groups."+snappl, myid);
-        CreatePLC (*subhalos, &data, &p, "subgroups."+snappl, myid);
+        CreatePLC (*halos,    &data, &p,    "groups."+snappl, ff);
+        CreatePLC (*subhalos, &data, &p, "subgroups."+snappl, ff);
 
         fin.clear();
         fin.close();
