@@ -678,8 +678,8 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
 
 void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
   *d = sqrt(x*x+y*y+z*z);
-  *dec = asin(x/(*d));
-  *ra = atan2(y,z);
+  *dec = asin(z/(*d));
+  *ra = atan2(x,y);
 }
 
 // grid points distribution function with != wheights
@@ -820,7 +820,7 @@ SubFind::SubFind(int n){
   this->nsub.resize(n);
 };
 
-void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, string FILE, int ff, int isnap){
+void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, string FILE, int isnap){
 
   size_t nhalos = halos.m.size();
   vector <unsigned int>::iterator it;
@@ -830,25 +830,39 @@ void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, 
   for(int i=0; i<nhalos; i++){
 
     it = find( subhalos->id.begin(), subhalos->id.end(), halos.id[i]);
-    if( it  == subhalos->id.end()){
+    if( it  == subhalos->id.end() & subhalos->id.back() != halos.id[i] & halos.m[i]>0 ){
 
       Header data;
-
       ifstream fin;
       float *vv[6][3];
-      read_header (FILE+"."+sconv(ff,fINT), &data, fin, false);
-      id.resize(data.npart[1]);
-      vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
-      vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
-      for(int i=1; i<6;i++){
-        for(int j=0;j<3;j++){
-          vv[i][j]=nullptr;
-        }
-      }
-      ReadVel (fin, &data, p, random, isnap, vv, 999);
-      ReadBlock(fin, data.npart[1], "GRNR", &id[0], 999);
 
-      it = find( id.begin(), id.end(), halos.id[i]);
+      for(int f=0; f<data.numfiles; f++){
+        read_header (FILE+"."+sconv(f,fINT), &data, fin, false);
+        id.resize(data.npart[1]);
+        vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
+        vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
+        for(int i=1; i<6;i++){
+          for(int j=0;j<3;j++){
+            vv[i][j]=nullptr;
+          }
+        }
+        ReadVel (fin, &data, p, random, isnap, vv, 999);
+        ReadBlock(fin, data.npart[1], "GRNR", &id[0], 999);
+
+        it = find( id.begin(), id.end(), halos.id[i]);
+        if( it  == id.end() & id.back() != halos.id[i] ){
+          fin.clear();
+          fin.close();
+          continue;
+        }
+        fin.clear();
+        fin.close();
+        break;
+      }
+      if( it  == id.end() & id.back() != halos.id[i] ){
+        cerr << "HALO NOT FOUND! ID: " << halos.id[i]  << endl;
+        exit(-1);
+      }
       int isub = it-id.begin();
       halos.vx0[i] = vx0[isub];
       halos.vy0[i] = vy0[isub];
