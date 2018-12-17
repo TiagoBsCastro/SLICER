@@ -196,7 +196,7 @@ int main(int argc, char** argv){
 
         if(GetGID(*halos, File, ff))
           MPI_Abort(MPI_COMM_WORLD,-1);
-        GetGVel(*halos, subhalos, &p, &random, File, ff-1, isnap);
+        GetGVel(*halos, subhalos, &p, &random, File, isnap);
         GetTrueZ(*halos, &data, GetZl, accGetZl);
         GetTrueZ(*subhalos, &data, GetZl, accGetZl);
         GetLOSVel(*halos);
@@ -213,9 +213,7 @@ int main(int argc, char** argv){
         delete subhalos;
 
       }
-
     }
-
   }
 
   gsl_spline_free (GetDl);gsl_spline_free (GetZl);

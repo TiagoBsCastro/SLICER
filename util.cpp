@@ -634,7 +634,7 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
         if(di>=lens->ld[isnap] && di<lens->ld2[isnap]){
 
           double rai,deci,dd;
-          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd);
+          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd, true);
 
           if(fabs(rai)<=fovradiants*(1.+2./p->npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p->npix)*0.5){
             xs.push_back(deci/fovradiants+0.5);
@@ -676,10 +676,23 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
 
 }
 
+<<<<<<< HEAD
 void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
   *d = sqrt(x*x+y*y+z*z);
   *dec = acos(z/(*d));
   *ra = atan2(y,x);
+=======
+void getPolar(double x, double y, double z, double *ang1, double *ang2, double *d, bool radec){
+  if(radec){
+    *d = sqrt(x*x+y*y+z*z);
+    *ang2 = asin(x/(*d)); // dec
+    *ang1 = atan2(y,z); // ra
+  }else{
+    *d = sqrt(x*x+y*y+z*z);
+    *ang1 = acos(z/(*d)); // Theta
+    *ang2 = atan2(y,x); // Phi
+  }
+>>>>>>> c017531fdd3c51edb9cf50c0a413e513e8dcf4e6
 }
 
 // grid points distribution function with != wheights
@@ -820,7 +833,7 @@ SubFind::SubFind(int n){
   this->nsub.resize(n);
 };
 
-void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, string FILE, int ff, int isnap){
+void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, string FILE, int isnap){
 
   size_t nhalos = halos.m.size();
   vector <unsigned int>::iterator it;
@@ -830,25 +843,39 @@ void GetGVel(SubFind &halos, SubFind *subhalos, InputParams *p, Random *random, 
   for(int i=0; i<nhalos; i++){
 
     it = find( subhalos->id.begin(), subhalos->id.end(), halos.id[i]);
-    if( it  == subhalos->id.end()){
+    if( it  == subhalos->id.end() & subhalos->id.back() != halos.id[i] & halos.m[i]>0 ){
 
       Header data;
-
       ifstream fin;
       float *vv[6][3];
-      read_header (FILE+"."+sconv(ff,fINT), &data, fin, false);
-      id.resize(data.npart[1]);
-      vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
-      vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
-      for(int i=1; i<6;i++){
-        for(int j=0;j<3;j++){
-          vv[i][j]=nullptr;
-        }
-      }
-      ReadVel (fin, &data, p, random, isnap, vv, 999);
-      ReadBlock(fin, data.npart[1], "GRNR", &id[0], 999);
 
-      it = find( id.begin(), id.end(), halos.id[i]);
+      for(int f=0; f<data.numfiles; f++){
+        read_header (FILE+"."+sconv(f,fINT), &data, fin, false);
+        id.resize(data.npart[1]);
+        vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
+        vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
+        for(int i=1; i<6;i++){
+          for(int j=0;j<3;j++){
+            vv[i][j]=nullptr;
+          }
+        }
+        ReadVel (fin, &data, p, random, isnap, vv, 999);
+        ReadBlock(fin, data.npart[1], "GRNR", &id[0], 999);
+
+        it = find( id.begin(), id.end(), halos.id[i]);
+        if( it  == id.end() & id.back() != halos.id[i] ){
+          fin.clear();
+          fin.close();
+          continue;
+        }
+        fin.clear();
+        fin.close();
+        break;
+      }
+      if( it  == id.end() & id.back() != halos.id[i] ){
+        cerr << "HALO NOT FOUND! ID: " << halos.id[i]  << endl;
+        exit(-1);
+      }
       int isub = it-id.begin();
       halos.vx0[i] = vx0[isub];
       halos.vy0[i] = vy0[isub];
@@ -935,7 +962,7 @@ void GetAngular(SubFind &halos){
     y = halos.yy0[i]-0.5;
     z = halos.zz0[i];
 
-    getPolar(x, y, z, &phi, &theta , &r);
+    getPolar(x, y, z, &phi, &theta , &r, true);
     halos.phi[i] = phi;
     halos.theta[i] = theta;
 
@@ -946,7 +973,7 @@ void GetAngular(SubFind &halos){
 void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int ff){
 
   fstream fileoutput ( p->directory+p->simulation+"."+snappl+".plane_"+sconv(p->fov,fDP1)+"_"+p->suffix+".plc."+sconv(ff,fINT), ios::out | ios::binary );
-  double fovradiants = p->fov/180.*M_PI;
+  double fovradiants = p->fov/180.0*M_PI;
 
   int nhalos = halos.m.size();
 
@@ -966,10 +993,19 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
       double obsz = halos.obsz[i];
       double truez = halos.truez[i];
       double vel = halos.vel[i];
+<<<<<<< HEAD
       double theta = 90.0-halos.theta[i]*180.0/M_PI;
       double phi = halos.phi[i]*180.0/M_PI;
       if( phi<0.0 )
         phi += 360.0;
+=======
+      double theta;
+      double phi;
+      double r;
+      getPolar(xx0,yy0,zz0,&theta,&phi,&r,false);
+      theta *= 180.0/M_PI;
+      phi   *= 180.0/M_PI;
+>>>>>>> c017531fdd3c51edb9cf50c0a413e513e8dcf4e6
 
       fileoutput.write((char*)&dummy, sizeof (int));
       fileoutput.write((char*)&id, sizeof (unsigned long long int));

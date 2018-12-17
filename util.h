@@ -153,7 +153,7 @@ void print_header (Header);
 void fastforwardToBlock (ifstream &, string, int);
 void ReadPos (ifstream &, Header *, InputParams *, Random *, int, float* xx[6][3], float rcase, int);
 void ReadVel (ifstream &, Header *, InputParams *, Random *, int , float* vv[6][3], int);
-void getPolar(double, double, double, double *, double *, double *);
+void getPolar(double, double, double, double *, double *, double *, bool);
 valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 int MapParticles(ifstream &, Header *, InputParams *, Lens *,
     float* xx[6][3], double, int, valarray<float>(& mapxyi)[6],
@@ -175,7 +175,7 @@ void ReadBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
 
 };
 
-void GetGVel(SubFind &, SubFind *, InputParams *, Random *, string, int, int);
+void GetGVel(SubFind &, SubFind *, InputParams *, Random *, string, int);
 int GetGID(SubFind &, string, int);
 void GetTrueZ(SubFind &, Header *, gsl_spline *, gsl_interp_accel *);
 void GetLOSVel(SubFind &);
