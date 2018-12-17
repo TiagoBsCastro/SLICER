@@ -634,7 +634,7 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
         if(di>=lens->ld[isnap] && di<lens->ld2[isnap]){
 
           double rai,deci,dd;
-          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd);
+          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],&rai,&deci,&dd, true);
 
           if(fabs(rai)<=fovradiants*(1.+2./p->npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p->npix)*0.5){
             xs.push_back(deci/fovradiants+0.5);
@@ -676,10 +676,16 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
 
 }
 
-void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
-  *d = sqrt(x*x+y*y+z*z);
-  *dec = asin(z/(*d));
-  *ra = atan2(x,y);
+void getPolar(double x, double y, double z, double *ang1, double *ang2, double *d, bool radec){
+  if(radec){
+    *d = sqrt(x*x+y*y+z*z);
+    *ang2 = asin(x/(*d)); // dec
+    *ang1 = atan2(y,z); // ra
+  }else{
+    *d = sqrt(x*x+y*y+z*z);
+    *ang1 = acos(z/(*d)); // Theta
+    *ang2 = atan2(y,x); // Phi
+  }
 }
 
 // grid points distribution function with != wheights
@@ -949,7 +955,7 @@ void GetAngular(SubFind &halos){
     y = halos.yy0[i]-0.5;
     z = halos.zz0[i];
 
-    getPolar(x, y, z, &phi, &theta , &r);
+    getPolar(x, y, z, &phi, &theta , &r, true);
     halos.phi[i] = phi;
     halos.theta[i] = theta;
 
@@ -980,8 +986,12 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
       double obsz = halos.obsz[i];
       double truez = halos.truez[i];
       double vel = halos.vel[i];
-      double theta = 90+halos.theta[i]*180.0/M_PI;
-      double phi = 90+halos.phi[i]*180.0/M_PI;
+      double theta;
+      double phi;
+      double r;
+      getPolar(xx0,yy0,zz0,&theta,&phi,&r,false);
+      theta *= 180.0/M_PI;
+      phi   *= 180.0/M_PI;
 
       fileoutput.write((char*)&dummy, sizeof (int));
       fileoutput.write((char*)&id, sizeof (unsigned long long int));
