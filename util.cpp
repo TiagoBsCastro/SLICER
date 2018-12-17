@@ -676,12 +676,6 @@ int MapParticles(ifstream & fin, Header *data, InputParams *p, Lens *lens,
 
 }
 
-<<<<<<< HEAD
-void getPolar(double x, double y, double z, double *ra, double *dec, double *d){
-  *d = sqrt(x*x+y*y+z*z);
-  *dec = acos(z/(*d));
-  *ra = atan2(y,x);
-=======
 void getPolar(double x, double y, double z, double *ang1, double *ang2, double *d, bool radec){
   if(radec){
     *d = sqrt(x*x+y*y+z*z);
@@ -689,10 +683,9 @@ void getPolar(double x, double y, double z, double *ang1, double *ang2, double *
     *ang1 = atan2(y,z); // ra
   }else{
     *d = sqrt(x*x+y*y+z*z);
-    *ang1 = acos(z/(*d)); // Theta
-    *ang2 = atan2(y,x); // Phi
+    *ang1 = acos(z/(*d)); // theta
+    *ang2 = atan2(y,x); // phi
   }
->>>>>>> c017531fdd3c51edb9cf50c0a413e513e8dcf4e6
 }
 
 // grid points distribution function with != wheights
@@ -924,7 +917,7 @@ void GetLOSVel(SubFind &halos){
     x /= r; y /= r; z /= r;
 
     halos.vel[i] = halos.vx0[i]*x + halos.vy0[i]*y + halos.vz0[i]*z;
-    halos.obsz[i] = halos.truez[i] + halos.vel[i]/speedcunit/100.0;
+    halos.obsz[i] = halos.truez[i] + halos.vel[i]/speedcunit/100.0 * (1 + halos.truez[i]);
 
   }
 
@@ -973,7 +966,7 @@ void GetAngular(SubFind &halos){
 void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int ff){
 
   fstream fileoutput ( p->directory+p->simulation+"."+snappl+".plane_"+sconv(p->fov,fDP1)+"_"+p->suffix+".plc."+sconv(ff,fINT), ios::out | ios::binary );
-  double fovradiants = p->fov/180.0*M_PI;
+  double fovradiants = p->fov/180.*M_PI;
 
   int nhalos = halos.m.size();
 
@@ -993,19 +986,13 @@ void CreatePLC (SubFind &halos, Header *data, InputParams *p, string snappl, int
       double obsz = halos.obsz[i];
       double truez = halos.truez[i];
       double vel = halos.vel[i];
-<<<<<<< HEAD
-      double theta = 90.0-halos.theta[i]*180.0/M_PI;
-      double phi = halos.phi[i]*180.0/M_PI;
+      double theta, phi, r;
+
+      getPolar(xx0, yy0, zz0, &theta, &phi, &r, false);
+      theta = 90.0-theta*180.0/M_PI;
+      phi = phi*180.0/M_PI;
       if( phi<0.0 )
         phi += 360.0;
-=======
-      double theta;
-      double phi;
-      double r;
-      getPolar(xx0,yy0,zz0,&theta,&phi,&r,false);
-      theta *= 180.0/M_PI;
-      phi   *= 180.0/M_PI;
->>>>>>> c017531fdd3c51edb9cf50c0a413e513e8dcf4e6
 
       fileoutput.write((char*)&dummy, sizeof (int));
       fileoutput.write((char*)&id, sizeof (unsigned long long int));
