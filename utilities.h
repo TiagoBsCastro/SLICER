@@ -2,15 +2,11 @@
 #define UTILITIES_H_
 #include <iostream>
 #include <string>
+#include <cmath>
 #include <vector>
-#include <fstream>
-#include <algorithm>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_multimin.h>
-#include <valarray>
-#include <assert.h>
+#include <gsl/gsl_errno.h>
 
-/** 
+/*
  * created by:  Matthias Bartelmann, MPA Garching, 2003; ZAH, U. Heidelberg, 2006 - (bartelmann@uni-heidelberg.de)
  * modified by: Carlo Giocoli, ZAH-ITA Heidelberg, 2010; INAF-OABO Bologna,  2012 - (carlo.giocoli@unibo.it)
  */
@@ -21,18 +17,33 @@ const double twopi=6.283185307179586476925286766559005768394;
 const double sqrt2=1.41421356237309504880168872420969807856967;
 const double euler=0.5772156649015328606065120900824024310422;
 const double nXbin=128.;
+const double speedcunit = 2.99792458e+3; // speed of light / H0/h
 
 const double tiny=1e-6;
 const double tiny4 = 1e-4;
 const double conv = 648000/M_PI;
 
+// conversion: double or int -> string
+static const char fINT[] = "%i";
+static const char fLONG[] = "%lli";
+static const char fDP0[] = "%1.0f";
+static const char fDP1[] = "%2.1f";
+static const char fDP2[] = "%3.2f";
+static const char fDP3[] = "%4.3f";
+static const char fDP4[] = "%5.4f";
+static const char fDP5[] = "%6.5f";
+static const char ee3[] = "%4.3e";
+template <class T>
+string sconv (T &val, const char *fact)
+{
+  char VAL[20]; sprintf (VAL, fact, val);
+  return string(VAL);
+}
 
 void error (const std::string s);
-void error (const bool f, const std::string s); 
+void error (const bool f, const std::string s);
 void gsl_error_handler (const char * reason, const char * file, int line, int gsl_errno);
 void warning (const std::string s);
-double sign (const double a, const double b);
-int nint (const double x);
 
 template <class T>
 void fill_linear ( std::vector<T> &v, size_t n, T min, T max ){
@@ -67,68 +78,8 @@ int locate (const std::vector<T> &v, const T x){
     return jl;
 }
 
-void swap (double &a, double &b);
-
-void sort (double *a, const int n);
-
-std:: vector<double> rotatexYz(double theta,std:: vector<double> v);
-std:: vector<double> rotatexyZ(double theta,std:: vector<double> v);
-
-double median(std:: vector<double> vec);
-
 float weight (float ixx, float ixh, double dx);
 
-void InertialT(std:: valarray<float> f,std:: vector<double> x,int n,double f1, double f2,double f3, double f4, double f5, 
-	       double &e1,double &e2,double &e3,double &e4, double &e5);
-
-double getY(std:: vector<double> x, std:: vector<double> y,double xi);
-
-double cubicInterpolate (double p[4], double x);
-
-double bicubicInterpolate (double p[4][4], double x, double y);
-
-double tricubicInterpolate (double p[4][4][4], double x, double y, double z);
-
-double nCubicInterpolate (int n, double* p, double coordinates[]);
-
-double getZ(std::valarray<float> map,int npix,double x,double y, std:: vector<double> xi,std:: vector<double> yi);
-
-/**
- * Returns the pointer of the radial profile of the maps of a given field.
- * Spherical simmetry is assumed 
- */
-double *estprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, double dr0, 
-
-		double xmax,std:: vector<int> &vi, std:: vector<int> &vj,int ngal);
-/**
- * Returns the pointer of the variance of the radial profile of the maps of a given field 
- * Spherical simmetry is assumed 
- */
-double *estsigmaprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, double dr0, 
-		     double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm);
-/**
- * Returns the pointer of the cumulative radial profile of the maps of a given field
- * Spherical simmetry is assumed 
- */
-double *estcprof(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, double dr0, 
-		 double xmax, std:: vector<int> &vi, std:: vector<int> &vj, int ngal);
-
-double *estsigmacprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
-		       std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm);
-
-double *estprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
-		 std:: vector<int> &vi, std:: vector<int> &vj,int ngal);
-
-double *estsigmaprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
-		      std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm);
-double *estcprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
-		  std:: vector<int> &vi, std:: vector<int> &vj, int ngal);
-
-double *estsigmacprof2(std:: valarray<float> q,int nx,int ny, std:: valarray<float> r, std:: vector<double> rbin,
-		       std:: vector<int> &vi, std:: vector<int> &vj, int ngal, double* qm);
-
-double fcos(double x);
-
-double fsin(double x);
+void getPolar(double x, double y, double z, double &ang1, double &ang2, double &d, bool radec);
 
 #endif

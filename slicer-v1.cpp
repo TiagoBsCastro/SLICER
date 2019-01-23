@@ -10,7 +10,7 @@
 /*             - File with Halo positions and Halo                           */
 /*               properties for Halos inside the PLC                         */
 /*                                                                           */
-/*          The PLC builder algorithm, although written from scratch,        */
+/*          The PLC builder algorithm, although re-written from scratch,     */
 /*          resembles that presented in the original MapSim                  */
 /*                         (Contact Carlo Giocoli - cgiocoli@gmail.com)      */
 /*                                                                           */
@@ -47,26 +47,26 @@ int main(int argc, char** argv){
   double fovradiants;
   size_t nsnap;
 
-  if(readInput(&p, inifile, snpix, &physical))
+  if(readInput(p, inifile, snpix, physical))
     MPI_Abort(MPI_COMM_WORLD,-1);
 
   // Reading the Snapshots available
   vector <string> snappath; // List of SnapShots paths
   vector <double> snapred; // List of SnapShots redshift
-  if( read_redlist(p.filredshiftlist, snapred, snappath, &p) )
+  if( read_redlist(p.filredshiftlist, snapred, snappath, p) )
     MPI_Abort(MPI_COMM_WORLD,-1);
   nsnap = snapred.size(); // Number of Snapshots
 
   /* Read the Snap Header and get Cosmological Values*/
   Header simdata;
   ifstream fin;
-  if( read_header (p.pathsnap+snappath[0]+".0", &simdata, fin, true) )
+  if( read_header (p.pathsnap+snappath[0]+".0", simdata, fin, true) )
     MPI_Abort(MPI_COMM_WORLD,-1);
-  test_hydro(&p, &simdata);
+  test_hydro(p, simdata);
 
   /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
   cosmology cosmo(simdata.om0,simdata.oml,1.0,-1.0);
-  /* Creating a table with redshifts and comovingdistances to be interpolated*/
+  /* Creating a table with redshifts and comoving distances to be interpolated*/
   vector <double> zl(neval),dl(neval);
   for(int i=0;i<neval;i++){
     zl[i] = i * (p.zs+1.0)/(neval-1);
@@ -81,15 +81,15 @@ int main(int argc, char** argv){
   gsl_spline_init (GetZl, &dl[0], &zl[0], neval);
   /* Comoving distance of the last plane*/
   p.Ds = gsl_spline_eval (GetDl, p.zs, accGetDl);
-  if(test_fov(p.fov, simdata.boxsize/1e3, p.Ds, myid, &fovradiants))
+  if(test_fov(p.fov, simdata.boxsize/1e3, p.Ds, myid, fovradiants))
     MPI_Abort(MPI_COMM_WORLD,-1);
 
   /* Creating an Instance of the Lens and Building the Planes */
   Lens lens;
-  build_planes(&p, &simdata, lens, snapred, snappath, GetDl, accGetDl, GetZl, accGetZl, numberOfLensPerSnap, myid);
+  build_planes(p, simdata, lens, snapred, snappath, GetDl, accGetDl, GetZl, accGetZl, numberOfLensPerSnap, myid);
   /* Creating an Instance of the Randomization plan */
   Random random;
-  randomize_box (random, &lens, &p, numberOfLensPerSnap, myid);
+  randomize_box (random, lens, p, numberOfLensPerSnap, myid);
 
   /* Looping on the Snapshots */
   if(myid==0){
@@ -121,7 +121,7 @@ int main(int argc, char** argv){
       continue;
     }
 
-    /* Computing Working Balance  */
+    /* Computing Working Balance */
     int intdiv, remaindiv,ffmin,ffmax;
     intdiv=simdata.numfiles/numprocs;
     remaindiv=simdata.numfiles%numprocs;
@@ -139,20 +139,23 @@ int main(int argc, char** argv){
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
 
-      if( CreateDensityMaps (&p, &lens, &random, isnap, ffmin, ffmax, File, fovradiants, rcase, GetDl,accGetDl,
-                            GetZl, accGetZl, mapxytot, mapxytoti, ntotxyi, myid))
+      if( CreateDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
+                            rcase, GetDl,accGetDl, GetZl, accGetZl, mapxytot, mapxytoti,
+                            ntotxyi, myid))
         MPI_Abort(MPI_COMM_WORLD,-1);
 
-      valarray<float> mapxytotrecv( p.npix*p.npix );
-      valarray<float> mapxytotirecv[6];
+      valarray <float> mapxytotrecv( p.npix*p.npix );
+      valarray <float> mapxytotirecv[6];
       for(int i=0; i<6; i++)
         mapxytotirecv[i].resize( p.npix*p.npix );
 
       MPI_Reduce( &mapxytot[0],  &mapxytotrecv[0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
       for(int i=0; i<6; i++)
         MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
       double zsim = gsl_spline_eval (GetZl, (lens.ld2[isnap]+lens.ld[isnap])/2.0, accGetZl);
-      write_maps (&p, &simdata, &lens, isnap, zsim, snappl, snpix, mapxytotrecv,
+      write_maps (p, simdata, lens, isnap, zsim, snappl, snpix, mapxytotrecv,
                        mapxytotirecv, ntotxyi,  myid);
 
     }else{
@@ -162,7 +165,7 @@ int main(int argc, char** argv){
         Header data;
         string file_in = File+"."+sconv(ff,fINT);
         ifstream fin;
-        if (read_header (file_in, &data, fin, false))
+        if (read_header (file_in, data, fin, false))
           MPI_Abort(MPI_COMM_WORLD,-1);
         int fastforwardheader = fin.tellg();
         if(ff==0)
@@ -186,26 +189,26 @@ int main(int argc, char** argv){
           }
         }
 
-        ReadPos (fin,  &data, &p, &random, isnap, xx, rcase, myid);
+        ReadPos (fin,  data, p, random, isnap, xx, rcase, myid);
         fin.seekg(fastforwardheader);
         ReadBlock(fin, data.npart[0], "MCRI", &halos->m[0], myid);
         ReadBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);
         ReadBlock(fin, data.npart[1], "MSUB", &subhalos->m[0], myid);
-        ReadVel (fin, &data, &p, &random, isnap, vv, myid);
+        ReadVel (fin, data, p, random, isnap, vv, myid);
         ReadBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
 
         if(GetGID(*halos, File, ff))
           MPI_Abort(MPI_COMM_WORLD,-1);
-        GetGVel(*halos, subhalos, &p, &random, File, isnap);
-        GetTrueZ(*halos, &data, GetZl, accGetZl);
-        GetTrueZ(*subhalos, &data, GetZl, accGetZl);
+        GetGVel(*halos, *subhalos, p, random, File, isnap);
+        GetTrueZ(*halos, data, GetZl, accGetZl);
+        GetTrueZ(*subhalos, data, GetZl, accGetZl);
         GetLOSVel(*halos);
         GetLOSVel(*subhalos);
         GetAngular(*halos);
         GetAngular(*subhalos);
 
-        CreatePLC (*halos,    &data, &p,    "groups."+snappl, ff);
-        CreatePLC (*subhalos, &data, &p, "subgroups."+snappl, ff);
+        CreatePLC (*halos,    data, p,    "groups."+snappl, ff);
+        CreatePLC (*subhalos, data, p, "subgroups."+snappl, ff);
 
         fin.clear();
         fin.close();

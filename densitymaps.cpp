@@ -1,19 +1,295 @@
 #include "densitymaps.h"
 
-int CreateDensityMaps (InputParams *p, Lens *lens, Random *random, int isnap, int ffmin, int ffmax, string File, double fovradiants, double rcase, gsl_spline *GetDl, gsl_interp_accel *accGetDl,
-                        gsl_spline *GetZl, gsl_interp_accel *accGetZl, valarray<float> &mapxytot, valarray<float> (&mapxytoti)[6], int (&ntotxyi)[6], int myid){
+int getSnap (vector <double> & zsnap, gsl_spline *GetDl, gsl_interp_accel *accGetDl, double dlens){
 
-  mapxytot.resize( p->npix*p->npix );
+  int pos;
+  double aux=99999;
+
+  for(int i=0;i<zsnap.size();i++){
+    float test = abs( gsl_spline_eval (GetDl, zsnap[i], accGetDl)-dlens );
+    if( test < aux ){
+      aux = test;
+      pos = i;
+    }
+  }
+
+  return pos;
+}
+
+void build_planes(InputParams &p, Header &header, Lens &lens, vector <double> & snapred, vector <string> & snappath, gsl_spline *GetDl,
+                 gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl, int numberOfLensPerSnap,
+                                                                                                           int myid){
+  size_t nsnaps = snapred.size();
+  int pos, nrepi = 0;
+  int nrep = 0;
+  double ldbut, zdbut;
+  do{
+    nrep++;
+    nrepi++;
+    ldbut = nrep*header.boxsize/1e3/numberOfLensPerSnap;
+    zdbut = gsl_spline_eval (GetZl, ldbut, accGetZl);
+    double dlens = ldbut-0.5*header.boxsize/1e3/numberOfLensPerSnap;
+    double zlens = gsl_spline_eval (GetZl, dlens, accGetZl);
+    int pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
+    if (myid==0)
+      cout << " simulation snapshots = " << ldbut << "  " << zdbut << "  " << nrep << " from snap "
+                                                       << snappath[pos_temp] << "  " << zlens << endl;
+    lens.ld.push_back(ldbut-header.boxsize/1e3/numberOfLensPerSnap);
+    lens.ld2.push_back(ldbut);
+    lens.zfromsnap.push_back(snapred[pos_temp]);
+    if ( nrep != 1 && pos_temp != pos){
+      for ( int i=0; i<nrepi-1; i++ )
+        lens.replication.push_back(nrep-1);
+      nrepi=1;
+    }
+    pos=pos_temp;
+    lens.zsimlens.push_back(zlens);
+    lens.fromsnap.push_back(snappath[pos]);
+    if( nrep==1 )
+      lens.randomize.push_back(1);
+    else
+      lens.randomize.push_back( !( (nrep-1)%numberOfLensPerSnap ) );
+
+  }while(ldbut<p.Ds);
+
+  for ( int i=0; i<nrepi+1; i++ ) lens.replication.push_back(nrep); // Last plane replications
+  if (myid==0){
+    cout << " Comoving Distance of the last plane " << p.Ds << endl;
+    cout << " nsnaps = " << nsnaps << "\n" << endl;
+  }
+
+  ofstream planelist;
+  string planes_list;
+  planes_list = p.directory+"planes_list_"+p.suffix+".txt";
+
+  if (myid==0)
+    planelist.open(planes_list.c_str());
+
+  for(int i=0;i<lens.fromsnap.size();i++){
+
+    if (myid==0){
+      cout << lens.zsimlens[i] << " planes = " << lens.ld[i] << "  " << lens.ld2[i] << "  " << lens.replication[i] <<
+                                                                     " from snap " << lens.fromsnap[i] << endl;
+      planelist <<  i << "   " << lens.zsimlens[i] << "   " << lens.ld[i] << "   " << lens.ld2[i] << "   " <<
+          lens.replication[i] << "   " << lens.fromsnap[i]  << "   " << lens.zfromsnap[i] << "  "
+          << lens.randomize[i]  << endl;
+    }
+
+    lens.pll.push_back(i);
+
+  }
+
+  if (myid==0)
+    planelist.close();
+
+  lens.nplanes = lens.replication.back();
+}
+
+void randomize_box (Random & random, Lens & lens, InputParams & p, int numberOfLensPerSnap, int myid){
+
+  size_t nrandom = lens.replication.back();
+  /* Inflating Random Structure */
+  random.x0.resize(nrandom); random.y0.resize(nrandom); random.z0.resize(nrandom);
+  random.sgnX.resize(nrandom); random.sgnY.resize(nrandom); random.sgnZ.resize(nrandom);
+  random.face.resize(nrandom);
+  for(int i=0;i<nrandom;i++){
+
+    if ( lens.randomize[i] ){
+
+      srand(p.seedcenter+i/numberOfLensPerSnap*13);
+      random.x0[i] = rand() / float(RAND_MAX);
+      random.y0[i] = rand() / float(RAND_MAX);
+      random.z0[i] = rand() / float(RAND_MAX);
+      if(myid==0){
+        cout << "  " << endl;
+        cout << " random centers  for the box " << i << " = " << random.x0[i] << "  " << random.y0[i] << "  " << random.z0[i] << endl;
+      }
+      random.face[i] = 7;
+      srand(p.seedface+i/numberOfLensPerSnap*5);
+      while(random.face[i]>6 || random.face[i]<1) random.face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
+      if (myid==0)
+        cout << " face of the dice " << random.face[i] << endl;
+      random.sgnX[i] = 2;
+      srand(p.seedsign+i/numberOfLensPerSnap*8);
+      while(random.sgnX[i] > 1 || random.sgnX[i] < 0) random.sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
+      random.sgnY[i] = 2;
+      while(random.sgnY[i] > 1 || random.sgnY[i] < 0) random.sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
+      random.sgnZ[i] = 2;
+      while(random.sgnZ[i] > 1 || random.sgnZ[i] < 0) random.sgnZ[i] = int(rand() / float(RAND_MAX)+0.5);
+      if(random.sgnX[i]==0) random.sgnX[i]=-1;
+      if(random.sgnY[i]==0) random.sgnY[i]=-1;
+      if(random.sgnZ[i]==0) random.sgnZ[i]=-1;
+      if(myid==0)
+        cout << " signs of the coordinates = " << random.sgnX[i] << "  " << random.sgnY[i] << " " << random.sgnZ[i] << endl;
+
+    }
+    else{
+
+      random.x0[i] = random.x0[i-1];
+      random.y0[i] = random.y0[i-1];
+      random.z0[i] = random.z0[i-1];
+      if(myid==0){
+        cout << "  " << endl;
+        cout << " random centers  for the box " << i << " = " << random.x0[i] << "  " << random.y0[i] << "  " << random.z0[i] << endl;
+      }
+      random.face[i] = random.face[i-1];
+      if (myid==0)
+        cout << " face of the dice " << random.face[i] << endl;
+      random.sgnX[i] = random.sgnX[i-1];
+      random.sgnY[i] = random.sgnY[i-1];
+      random.sgnZ[i] = random.sgnZ[i-1];
+      if(myid==0)
+        cout << " signs of the coordinates = " << random.sgnX[i] << "  " << random.sgnY[i] << " " << random.sgnZ[i] << endl;
+
+    }
+
+  }
+
+}
+
+int test_fov(double fov, double boxl, double Ds, int myid, double & fovradiants){
+  if(myid==0)
+    cout << " Setting the field of view to be square in degrees " << endl;
+
+  fovradiants = fov/180.*M_PI;
+  /* check if the field of view is too large with respect to the box size */
+  if( (fovradiants)*Ds>boxl && myid==0 ){
+    cerr << " !!Field view too large!!\n !!!I will STOP here!!! " << endl;
+    cerr << " Value set is = " << fov << endl;
+    cerr << " Maximum value allowed " << boxl/Ds*180./M_PI << " in degrees " << endl;
+    return 1;
+  }
+  return 0;
+}
+
+int MapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
+    float* xx[6][3], double fovradiants, int isnap, valarray<float>(& mapxyi)[6],
+    int(& ntotxyi)[6], int myid){
+
+  int imax = 6;
+  float num_float1;
+  int totPartxyi[6];
+  for(int i=0; i<imax; i++){
+
+    size_t n = data.npart[i];
+
+    if(n>0){
+      // quadrate box
+      double xmin=double(*min_element(xx[i][0], &xx[i][0][n]));
+      double xmax=double(*max_element(xx[i][0], &xx[i][0][n]));
+      double ymin=double(*min_element(xx[i][1], &xx[i][1][n]));
+      double ymax=double(*max_element(xx[i][1], &xx[i][1][n]));
+      double zmin=double(*min_element(xx[i][2], &xx[i][2][n]));
+      double zmax=double(*max_element(xx[i][2], &xx[i][2][n]));
+
+      if (myid==0){
+       cout << " " << endl;
+       cout << " n"<<i<<" particles " << endl;
+       cout << "xmin = " << xmin << endl;
+       cout << "xmax = " << xmax << endl;
+       cout << "ymin = " << ymin << endl;
+       cout << "ymax = " << ymax << endl;
+       cout << "zmin = " << zmin << endl;
+       cout << "zmax = " << zmax << endl;
+       cout << "  " << endl;
+      }
+
+      if(xmin<0 || ymin<0 || zmin< 0){
+        cerr << "xmin = " << xmin << endl;
+        cerr << "xmax = " << xmax << endl;
+        cerr << "ymin = " << ymin << endl;
+        cerr << "ymax = " << ymax << endl;
+        cerr << "zmin = " << zmin << endl;
+        cerr << "zmax = " << zmax << endl;
+        cerr << "  0 type check this!!! I will STOP here!!! " << endl;
+        cerr << "Aborting from Rank "<< myid << endl;
+        return 1;
+      }
+      if (myid==0){
+         cout << " Mapping type "<< i <<" particles on the grid with " << p.npix << " pixels" << endl;
+         cout << "Min distance: "<< lens.ld[isnap]/data.boxsize*1.e+3/POS_U<< " "<<lens.ld2[isnap]/data.boxsize*1.e+3/POS_U << endl;
+      }
+
+      vector<float> xs(0),ys(0),ms(0);
+      for(int l=0;l<data.npart[i];l++){
+
+        if(p.hydro && data.massarr[i]==0){
+
+          if(l==0 && i==5){
+            fastforwardNVars (fin, sizeof(int32_t), data.npart[5],myid);
+            fastforwardToBlock (fin, "BHMA", myid);
+          }
+
+          fin.read((char *)&num_float1, sizeof(num_float1));
+          if (num_float1>MAX_M)
+            num_float1=0;
+        }
+        else
+          num_float1=data.massarr[i];
+
+        double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2))*data.boxsize/1.e+3*POS_U;
+        if(di>=lens.ld[isnap] && di<lens.ld2[isnap]){
+
+          double rai,deci,dd;
+          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],rai,deci,dd, true);
+
+          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
+            xs.push_back(deci/fovradiants+0.5);
+            ys.push_back(rai/fovradiants+0.5);
+            if(p.snopt==0){
+              ms.push_back(num_float1);
+            }
+            else{
+              if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
+              else ms.push_back(0.);
+            }
+          }
+        }
+      }
+      totPartxyi[i]=xs.size();
+      ntotxyi[i]+=totPartxyi[i];
+
+      if(totPartxyi[i]>0){
+        mapxyi[i] = gridist_w(xs,ys,ms,p.npix,DO_NGP);
+      }
+
+      //re-normalize to the total mass!
+      double mtot=0.;
+      double mnorm=0.;
+      for(int i=0;i<ms.size();i++)
+        mnorm+=ms[i];
+
+      if(totPartxyi[i]>0){
+        for(int l=0;l<p.npix*p.npix;l++)
+          mtot += mapxyi[i][l];
+        if(mtot==0.)
+          mtot=1.; //To avoid NaN
+        for(int l=0;l<p.npix*p.npix;l++) mapxyi[i][l]*=mnorm/mtot;
+      }
+    }
+  }
+
+  return 0;
+
+}
+
+int CreateDensityMaps (InputParams &p, Lens &lens, Random &random, int isnap,
+  int ffmin, int ffmax, string File, double fovradiants, double rcase,
+  gsl_spline *GetDl, gsl_interp_accel *accGetDl, gsl_spline *GetZl,
+  gsl_interp_accel *accGetZl, valarray<float> &mapxytot,
+  valarray<float> (&mapxytoti)[6], int (&ntotxyi)[6], int myid){
+
+  mapxytot.resize( p.npix*p.npix );
   for(int i=0;i<6;i++){
     ntotxyi[i]=0;
-    mapxytoti[i].resize( p->npix*p->npix );
+    mapxytoti[i].resize( p.npix*p.npix );
   }
   for (unsigned int ff=ffmin; ff<ffmax; ff++){
 
     Header data;
     string file_in = File+"."+sconv(ff,fINT);
     ifstream fin;
-    if (read_header (file_in, &data, fin, false))
+    if (read_header (file_in, data, fin, false))
       return 1;
     if(ff==0)
       print_header(data);
@@ -35,10 +311,10 @@ int CreateDensityMaps (InputParams *p, Lens *lens, Random *random, int isnap, in
     xx[4][0]=&gadget->xx4[0]; xx[4][1]=&gadget->yy4[0]; xx[4][2]=&gadget->zz4[0];
     xx[5][0]=&gadget->xx5[0]; xx[5][1]=&gadget->yy5[0]; xx[5][2]=&gadget->zz5[0];
 
-    ReadPos (fin,  &data, p, random, isnap, xx, rcase, myid);
+    ReadPos (fin,  data, p, random, isnap, xx, rcase, myid);
 
     /* If Hydro run I have to read the masses, otherwise close the snapshot*/
-    if(p->hydro)
+    if(p.hydro)
       fastforwardToBlock (fin, "MASS", myid);
     else{
       fin.clear();
@@ -49,13 +325,13 @@ int CreateDensityMaps (InputParams *p, Lens *lens, Random *random, int isnap, in
     valarray<float> mapxyi[6];
     int ntotxyi[6];
     for(int i=0; i<6; i++)
-      mapxyi[i].resize(p->npix*p->npix);
+      mapxyi[i].resize(p.npix*p.npix);
 
-    if(MapParticles(fin, &data, p, lens, xx, fovradiants, isnap, mapxyi,
+    if(MapParticles(fin, data, p, lens, xx, fovradiants, isnap, mapxyi,
                                                  ntotxyi, myid))
       return 1;
 
-    if(p->hydro){
+    if(p.hydro){
       fin.clear();
       fin.close();
     }
@@ -75,4 +351,77 @@ int CreateDensityMaps (InputParams *p, Lens *lens, Random *random, int isnap, in
     cout << " maps done! from Rank:" << myid << endl;
   return 0;
 
+}
+
+void write_maps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim,
+                 string snappl, string snpix, valarray<float>& mapxytotrecv,
+                 valarray<float>(& mapxytotirecv)[6], int(& ntotxyi)[6], int myid){
+
+  if (myid==0){
+    if(p.partinplanes==false){
+     /*
+      * write image array(s) to FITS files all particles in a FITS file!
+      */
+      long naxis = 2;
+      long naxes[2]={ p.npix,p.npix };
+      string fileoutput;
+      fileoutput = p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits";
+      cout << "Saving the maps on: " << fileoutput << endl;
+      unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+      vector<long> naxex( 2 );
+      naxex[0]=p.npix;
+      naxex[1]=p.npix;
+      PHDU *phxy=&ffxy->pHDU();
+      phxy->write( 1, p.npix*p.npix, mapxytotrecv );
+      phxy->addKey ("REDSHIFT",zsim," ");
+      phxy->addKey ("PHYSICALSIZE",p.fov," ");
+      phxy->addKey ("PIXELUNIT",1.e+10/data.h,"Mass unit in M_Sun");
+      phxy->addKey ("DlLOW",lens.ld[isnap]/data.h,"comoving distance in Mpc");
+      phxy->addKey ("DlUP",lens.ld2[isnap]/data.h,"comoving distance in Mpc");
+      phxy->addKey ("nparttype0",ntotxyi[0]," ");
+      phxy->addKey ("nparttype1",ntotxyi[1]," ");
+      phxy->addKey ("nparttype2",ntotxyi[2]," ");
+      phxy->addKey ("nparttype3",ntotxyi[3]," ");
+      phxy->addKey ("nparttype4",ntotxyi[4]," ");
+      phxy->addKey ("nparttype5",ntotxyi[5]," ");
+      phxy->addKey ("HUBBLE",data.h," ");
+      phxy->addKey ("OMEGAMATTER",data.om0," ");
+      phxy->addKey ("OMEGALAMBDA",data.oml," ");
+      phxy->addKey ("m0",data.massarr[0]," ");
+      phxy->addKey ("m1",data.massarr[1]," ");
+      phxy->addKey ("m2",data.massarr[2]," ");
+      phxy->addKey ("m3",data.massarr[3]," ");
+      phxy->addKey ("m4",data.massarr[4]," ");
+      phxy->addKey ("m5",data.massarr[5]," ");
+    }else{
+    /**
+    * write image array(s) to FITS files each particle type in different planes
+    */
+     for(int i=0; i<6; i++){
+
+       if(ntotxyi[i]>0){
+         long naxis = 2;
+         long naxes[2]={ p.npix,p.npix };
+         string fileoutput;
+         fileoutput = p.directory+p.simulation+"."+snappl+".ptype"+sconv(i,fINT)+"_plane_"+snpix+"_"+p.suffix+".fits";
+         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+         vector<long> naxex( 2 );
+         naxex[0]=p.npix;
+         naxex[1]=p.npix;
+         PHDU *phxy=&ffxy->pHDU();
+         phxy->write( 1, p.npix*p.npix, mapxytotirecv[i] );
+         phxy->addKey ("REDSHIFT",zsim," ");
+         phxy->addKey ("PHYSICALSIZE",p.fov," ");
+         phxy->addKey ("PIXELUNIT",1.e+10/data.h,"Mass unit in M_Sun");
+         phxy->addKey ("DlLOW",lens.ld[isnap]/data.h,"comoving distance in Mpc");
+         phxy->addKey ("DlUP",lens.ld2[isnap]/data.h,"comoving distance in Mpc");
+         phxy->addKey ("nparttype0",ntotxyi[i]," ");
+         phxy->addKey ("HUBBLE",data.h," ");
+         phxy->addKey ("OMEGAMATTER",data.om0," ");
+         phxy->addKey ("OMEGALAMBDA",data.oml," ");
+         phxy->addKey ("m"+sconv(i,fINT),data.massarr[i]," ");
+       }
+     }
+    }
+  }
 }

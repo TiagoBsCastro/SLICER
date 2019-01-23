@@ -4,7 +4,7 @@
 #include <vector>
 #include <gsl/gsl_spline.h>
 
-/**
+/*
  * created  by: Matthias Bartelmann, MPA Garching, 2003; ZAH, U. Heidelberg, 2006 - (bartelmann@uni-heidelberg.de)
  * modified by: Carlo Giocoli, ZAH-ITA Heidelberg, 2010; INAF-OABO Bologna,  2012 - (carlo.giocoli@unibo.it)
  */

@@ -8,12 +8,18 @@
 #include "cosmology.h"
 #include "utilities.h"
 
+/*
+ * Cosmology Class from MOKA
+ * Giocoli et al. 2011 (https://arxiv.org/pdf/1109.0285.pdf for details)
+ * created  by: Matthias Bartelmann, MPA Garching, 2003; ZAH, U. Heidelberg, 2006 - (bartelmann@uni-heidelberg.de)
+ * modified by: Carlo Giocoli, ZAH-ITA Heidelberg, 2010; INAF-OABO Bologna,  2012 - (carlo.giocoli@unibo.it)
+ */
+
 double gslTimeKernel (double, void*);
 double gslQKernel (double, void*);
 double gslAngDistKernel (double, void*);
 
 const double del=1.0e-2;
-
 const double tol=1.0e-4;
 const double amin=1.0e-5;
 const double amax=1.0;
