@@ -1,13 +1,19 @@
 /* Header with different data structures and how to read them */
+#ifndef DATA_H_
+#define DATA_H_
 #include <gsl/gsl_spline.h>
 #include <vector>
 #include <fstream>
 #include <algorithm>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include "utilities.h"
 
 using namespace std;
 
-// parameters in the input file
+// Input file struct
 struct InputParams{
   int npix; // Number of Pixels
   double zs; // Source Redshift
@@ -24,8 +30,11 @@ struct InputParams{
   string directory; // Directory to save FITS files
   string suffix; // Suffix to FITS files
   int snopt; // Shot-noise option: 0-No random Degradation; 1-Half particles degradation; 2- Three quarters particle degradation ...
+  string snpix; // Label string for the output according to npix and physical options
+  bool physical; // How the pixelization should be done: True on physical distances. False on angular positions
 };
 
+// Gadget2 Header Struct
 const int dummy = 14;
 struct Header
 {
@@ -49,6 +58,7 @@ struct Header
   int32_t la[dummy];
 };
 
+// Gadget2 Block Metadata structure
 struct Block
 {
   int32_t blocksize1;
@@ -58,6 +68,8 @@ struct Block
   int32_t blocksize2;
 };
 
+
+// Lens structure
 struct Lens{
   int nplanes;                   // Number of lens planes
   vector <int>    replication;  // Number of repetitions of the i-th snapshot box
@@ -70,11 +82,15 @@ struct Lens{
   vector <bool>   randomize;    // Bool variable to whether the positions should be re-randomized or not
 
 };
+
+// Randomization plan structure
 struct Random{
   vector<double> x0, y0, z0;   // ramdomizing the center of the simulation [0,1]
   vector<int> face;            // face of the dice
   vector<int> sgnX, sgnY,sgnZ; // randomizing the box axis signs
 };
+
+// Particles position structure
 struct Gadget{
   // GADGET has 6 different particle type
   vector<float> xx0, yy0, zz0;
@@ -84,6 +100,8 @@ struct Gadget{
   vector<float> xx4, yy4, zz4;
   vector<float> xx5, yy5, zz5;
 };
+
+// Subfind structure
 struct SubFind{
   // SubFind has 1 particle type (Pinocchio PLC like structure)
   vector<uint32_t> id; //                 1) Group ID
@@ -100,6 +118,7 @@ struct SubFind{
   SubFind(int); //Constructor declaration
 
 };
+
 // Operators to Read Header and Block
 inline istream & operator>>(istream &input, Header &header)
 {
@@ -111,3 +130,11 @@ inline istream & operator>>(istream &input, Block &block)
   input.read((char *)&block, sizeof(block));
   return input;
 };
+
+/*
+  Reads the input params file "name" and stores the parameter values in the
+  InputParams structure
+*/
+int readInput(struct InputParams &p, string name);
+
+#endif

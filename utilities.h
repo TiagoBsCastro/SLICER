@@ -5,6 +5,9 @@
 #include <cmath>
 #include <vector>
 #include <gsl/gsl_errno.h>
+#include <valarray>
+
+using namespace std;
 
 /*
  * created by:  Matthias Bartelmann, MPA Garching, 2003; ZAH, U. Heidelberg, 2006 - (bartelmann@uni-heidelberg.de)
@@ -81,5 +84,7 @@ int locate (const std::vector<T> &v, const T x){
 float weight (float ixx, float ixh, double dx);
 
 void getPolar(double x, double y, double z, double &ang1, double &ang2, double &d, bool radec);
+
+valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
 
 #endif
