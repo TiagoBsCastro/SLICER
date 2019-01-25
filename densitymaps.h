@@ -1,7 +1,8 @@
 #include <valarray>
+#include <stdexcept>
+#include <CCfits/CCfits>
 #include "data.h"
 #include "utilities.h"
-#include <CCfits/CCfits>
 
 using namespace std;
 using namespace CCfits;
@@ -87,3 +88,6 @@ int createDensityMaps (InputParams &p, Lens &lens, Random &random, int isnap,
 void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim,
                  string snappl, string snpix, valarray<float>& mapxytotrecv,
                  valarray<float>(& mapxytotirecv)[6], int(& ntotxyi)[6], int myid);
+
+/* Outputfile name */
+string fileOutput (InputParams p, string snappl, int label = 0);

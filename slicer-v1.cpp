@@ -115,13 +115,6 @@ int main(int argc, char** argv){
     else
       snappl = sconv(lens.pll[isnap],fINT);
 
-    /* If this lens plane was already created go to the next one */
-    if(ifstream(p.directory+p.simulation+"."+snappl+".plane_"+p.snpix+"_"+p.suffix+".fits") && p.partinplanes == false && p.simType == "Gadget"){
-      if (myid==0)
-        cout << p.directory+p.simulation+"."+snappl+".plane_"+p.snpix+"_"+p.suffix+".fits" << " "<< "Already exists" <<endl;
-      continue;
-    }
-
     /* Computing Working Balance */
     int intdiv, remaindiv,ffmin,ffmax;
     intdiv=simdata.numfiles/numprocs;
@@ -136,6 +129,20 @@ int main(int argc, char** argv){
     }
     /* Starting the loop on different Snapshot subfiles */
     if(p.simType == "Gadget"){
+
+      /* If this lens plane was already created go to the next one */
+      if(p.partinplanes == false){
+        if( ifstream( fileOutput(p, snappl) ) ){
+          if (myid==0)
+            cout << fileOutput(p, snappl) << " Already exists" <<endl;
+          continue;
+        }
+      }else{
+        if (myid==0)
+          cout << "!It is not possible to resume a Gadget run with partinplanes == true!" << endl <<
+                  "!!               Files on Output folder will be overwritten        !!" << endl;
+      }
+
       valarray<float> mapxytot;
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
@@ -162,6 +169,12 @@ int main(int argc, char** argv){
     }else{
 
       for (unsigned int ff=ffmin; ff<ffmax; ff++){
+
+        if( ifstream( fileOutput(p, snappl, ff) ) ){
+          if (myid==0)
+            cout << fileOutput(p, snappl, ff) << " Already exists" <<endl;
+          continue;
+        }
 
         Header data;
         string file_in = File+"."+sconv(ff,fINT);

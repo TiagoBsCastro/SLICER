@@ -422,7 +422,7 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
       long naxis = 2;
       long naxes[2]={ p.npix,p.npix };
       string fileoutput;
-      fileoutput = p.directory+p.simulation+"."+snappl+".plane_"+snpix+"_"+p.suffix+".fits";
+      fileoutput = fileOutput(p, snappl);
       cout << "Saving the maps on: " << fileoutput << endl;
       unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
       vector<long> naxex( 2 );
@@ -460,7 +460,7 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
          long naxis = 2;
          long naxes[2]={ p.npix,p.npix };
          string fileoutput;
-         fileoutput = p.directory+p.simulation+"."+snappl+".ptype"+sconv(i,fINT)+"_plane_"+snpix+"_"+p.suffix+".fits";
+         fileoutput = fileOutput(p, snappl, i);
          unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
          vector<long> naxex( 2 );
          naxex[0]=p.npix;
@@ -481,4 +481,22 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
      }
     }
   }
+}
+
+/*
+ * Output file name
+ * - label is the file suffix for SubFind files or the particle Type for partinplanes == true
+ */
+string fileOutput (InputParams p, string snappl, int label){
+
+  if(p.simType == "Gadget" && p.partinplanes == false)
+    return p.directory+p.simulation+"."+snappl+".plane_"+p.snpix+"_"+p.suffix+".fits";
+  else if(p.simType == "Gadget" && p.partinplanes == true)
+    return p.directory+p.simulation+"."+snappl+".ptype"+sconv(label,fINT)+"_plane_"+p.snpix+"_"+p.suffix+".fits";
+  else if(p.simType == "SubFind")
+    return p.directory+p.simulation+"."+snappl+".plane_"+sconv(p.fov,fDP1)+"_"+p.suffix+".plc."+sconv(label,fINT);
+  else{
+    throw invalid_argument("Output name format not recognized");
+  }
+
 }

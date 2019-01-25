@@ -1,8 +1,9 @@
 #include "writeplc.h"
+#include "densitymaps.h"
 
 void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int ff){
 
-  fstream fileoutput ( p.directory+p.simulation+"."+snappl+".plane_"+sconv(p.fov,fDP1)+"_"+p.suffix+".plc."+sconv(ff,fINT), ios::out | ios::binary );
+  fstream fileoutput ( fileOutput(p, snappl, ff), ios::out | ios::binary );
   double fovradiants = p.fov/180.*M_PI;
 
   int nhalos = halos.m.size();
