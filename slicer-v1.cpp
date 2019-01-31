@@ -84,7 +84,6 @@ int main(int argc, char** argv){
   gsl_spline_init (getDl, &zl[0], &dl[0], neval);
   gsl_spline_init (getZl, &dl[0], &zl[0], neval);
   /* Comoving distance of the last plane*/
-  cout << "So far so good!" << endl;
   p.Ds = gsl_spline_eval (getDl, p.zs, accGetDl);
   if(testFov(p.fov, simdata.boxsize/1e3, p.Ds, myid, fovradiants))
     MPI_Abort(MPI_COMM_WORLD,-1);
@@ -196,8 +195,8 @@ int main(int argc, char** argv){
         float *xx[6][3];
         float *vv[6][3];
 
-        halos = new SubFind(data.npart[0]);
-        subhalos = new SubFind(data.npart[1]);
+        halos = new SubFind(data.npart[0], 1 );
+        subhalos = new SubFind(data.npart[1], 0);
         xx[0][0]=&halos->xx0[0]; xx[0][1]=&halos->yy0[0]; xx[0][2]=&halos->zz0[0];
         xx[1][0]=&subhalos->xx0[0]; xx[1][1]=&subhalos->yy0[0]; xx[1][2]=&subhalos->zz0[0];
         vv[0][0]=&subhalos->vx0[0]; vv[0][1]=&subhalos->vy0[0]; vv[0][2]=&subhalos->vz0[0];
@@ -213,18 +212,21 @@ int main(int argc, char** argv){
         fin.seekg(fastforwardheader);
         readBlock(fin, data.npart[0], "MCRI", &halos->m[0], myid);
         readBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);
+        readBlock(fin, data.npart[0], "FSUB", &halos->fsub[0], myid);
         readBlock(fin, data.npart[1], "MSUB", &subhalos->m[0], myid);
         readVel (fin, data, p, random, isnap, vv, myid);
         readBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
-
-        if(ff==ffmin)
+        if(ff==ffmin){
           if(getGID(*halos, File, 0, ff, nhalos))
             MPI_Abort(MPI_COMM_WORLD,-1);
-        else
-          if(getGID(*halos, File, ff-1, ff, nhalos))
+        }
+        else{
+          if(getGID(*halos, File, ff, ff, nhalos))
             MPI_Abort(MPI_COMM_WORLD,-1);
+        }
 
-        getGVel(*halos, *subhalos, p, random, File, isnap);
+        getGVel(*halos, p, random, File);
+        exit(-1);
         getTrueZ(*halos, data, getZl, accGetZl);
         getTrueZ(*subhalos, data, getZl, accGetZl);
         getLOSVel(*halos);

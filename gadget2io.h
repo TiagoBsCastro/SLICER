@@ -70,8 +70,7 @@ void readVel (ifstream & fin, Header &data, InputParams &p, Random &random,
    !! the complexity probably evolves with n^2 and should be avoided !!
    !! for very large boxes                                           !!
 */
-void getGVel(SubFind &halos, SubFind &subhalos, InputParams &p, Random &random,
-  string FILE, int isnap);
+int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE);
 
 /* Get the "halos" group ID corresponding according to its position on the
    snapshot "FILE.ff"

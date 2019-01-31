@@ -82,7 +82,7 @@ int readInput(struct InputParams &p, string name){
 /*
  * SubFind Constructor
 */
-SubFind::SubFind(int n){
+SubFind::SubFind(int n, bool halos){
   this->id.resize(n);
   this->truez.resize(n);
   this->xx0.resize(n); this->yy0.resize(n); this->zz0.resize(n);
@@ -93,4 +93,6 @@ SubFind::SubFind(int n){
   this->vel.resize(n);
   this->obsz.resize(n);
   this->nsub.resize(n);
+  if(halos)
+    this->fsub.resize(n);
 };

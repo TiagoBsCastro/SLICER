@@ -324,61 +324,70 @@ void readVel (ifstream & fin, Header &data, InputParams &p, Random &random,
    !! the complexity probably evolves with n^2 and should be avoided !!
    !! for very large boxes                                           !!
 */
-void getGVel(SubFind &halos, SubFind &subhalos, InputParams &p, Random &random,
-  string FILE, int isnap){
+int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE){
 
-  size_t nhalos = halos.m.size();
-  vector <unsigned int>::iterator it;
-  vector <unsigned int> id;
-  vector <float> vx0, vy0, vz0;
+  vector<float>::iterator vx0it = halos.vx0.begin();
+  vector<float>::iterator vy0it = halos.vy0.begin();
+  vector<float>::iterator vz0it = halos.vz0.begin();
+  float dummyv;
 
-  for(int i=0; i<nhalos; i++){
+  int nsubhalos = 0;
+  int flast = 0;
+  bool finopen = false;
+  int lastsub = 0;
 
-    it = find( subhalos.id.begin(), subhalos.id.end(), halos.id[i]);
-    if( it  == subhalos.id.end() & subhalos.id.back() != halos.id[i] & halos.m[i]>0 ){
+  for(vector<uint32_t>::iterator fsubit = halos.fsub.begin(); fsubit < halos.fsub.end(); fsubit++){
 
-      Header data;
+    Header data;
+    if(finopen){
       ifstream fin;
-      float *vv[6][3];
-
-      for(int f=0; f<data.numfiles; f++){
-        readHeader (FILE+"."+sconv(f,fINT), data, fin, false);
-        id.resize(data.npart[1]);
-        vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
-        vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
-        for(int ii=1; ii<6;ii++){
-          for(int jj=0;jj<3;jj++){
-            vv[ii][jj]=nullptr;
-          }
-        }
-        readVel (fin, data, p, random, isnap, vv, 999);
-        readBlock(fin, data.npart[1], "GRNR", &id[0], 999);
-
-        it = find( id.begin(), id.end(), halos.id[i]);
-        if( it  == id.end() & id.back() != halos.id[i] ){
-          fin.clear();
-          fin.close();
-          continue;
-        }
-        fin.clear();
-        fin.close();
-        break;
-      }
-      if( it  == id.end() & id.back() != halos.id[i] ){
-        cerr << "HALO NOT FOUND! ID: " << halos.id[i]  << endl;
-        exit(-1);
-      }
-      int isub = it-id.begin();
-      halos.vx0[i] = vx0[isub];
-      halos.vy0[i] = vy0[isub];
-      halos.vz0[i] = vz0[isub];
-
-    }else{
-      int isub = it-subhalos.id.begin();
-      halos.vx0[i] = subhalos.vx0[isub];
-      halos.vy0[i] = subhalos.vy0[isub];
-      halos.vz0[i] = subhalos.vz0[isub];
+      readHeader (FILE+"."+sconv(flast,fINT), data, fin, true);
+      fin.clear();
     }
+
+    ifstream fin;
+    for(int f = flast; f < data.numfiles; f++){
+
+      if(!finopen){
+        readHeader (FILE+"."+sconv(f,fINT), data, fin, false);
+        lastsub=0;
+      }
+
+      if(data.npart[1] + nsubhalos < *fsubit){
+        fin.close();
+        fin.clear();
+        nsubhalos += data.npart[1];
+        continue;
+      }else{
+
+        if(!lastsub)
+          fastforwardToBlock(fin, "SVEL", 0);
+
+        fastforwardNVars(fin, sizeof(double), 3*(*fsubit-nsubhalos-lastsub) );
+        lastsub = 3*(*fsubit-nsubhalos-lastsub);
+        fin.read((char *)&dummyv, sizeof(dummyv));
+        *vx0it=dummyv; vx0it++;
+        fin.read((char *)&dummyv, sizeof(dummyv));
+        *vy0it=dummyv; vy0it++;
+        fin.read((char *)&dummyv, sizeof(dummyv));
+        *vz0it=dummyv; vz0it++;
+
+        if(data.npart[1] + nsubhalos < *(fsubit+1)){
+          fin.close();
+          fin.clear();
+          nsubhalos += data.npart[1];
+          finopen=false;
+          flast++;
+        }else{
+          finopen=true;
+        }
+      }
+    }
+  }
+  if( vx0it != halos.vx0.end() || vy0it != halos.vy0.end() || vz0it != halos.vz0.end() ){
+    return 1;
+  }else{
+    return 0;
   }
 }
 
@@ -394,13 +403,13 @@ int getGID(SubFind &halos, string File, int ffmin, int ffi, int &nhalos){
       return 1;
     nhalos += data.npart[0];
     fin.clear();
-    fin.close();
   }
 
   int nlocal=halos.m.size();
   for(int i=nhalos; i<nhalos+nlocal; i++){
     halos.id[i-nhalos]=i;
   }
+  nhalos += nlocal;
   return 0;
 }
 

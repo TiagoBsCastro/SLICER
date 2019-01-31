@@ -105,17 +105,18 @@ struct Gadget{
 struct SubFind{
   // SubFind has 1 particle type (Pinocchio PLC like structure)
   vector<uint32_t> id; //                 1) Group ID
-  vector<double> truez;//                 2) True Redshift
-  vector<float> xx0, yy0, zz0;//          3-5) comoving position (Mpc/h)
-  vector<float> vx0, vy0, vz0;//          6-8) velocity (km/s)
-  vector<float> m;//                      9) Mass (m200 crit. for Halos MSUB for subhalos)
-  vector<double> theta;//                 10) Theta (degree)
-  vector<double> phi;//                   11) Phi (degree)
-  vector<double> vel;//                   12) Peculiar velocity along the line-of-sight (km/s)
-  vector<double> obsz;//                  13) Observed redshift
-  vector<uint32_t> nsub; //               14) Number of Subhalos
+  vector<uint32_t> fsub; //               2) FOF group index
+  vector<double> truez;//                 3) True Redshift
+  vector<float> xx0, yy0, zz0;//          4-6) comoving position (Mpc/h)
+  vector<float> vx0, vy0, vz0;//          7-9) velocity (km/s)
+  vector<float> m;//                      10) Mass (m200 crit. for Halos MSUB for subhalos)
+  vector<double> theta;//                 11) Theta (degree)
+  vector<double> phi;//                   12) Phi (degree)
+  vector<double> vel;//                   13) Peculiar velocity along the line-of-sight (km/s)
+  vector<double> obsz;//                  14) Observed redshift
+  vector<uint32_t> nsub; //               15) Number of Subhalos
 
-  SubFind(int); //Constructor declaration
+  SubFind(int, bool); //Constructor declaration
 
 };
 
