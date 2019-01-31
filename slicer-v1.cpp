@@ -221,9 +221,9 @@ int main(int argc, char** argv){
           if(getGID(*halos, File, 0, ff, nhalos))
             MPI_Abort(MPI_COMM_WORLD,-1);
         else
-          if(getGID(*halos, File, ff, ff, nhalos))
+          if(getGID(*halos, File, ff-1, ff, nhalos))
             MPI_Abort(MPI_COMM_WORLD,-1);
-        
+
         getGVel(*halos, *subhalos, p, random, File, isnap);
         getTrueZ(*halos, data, getZl, accGetZl);
         getTrueZ(*subhalos, data, getZl, accGetZl);
