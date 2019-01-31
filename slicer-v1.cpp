@@ -3,7 +3,7 @@
 #include "densitymaps.h"
 #include "gadget2io.h"
 #include "writeplc.h"
-#define numberOfLensPerSnap  1 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
 #define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
@@ -40,6 +40,9 @@ int main(int argc, char** argv){
     cout << "   ------------------------------------------------------ " << endl;
     cout << "   -        SLICER - Simulation LIght ConE BuildeR      - " << endl;
     cout << "   -                       v1.0                         - " << endl;
+    cout << "   -                                                    - " << endl;
+    cout << "   -               Running on "<<numprocs<<" processes              - " << endl;
+    cout << "   -                                                    - " << endl;
     cout << "   ------------------------------------------------------ " << endl;
   }
 
@@ -81,6 +84,7 @@ int main(int argc, char** argv){
   gsl_spline_init (getDl, &zl[0], &dl[0], neval);
   gsl_spline_init (getZl, &dl[0], &zl[0], neval);
   /* Comoving distance of the last plane*/
+  cout << "So far so good!" << endl;
   p.Ds = gsl_spline_eval (getDl, p.zs, accGetDl);
   if(testFov(p.fov, simdata.boxsize/1e3, p.Ds, myid, fovradiants))
     MPI_Abort(MPI_COMM_WORLD,-1);
@@ -168,9 +172,11 @@ int main(int argc, char** argv){
 
     }else{
 
+      /* number of halos from snap.0 up to snap.ff. It will be modified by getGID */
+      int nhalos = 0;
       for (unsigned int ff=ffmin; ff<ffmax; ff++){
 
-        if( ifstream( fileOutput(p, snappl, ff) ) ){
+        if( ifstream( fileOutput(p, "groups."+snappl, ff) ) && ifstream( fileOutput(p, "subgroups."+snappl, ff) ) ){
           if (myid==0)
             cout << fileOutput(p, snappl, ff) << " Already exists" <<endl;
           continue;
@@ -211,8 +217,13 @@ int main(int argc, char** argv){
         readVel (fin, data, p, random, isnap, vv, myid);
         readBlock(fin, data.npart[1], "GRNR", &subhalos->id[0], myid);
 
-        if(getGID(*halos, File, ff))
-          MPI_Abort(MPI_COMM_WORLD,-1);
+        if(ff==ffmin)
+          if(getGID(*halos, File, 0, ff, nhalos))
+            MPI_Abort(MPI_COMM_WORLD,-1);
+        else
+          if(getGID(*halos, File, ff, ff, nhalos))
+            MPI_Abort(MPI_COMM_WORLD,-1);
+        
         getGVel(*halos, *subhalos, p, random, File, isnap);
         getTrueZ(*halos, data, getZl, accGetZl);
         getTrueZ(*subhalos, data, getZl, accGetZl);

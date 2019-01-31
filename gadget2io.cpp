@@ -346,9 +346,9 @@ void getGVel(SubFind &halos, SubFind &subhalos, InputParams &p, Random &random,
         id.resize(data.npart[1]);
         vx0.resize(data.npart[1]); vy0.resize(data.npart[1]); vz0.resize(data.npart[1]);
         vv[0][0]=&vx0[0]; vv[0][1]=&vy0[0]; vv[0][2]=&vz0[0];
-        for(int i=1; i<6;i++){
-          for(int j=0;j<3;j++){
-            vv[i][j]=nullptr;
+        for(int ii=1; ii<6;ii++){
+          for(int jj=0;jj<3;jj++){
+            vv[ii][jj]=nullptr;
           }
         }
         readVel (fin, data, p, random, isnap, vv, 999);
@@ -385,10 +385,9 @@ void getGVel(SubFind &halos, SubFind &subhalos, InputParams &p, Random &random,
 /* Get the "halos" group ID corresponding according to its position on the
    snapshot "FILE.ff"
 */
-int getGID(SubFind &halos, string File, int ff){
+int getGID(SubFind &halos, string File, int ffmin, int ffi, int &nhalos){
 
-  int nhalos=0;
-  for(int i=0; i<ff; i++){
+  for(int i=ffmin; i<ffi; i++){
     Header data;
     ifstream fin;
     if(readHeader (File+"."+sconv(i,fINT), data, fin, true))

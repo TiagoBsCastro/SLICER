@@ -305,15 +305,17 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
       //re-normalize to the total mass!
       double mtot=0.;
       double mnorm=0.;
-      for(int i=0;i<ms.size();i++)
-        mnorm+=ms[i];
+      for(int ii=0;ii<ms.size();ii++){
+        mnorm+=ms[ii];
+      }
 
       if(totPartxyi[i]>0){
         for(int l=0;l<p.npix*p.npix;l++)
           mtot += mapxyi[i][l];
         if(mtot==0.)
           mtot=1.; //To avoid NaN
-        for(int l=0;l<p.npix*p.npix;l++) mapxyi[i][l]*=mnorm/mtot;
+        for(int l=0;l<p.npix*p.npix;l++)
+          mapxyi[i][l]*=mnorm/mtot;
       }
     }
   }

@@ -76,7 +76,7 @@ void getGVel(SubFind &halos, SubFind &subhalos, InputParams &p, Random &random,
 /* Get the "halos" group ID corresponding according to its position on the
    snapshot "FILE.ff"
 */
-int getGID(SubFind &halos, string File, int ff);
+int getGID(SubFind &halos, string File, int ffmin, int ffi, int &nhalos);
 
 /* Get the "halos" LineOfSight velocity
 */
