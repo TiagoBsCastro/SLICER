@@ -103,7 +103,8 @@ int main(int argc, char** argv){
   for(int isnap=0; isnap < lens.nplanes; isnap++){
 
     float rcase = floor(lens.ld[isnap]/simdata.boxsize*1e3);
-
+    cout << rcase << " " << lens.ld[isnap] << " " << simdata.boxsize << endl;
+    exit(-1);
     /* Override p.npix if physical is True */
     if (p.physical)
       p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3 )+1;
@@ -226,8 +227,8 @@ int main(int argc, char** argv){
         }
 
         getGVel(*halos, p, random, File, isnap);
-        getTrueZ(*halos, data, getZl, accGetZl);
-        getTrueZ(*subhalos, data, getZl, accGetZl);
+        getTrueZ(*halos, data, getZl, accGetZl, lens, isnap);
+        getTrueZ(*subhalos, data, getZl, accGetZl, lens, isnap);
         getLOSVel(*halos);
         getLOSVel(*subhalos);
         getAngular(*halos);

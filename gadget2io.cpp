@@ -479,8 +479,16 @@ void getLOSVel(SubFind &halos){
     r = sqrt(x*x + y*y + z*z);
     x /= r; y /= r; z /= r;
 
-    halos.vel[i] = halos.vx0[i]*x + halos.vy0[i]*y + halos.vz0[i]*z;
-    halos.obsz[i] = halos.truez[i] + halos.vel[i]/speedcunit/100.0 * (1 + halos.truez[i]);
+    if(halos.truez[i]>0){
+
+      halos.vel[i] = halos.vx0[i]*x + halos.vy0[i]*y + halos.vz0[i]*z;
+      halos.obsz[i] = halos.truez[i] + halos.vel[i]/speedcunit/100.0 * (1 + halos.truez[i]);
+
+    }else{
+
+      halos.vel[i] =  -999.9;
+      halos.obsz[i] = -999.9;
+    }
 
   }
 
@@ -488,7 +496,7 @@ void getLOSVel(SubFind &halos){
 
 /* Get the "halos" cosmological redshift (not taking into account pec.vel)
 */
-void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl, gsl_interp_accel *accGetZl){
+void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl, gsl_interp_accel *accGetZl, Lens lens, int isnap){
 
   int nhalos=halos.m.size();
   double x,y,z,r;
@@ -498,9 +506,17 @@ void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl, gsl_interp_accel 
     x = halos.xx0[i]-0.5;
     y = halos.yy0[i]-0.5;
     z = halos.zz0[i];
-    r = sqrt(x*x + y*y + z*z);
+    r = sqrt(x*x + y*y + z*z)*data.boxsize/1.e+3*POS_U;
 
-    halos.truez[i]=gsl_spline_eval (getZl, r*data.boxsize/1e3, accGetZl);
+    if(lens.ld[isnap] <= r && r<lens.ld2[isnap]){
+
+      halos.truez[i]=gsl_spline_eval (getZl, r*data.boxsize/1e3, accGetZl);
+
+    }else{
+
+      halos.truez[i] = -999.9;
+
+    }
 
   }
 

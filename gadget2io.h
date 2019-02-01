@@ -2,6 +2,8 @@
 #include "utilities.h"
 #include "data.h"
 
+#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
+
 /* Reads the "file_in" snapshot and stores it on the "header" instance
    of Header. "fin" is a ifstream instance that is leaved open for further
    reading if "close" == false.
@@ -84,7 +86,7 @@ void getLOSVel(SubFind &halos);
 /* Get the "halos" cosmological redshift (not taking into account pec.vel)
 */
 void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl,
-  gsl_interp_accel *accGetZl);
+  gsl_interp_accel *accGetZl, Lens lens, int isnap);
 
 /* Get the "halos" angular positions.
    Matches Pinocchio cordinate system.

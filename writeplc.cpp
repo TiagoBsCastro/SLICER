@@ -10,7 +10,7 @@ void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int 
 
   for(int i=0; i<nhalos; i++){
 
-    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0) & (halos.m[i]>0) ){
+    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0) & (halos.m[i]>0) & (halos.truez[i]>0) ){
       /* Explicitly casting the variables as in Pinocchio PLC */
       int dummy;
       long long unsigned int id = halos.id[i];
