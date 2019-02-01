@@ -510,7 +510,7 @@ void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl, gsl_interp_accel 
 
     if(lens.ld[isnap] <= r && r<lens.ld2[isnap]){
 
-      halos.truez[i]=gsl_spline_eval (getZl, r*data.boxsize/1e3, accGetZl);
+      halos.truez[i]=gsl_spline_eval (getZl, r, accGetZl);
 
     }else{
 
