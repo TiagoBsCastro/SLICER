@@ -324,7 +324,7 @@ void readVel (ifstream & fin, Header &data, InputParams &p, Random &random,
    !! the complexity probably evolves with n^2 and should be avoided !!
    !! for very large boxes                                           !!
 */
-int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE){
+int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isnap){
 
   vector<float>::iterator vx0it = halos.vx0.begin();
   vector<float>::iterator vy0it = halos.vy0.begin();
@@ -336,7 +336,7 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE){
   bool finopen = false;
   int lastsub = 0;
 
-  for(vector<uint32_t>::iterator fsubit = halos.fsub.begin(); fsubit < halos.fsub.end(); fsubit++){
+  for(vector<uint32_t>::iterator fsubit = halos.fsub.begin(); fsubit != halos.fsub.end() || fsubit == halos.fsub.end(); fsubit++){
 
     Header data;
     if(finopen){
@@ -372,21 +372,76 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE){
         fin.read((char *)&dummyv, sizeof(dummyv));
         *vz0it=dummyv; vz0it++;
 
-        if(data.npart[1] + nsubhalos < *(fsubit+1)){
-          fin.close();
-          fin.clear();
-          nsubhalos += data.npart[1];
-          finopen=false;
-          flast++;
-        }else{
+        if(fsubit != halos.fsub.end()){
+          if(data.npart[1] + nsubhalos < *(fsubit+1)){
+            fin.close();
+            fin.clear();
+            nsubhalos += data.npart[1];
+            finopen=false;
+            flast++;
+          }else{
           finopen=true;
+          }
         }
       }
     }
   }
   if( vx0it != halos.vx0.end() || vy0it != halos.vy0.end() || vz0it != halos.vz0.end() ){
+
     return 1;
+
   }else{
+
+    vx0it = halos.vx0.begin(); vy0it = halos.vy0.begin(); vz0it = halos.vz0.begin();
+
+    while( ( vx0it != halos.vx0.end() || vy0it != halos.vy0.end() || vz0it != halos.vz0.end() )
+           || ( vx0it == halos.vx0.end() || vy0it == halos.vy0.end() || vz0it == halos.vz0.end() ) ){
+
+      float x, y, z;
+      float xb = random.sgnX[isnap]*(*vx0it);
+      float yb = random.sgnY[isnap]*(*vy0it);
+      float zb = random.sgnZ[isnap]*(*vz0it);
+
+      // wrapping periodic condition
+      switch (random.face[isnap]){
+        case(1):
+          x = xb;
+          y = yb;
+          z = zb;
+          break;
+        case(2):
+          x = xb;
+          y = zb;
+          z = yb;
+          break;
+        case(3):
+          x = yb;
+          y = zb;
+          z = xb;
+          break;
+        case(4):
+          x = yb;
+          y = xb;
+          z = zb;
+          break;
+        case(5):
+          x = zb;
+          y = xb;
+          z = yb;
+          break;
+        case(6):
+          x = zb;
+          y = yb;
+          z = xb;
+          break;
+      }
+      *vx0it = x;
+      *vy0it = y;
+      *vz0it = z;
+
+      vx0it++; vy0it++; vz0it++;
+    }
+
     return 0;
   }
 }

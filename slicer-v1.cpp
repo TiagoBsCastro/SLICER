@@ -225,8 +225,7 @@ int main(int argc, char** argv){
             MPI_Abort(MPI_COMM_WORLD,-1);
         }
 
-        getGVel(*halos, p, random, File);
-        exit(-1);
+        getGVel(*halos, p, random, File, isnap);
         getTrueZ(*halos, data, getZl, accGetZl);
         getTrueZ(*subhalos, data, getZl, accGetZl);
         getLOSVel(*halos);
