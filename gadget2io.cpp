@@ -320,9 +320,6 @@ void readVel (ifstream & fin, Header &data, InputParams &p, Random &random,
    "random".
 
    The code searches for the subhalos.id in snapshots "FILE".{0..nfiles}
-   !! Be Aware that this evolves reading several files for each halo !!
-   !! the complexity probably evolves with n^2 and should be avoided !!
-   !! for very large boxes                                           !!
 */
 int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isnap){
 
@@ -336,7 +333,7 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isn
   bool finopen = false;
   int lastsub = 0;
 
-  for(vector<uint32_t>::iterator fsubit = halos.fsub.begin(); fsubit != halos.fsub.end() || fsubit == halos.fsub.end(); fsubit++){
+  for(vector<uint32_t>::iterator fsubit = halos.fsub.begin(); fsubit != halos.fsub.end(); ++fsubit){
 
     Header data;
     if(finopen){
@@ -392,10 +389,11 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isn
 
   }else{
 
-    vx0it = halos.vx0.begin(); vy0it = halos.vy0.begin(); vz0it = halos.vz0.begin();
+    cout << "GVEL read!" << endl;
 
-    while( ( vx0it != halos.vx0.end() || vy0it != halos.vy0.end() || vz0it != halos.vz0.end() )
-           || ( vx0it == halos.vx0.end() || vy0it == halos.vy0.end() || vz0it == halos.vz0.end() ) ){
+    for(vx0it = halos.vx0.begin(), vy0it = halos.vy0.begin(), vz0it = halos.vz0.begin();
+        vx0it != halos.vx0.end(), vy0it != halos.vy0.end(), vz0it != halos.vz0.end();
+        ++vx0it, ++vy0it, ++vz0it){
 
       float x, y, z;
       float xb = random.sgnX[isnap]*(*vx0it);
