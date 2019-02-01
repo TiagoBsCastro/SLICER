@@ -54,6 +54,12 @@ int main(int argc, char** argv){
   if(readInput(p, inifile))
     MPI_Abort(MPI_COMM_WORLD,-1);
 
+  if(p.simType == "SubFind" && numprocs>1){
+    cerr << "!! Some of the routines for SubFind PLC creates concurrency between the process !!" << endl;
+    cerr << "!!                       and this is not sorted out: sorry :(                   !!" << endl;
+    MPI_Abort(MPI_COMM_WORLD,-1);
+  }
+
   // Reading the Snapshots available
   vector <string> snappath; // List of SnapShots paths
   vector <double> snapred; // List of SnapShots redshift
