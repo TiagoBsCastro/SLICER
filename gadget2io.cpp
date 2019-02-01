@@ -392,7 +392,7 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isn
     cout << "GVEL read!" << endl;
 
     for(vx0it = halos.vx0.begin(), vy0it = halos.vy0.begin(), vz0it = halos.vz0.begin();
-        vx0it != halos.vx0.end(), vy0it != halos.vy0.end(), vz0it != halos.vz0.end();
+        vx0it != halos.vx0.end(),  vy0it != halos.vy0.end(),  vz0it != halos.vz0.end();
         ++vx0it, ++vy0it, ++vz0it){
 
       float x, y, z;
@@ -436,8 +436,6 @@ int getGVel(SubFind &halos, InputParams &p, Random &random, string FILE, int isn
       *vx0it = x;
       *vy0it = y;
       *vz0it = z;
-
-      vx0it++; vy0it++; vz0it++;
     }
 
     return 0;
