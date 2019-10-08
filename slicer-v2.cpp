@@ -98,14 +98,15 @@ int main(int argc, char** argv){
   buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
   /* Testing if the PLC fits inside the piled boxes*/
   for(int i = 0; i< lens.ld.size(); i++){
-    cout << lens.pll[i] << " " << snapbox[lens.pll[i]]/1e3 << " " << lens.ld2[i] << endl;
-    if(testFov(p.fov, snapbox[lens.pll[i]]/1e3, lens.ld2[i], myid, fovradiants))
+    cout << lens.fromsnapi[i] << " " << snapbox[lens.fromsnapi[i]]/1e3 << " " << lens.ld2[i] << endl;
+    if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
   }
   /* Creating an Instance of the Randomization plan */
   Random random;
   randomizeBox (random, lens, p, numberOfLensPerSnap, myid);
 
+  return 0;
   /* Looping on the Snapshots */
   if(myid==0){
     cout << " Now loop on " << lens.nplanes << " planes " << endl;

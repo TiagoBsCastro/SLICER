@@ -68,6 +68,7 @@ void buildPlanes(InputParams &p, Lens &lens,
     pos=pos_temp;
     lens.zsimlens.push_back(zlens);
     lens.fromsnap.push_back(snappath[pos]);
+    lens.fromsnapi.push_back(pos);
     if( nrep==1 )
       lens.randomize.push_back(1);
     else

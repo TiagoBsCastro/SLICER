@@ -75,6 +75,7 @@ struct Lens{
   vector <int>    replication;  // Number of repetitions of the i-th snapshot box
   vector <int>    pll;          // Lens Plane indice
   vector <string> fromsnap;     // From which snapshot the i-th lens plane were build
+  vector <int> fromsnapi;    // The indice inside redshift list from which snapshot the i-th lens plane were build
   vector <double> zsimlens;     // z of the i-th lens (z correspodent to d=1/2(ld+ld2))
   vector <double> ld;           // Start position of the i-th lens
   vector <double> ld2;          // End position of the i-th lens
