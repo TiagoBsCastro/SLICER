@@ -105,7 +105,6 @@ int main(int argc, char** argv){
   Random random;
   randomizeBox (random, lens, p, numberOfLensPerSnap, myid);
 
-  return 0;
   /* Looping on the Snapshots */
   if(myid==0){
     cout << " Now loop on " << lens.nplanes << " planes " << endl;
