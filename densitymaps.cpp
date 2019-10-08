@@ -36,27 +36,28 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl,
  * - Each lens will be BoxSize/numberOfLensPerSnap thick
  * - if myid == 0: monitoring messages are produced
  */
-void buildPlanes(InputParams &p, Header &header, Lens &lens,
-  vector <double> & snapred, vector <string> & snappath, gsl_spline *GetDl,
-  gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
+void buildPlanes(InputParams &p, Lens &lens,
+  vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox,
+  gsl_spline *GetDl, gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
   int numberOfLensPerSnap, int myid){
 
   size_t nsnaps = snapred.size();
   int pos, nrepi = 0;
   int nrep = 0;
-  double ldbut, zdbut;
+  double zdbut, ldbut = 0.0;
+  int pos_temp = 0;
   do{
     nrep++;
     nrepi++;
-    ldbut = nrep*header.boxsize/1e3/numberOfLensPerSnap;
-    zdbut = gsl_spline_eval (GetZl, ldbut, accGetZl);
-    double dlens = ldbut-0.5*header.boxsize/1e3/numberOfLensPerSnap;
+    ldbut += snapbox[pos_temp]/1e3/numberOfLensPerSnap;
+    zdbut  = gsl_spline_eval (GetZl, ldbut, accGetZl);
+    double dlens = ldbut-0.5*snapbox[pos_temp]/1e3/numberOfLensPerSnap;
     double zlens = gsl_spline_eval (GetZl, dlens, accGetZl);
-    int pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
+    pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
     if (myid==0)
       cout << " simulation snapshots = " << ldbut << "  " << zdbut << "  " << nrep << " from snap "
                                                        << snappath[pos_temp] << "  " << zlens << endl;
-    lens.ld.push_back(ldbut-header.boxsize/1e3/numberOfLensPerSnap);
+    lens.ld.push_back(ldbut-snapbox[pos_temp]/1e3/numberOfLensPerSnap);
     lens.ld2.push_back(ldbut);
     lens.zfromsnap.push_back(snapred[pos_temp]);
     if ( nrep != 1 && pos_temp != pos){
@@ -185,8 +186,6 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
  * !!                            the PLC axis                          !!
  */
 int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
-  if(myid==0)
-    cout << " Setting the field of view to be square in degrees " << endl;
 
   fovradiants = fov/180.*M_PI;
   /* check if the field of view is too large with respect to the box size */

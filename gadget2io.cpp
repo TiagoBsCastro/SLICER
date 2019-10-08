@@ -552,7 +552,7 @@ void getAngular(SubFind &halos){
   than the source in InputParams "p". The path for the snapshots and its
   redshifts are stored in snappath and snapred respectively.
 */
-int readRedList(string filredshiftlist, vector <double> & snapred, vector <string> & snappath, InputParams &p){
+int readRedList(string filredshiftlist, vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox, InputParams &p){
 
   ifstream redlist;
   redlist.open(filredshiftlist.c_str());
@@ -563,20 +563,25 @@ int readRedList(string filredshiftlist, vector <double> & snapred, vector <strin
     string name;  // snapshot directory
     double z;     // snapshot redshift
     Header header;// snapshot header
+
     do{
+
       redlist >> name;
       snappath.push_back(name);
       if( readHeader( p.pathsnap+name+".0" , header, fin, true) ){
         cerr << name << " not found!" << endl;
         return 1;
       }
+
       if(header.redshift<zlast){
         cerr << " Snapshots on "<< filredshiftlist << " are not sorted!" << endl;
         return 1;
       }
       else
         zlast = header.redshift;
+
       snapred.push_back(header.redshift);
+      snapbox.push_back(header.boxsize);
     }while(header.redshift<p.zs);
   }else{
     cerr << " redshift list file redshift_list.txt does not " << endl;

@@ -98,4 +98,4 @@ void getAngular(SubFind &halos);
   than the source in InputParams "p". The path for the snapshots and its
   redshifts are stored in snappath and snapred respectively.
 */
-int readRedList(string filredshiftlist, vector <double> & snapred, vector <string> & snappath, InputParams &p);
+int readRedList(string filredshiftlist, vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox , InputParams &p);

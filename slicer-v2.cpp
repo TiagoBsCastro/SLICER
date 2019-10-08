@@ -3,7 +3,7 @@
 #include "densitymaps.h"
 #include "gadget2io.h"
 #include "writeplc.h"
-#define numberOfLensPerSnap 24 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap 4 // Number of Lens to be builded from a snap
 #define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
@@ -39,7 +39,7 @@ int main(int argc, char** argv){
   if (myid==0){
     cout << "   ------------------------------------------------------ " << endl;
     cout << "   -        SLICER - Simulation LIght ConE BuildeR      - " << endl;
-    cout << "   -                       v1.0                         - " << endl;
+    cout << "   -                       v2.0                         - " << endl;
     cout << "   -                                                    - " << endl;
     cout << "   -               Running on "<<numprocs<<" processes              - " << endl;
     cout << "   -                                                    - " << endl;
@@ -63,7 +63,8 @@ int main(int argc, char** argv){
   // Reading the Snapshots available
   vector <string> snappath; // List of SnapShots paths
   vector <double> snapred; // List of SnapShots redshift
-  if( readRedList(p.filredshiftlist, snapred, snappath, p) )
+  vector <double> snapbox; // List of different boxes sizes
+  if( readRedList(p.filredshiftlist, snapred, snappath, snapbox, p) )
     MPI_Abort(MPI_COMM_WORLD,-1);
   nsnap = snapred.size(); // Number of Snapshots
 
@@ -91,12 +92,16 @@ int main(int argc, char** argv){
   gsl_spline_init (getZl, &dl[0], &zl[0], neval);
   /* Comoving distance of the last plane*/
   p.Ds = gsl_spline_eval (getDl, p.zs, accGetDl);
-  if(testFov(p.fov, simdata.boxsize/1e3, p.Ds, myid, fovradiants))
-    MPI_Abort(MPI_COMM_WORLD,-1);
 
   /* Creating an Instance of the Lens and Building the Planes */
   Lens lens;
-  buildPlanes(p, simdata, lens, snapred, snappath, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
+  buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
+  /* Testing if the PLC fits inside the piled boxes*/
+  for(int i = 0; i< lens.ld.size(); i++){
+    cout << lens.pll[i] << " " << snapbox[lens.pll[i]]/1e3 << " " << lens.ld2[i] << endl;
+    if(testFov(p.fov, snapbox[lens.pll[i]]/1e3, lens.ld2[i], myid, fovradiants))
+      MPI_Abort(MPI_COMM_WORLD,-1);
+  }
   /* Creating an Instance of the Randomization plan */
   Random random;
   randomizeBox (random, lens, p, numberOfLensPerSnap, myid);
@@ -108,7 +113,6 @@ int main(int argc, char** argv){
   }
   for(int isnap=0; isnap < lens.nplanes; isnap++){
 
-    float rcase = floor(lens.ld[isnap]/simdata.boxsize*1e3);
     /* Override p.npix if physical is True */
     if (p.physical)
       p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3 )+1;
@@ -156,7 +160,7 @@ int main(int argc, char** argv){
       valarray<float> mapxytoti[6];
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
-                            rcase, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
+                            isnap, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
                             ntotxyi, myid))
         MPI_Abort(MPI_COMM_WORLD,-1);
 
@@ -213,7 +217,7 @@ int main(int argc, char** argv){
           }
         }
 
-        readPos (fin,  data, p, random, isnap, xx, rcase, myid);
+        readPos (fin,  data, p, random, isnap, xx, isnap, myid);
         fin.seekg(fastforwardheader);
         readBlock(fin, data.npart[0], "MCRI", &halos->m[0], myid);
         readBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);

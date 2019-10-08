@@ -32,9 +32,9 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl,
  * - Each lens will be BoxSize/numberOfLensPerSnap thick
  * - if myid == 0: monitoring messages are produced
  */
-void buildPlanes(InputParams &p, Header &header, Lens &lens,
-  vector <double> & snapred, vector <string> & snappath, gsl_spline *GetDl,
-  gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
+void buildPlanes(InputParams &p, Lens &lens,
+  vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox, 
+  gsl_spline *GetDl,  gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
   int numberOfLensPerSnap, int myid);
 
 /*
