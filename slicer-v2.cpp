@@ -3,7 +3,7 @@
 #include "densitymaps.h"
 #include "gadget2io.h"
 #include "writeplc.h"
-#define numberOfLensPerSnap 4 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap 2 // Number of Lens to be builded from a snap
 #define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
@@ -98,7 +98,6 @@ int main(int argc, char** argv){
   buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
   /* Testing if the PLC fits inside the piled boxes*/
   for(int i = 0; i< lens.ld.size(); i++){
-    cout << lens.fromsnapi[i] << " " << snapbox[lens.fromsnapi[i]]/1e3 << " " << lens.ld2[i] << endl;
     if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
   }
@@ -113,6 +112,12 @@ int main(int argc, char** argv){
     cout << "  " << endl;
   }
   for(int isnap=0; isnap < lens.nplanes; isnap++){
+
+    /*Override simdata*/
+    Header simdata;
+    ifstream fin;
+    if( readHeader (p.pathsnap+snappath[isnap]+".0", simdata, fin, true) )
+      MPI_Abort(MPI_COMM_WORLD,-1);
 
     /* Override p.npix if physical is True */
     if (p.physical)
@@ -129,7 +134,7 @@ int main(int argc, char** argv){
       snappl = sconv(lens.pll[isnap],fINT);
 
     /* Computing Working Balance */
-    int intdiv, remaindiv,ffmin,ffmax;
+    int intdiv, remaindiv, ffmin, ffmax;
     intdiv=simdata.numfiles/numprocs;
     remaindiv=simdata.numfiles%numprocs;
 
