@@ -194,6 +194,7 @@ int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
     cerr << " !!Field view too large!!\n !!!I will STOP here!!! " << endl;
     cerr << " Value set is = " << fov << endl;
     cerr << " Maximum value allowed " << boxl/Ds*180./M_PI << " in degrees " << endl;
+    cerr << " For the lens at "<< Ds << endl;
     return 1;
   }
   return 0;
