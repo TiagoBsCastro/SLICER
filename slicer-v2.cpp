@@ -112,12 +112,6 @@ int main(int argc, char** argv){
   }
   for(int isnap=0; isnap < lens.nplanes; isnap++){
 
-    /*Override simdata*/
-    Header simdata;
-    ifstream fin;
-    if( readHeader (p.pathsnap+snappath[isnap]+".0", simdata, fin, true) )
-      MPI_Abort(MPI_COMM_WORLD,-1);
-
     /* Override p.npix if physical is True */
     if (p.physical)
       p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3 )+1;
@@ -125,6 +119,12 @@ int main(int argc, char** argv){
     /* Get the Snapshot Name */
     string File = p.pathsnap+lens.fromsnap[isnap];
     string snappl;
+    /*Override simdata*/
+    Header simdata;
+    ifstream fin;
+    if( readHeader (File+".0", simdata, fin, true) )
+      MPI_Abort(MPI_COMM_WORLD,-1);
+      
     if( lens.pll[isnap]<10)
       snappl = "00"+sconv(lens.pll[isnap],fINT);
     else if(lens.pll[isnap]>=10 && lens.pll[isnap]<100 )
@@ -165,7 +165,7 @@ int main(int argc, char** argv){
       valarray<float> mapxytoti[6];
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
-                            isnap, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
+                            floor(isnap*1.0/numberOfLensPerSnap), getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
                             ntotxyi, myid))
         MPI_Abort(MPI_COMM_WORLD,-1);
 
@@ -222,7 +222,7 @@ int main(int argc, char** argv){
           }
         }
 
-        readPos (fin,  data, p, random, isnap, xx, isnap, myid);
+        readPos (fin,  data, p, random, isnap, xx, floor(isnap*1.0/numberOfLensPerSnap), myid);
         fin.seekg(fastforwardheader);
         readBlock(fin, data.npart[0], "MCRI", &halos->m[0], myid);
         readBlock(fin, data.npart[0], "NSUB", &halos->nsub[0], myid);

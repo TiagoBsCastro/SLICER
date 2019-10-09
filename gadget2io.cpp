@@ -582,7 +582,7 @@ int readRedList(string filredshiftlist, vector <double> & snapred, vector <strin
 
       snapred.push_back(header.redshift);
       snapbox.push_back(header.boxsize);
-    }while(header.redshift<p.zs);
+    }while(header.redshift<p.zs & !redlist.eof());
   }else{
     cerr << " redshift list file redshift_list.txt does not " << endl;
     cerr << " exist in the Code dir ... check this out      " << endl;

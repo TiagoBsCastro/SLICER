@@ -42,13 +42,28 @@ void buildPlanes(InputParams &p, Lens &lens,
   int numberOfLensPerSnap, int myid){
 
   size_t nsnaps = snapred.size();
-  int pos, nrepi = 0;
+  int pos=0;
+  int nrepi = 0;
   int nrep = 0;
   double zdbut, ldbut = 0.0;
-  int pos_temp = 0;
+
   do{
     nrep++;
     nrepi++;
+    double ztest=9999;
+    int pos_temp = pos;
+    // checking which snapshot is the closest to the next lens plane
+    for(int i=pos_temp; i<nsnaps; i++){
+      double dtest = ldbut + snapbox[i]/1e3/numberOfLensPerSnap;
+      int    itest = getSnap(snapred, GetDl, accGetDl, dtest);
+      double dz    = fabs( snapred[itest]-gsl_spline_eval (GetZl, dtest, accGetZl) );
+      if(dz < ztest){
+        if( nrep==1 || ( !bool((nrep-1)%numberOfLensPerSnap) || snapbox[itest] == snapbox[pos] ) ){
+          pos_temp = itest;
+          ztest    = dz;
+        }
+      }
+    }
     ldbut += snapbox[pos_temp]/1e3/numberOfLensPerSnap;
     zdbut  = gsl_spline_eval (GetZl, ldbut, accGetZl);
     double dlens = ldbut-0.5*snapbox[pos_temp]/1e3/numberOfLensPerSnap;
@@ -282,7 +297,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
 
           double rai,deci,dd;
           getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],rai,deci,dd, true);
-
           if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
             xs.push_back(deci/fovradiants+0.5);
             ys.push_back(rai/fovradiants+0.5);
