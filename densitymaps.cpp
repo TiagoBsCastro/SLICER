@@ -39,7 +39,7 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl,
 void buildPlanes(InputParams &p, Lens &lens,
   vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox,
   gsl_spline *GetDl, gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
-  int numberOfLensPerSnap, int myid){
+  int numOfLensPerSnap, int myid){
 
   size_t nsnaps = snapred.size();
   int pos=0;
@@ -54,25 +54,25 @@ void buildPlanes(InputParams &p, Lens &lens,
     int pos_temp = pos;
     // checking which snapshot is the closest to the next lens plane
     for(int i=pos_temp; i<nsnaps; i++){
-      double dtest = ldbut + snapbox[i]/1e3/numberOfLensPerSnap;
+      double dtest = ldbut + snapbox[i]/1e3/numOfLensPerSnap;
       int    itest = getSnap(snapred, GetDl, accGetDl, dtest);
       double dz    = fabs( snapred[itest]-gsl_spline_eval (GetZl, dtest, accGetZl) );
       if(dz < ztest){
-        if( nrep==1 || ( !bool((nrep-1)%numberOfLensPerSnap) || snapbox[itest] == snapbox[pos] ) ){
+        if( nrep==1 || ( !bool((nrep-1)%numOfLensPerSnap) || snapbox[itest] == snapbox[pos] ) ){
           pos_temp = itest;
           ztest    = dz;
         }
       }
     }
-    ldbut += snapbox[pos_temp]/1e3/numberOfLensPerSnap;
+    ldbut += snapbox[pos_temp]/1e3/numOfLensPerSnap;
     zdbut  = gsl_spline_eval (GetZl, ldbut, accGetZl);
-    double dlens = ldbut-0.5*snapbox[pos_temp]/1e3/numberOfLensPerSnap;
+    double dlens = ldbut-0.5*snapbox[pos_temp]/1e3/numOfLensPerSnap;
     double zlens = gsl_spline_eval (GetZl, dlens, accGetZl);
     pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
     if (myid==0)
       cout << " simulation snapshots = " << ldbut << "  " << zdbut << "  " << nrep << " from snap "
                                                        << snappath[pos_temp] << "  " << zlens << endl;
-    lens.ld.push_back(ldbut-snapbox[pos_temp]/1e3/numberOfLensPerSnap);
+    lens.ld.push_back(ldbut-snapbox[pos_temp]/1e3/numOfLensPerSnap);
     lens.ld2.push_back(ldbut);
     lens.zfromsnap.push_back(snapred[pos_temp]);
     if ( nrep != 1 && pos_temp != pos){
@@ -87,7 +87,7 @@ void buildPlanes(InputParams &p, Lens &lens,
     if( nrep==1 )
       lens.randomize.push_back(1);
     else
-      lens.randomize.push_back( !( (nrep-1)%numberOfLensPerSnap ) );
+      lens.randomize.push_back( !( (nrep-1)%numOfLensPerSnap ) );
 
   }while(ldbut<p.Ds);
 
@@ -133,7 +133,7 @@ void buildPlanes(InputParams &p, Lens &lens,
  *
  */
 void randomizeBox (Random & random, Lens & lens, InputParams & p,
-                                int numberOfLensPerSnap, int myid){
+                                int numOfLensPerSnap, int myid){
 
   size_t nrandom = lens.replication.back();
   /* Inflating Random Structure */
@@ -144,7 +144,7 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
 
     if ( lens.randomize[i] ){
 
-      srand(p.seedcenter+i/numberOfLensPerSnap*13);
+      srand(p.seedcenter+i/numOfLensPerSnap*13);
       random.x0[i] = rand() / float(RAND_MAX);
       random.y0[i] = rand() / float(RAND_MAX);
       random.z0[i] = rand() / float(RAND_MAX);
@@ -153,12 +153,12 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
         cout << " random centers  for the box " << i << " = " << random.x0[i] << "  " << random.y0[i] << "  " << random.z0[i] << endl;
       }
       random.face[i] = 7;
-      srand(p.seedface+i/numberOfLensPerSnap*5);
+      srand(p.seedface+i/numOfLensPerSnap*5);
       while(random.face[i]>6 || random.face[i]<1) random.face[i] = int(1+rand() / float(RAND_MAX)*5.+0.5);
       if (myid==0)
         cout << " face of the dice " << random.face[i] << endl;
       random.sgnX[i] = 2;
-      srand(p.seedsign+i/numberOfLensPerSnap*8);
+      srand(p.seedsign+i/numOfLensPerSnap*8);
       while(random.sgnX[i] > 1 || random.sgnX[i] < 0) random.sgnX[i] = int(rand() / float(RAND_MAX)+0.5);
       random.sgnY[i] = 2;
       while(random.sgnY[i] > 1 || random.sgnY[i] < 0) random.sgnY[i] = int(rand() / float(RAND_MAX)+0.5);
@@ -270,9 +270,11 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         cerr << "Aborting from Rank "<< myid << endl;
         return 1;
       }
+      double minDist = isnap*1.0/numberOfLensPerSnap;
+      double maxDist = isnap/numberOfLensPerSnap + (isnap%numberOfLensPerSnap + 1) * (lens.ld2[isnap]-lens.ld[isnap])/data.boxsize*1.e+3/POS_U;
       if (myid==0){
          cout << " Mapping type "<< i <<" particles on the grid with " << p.npix << " pixels" << endl;
-         cout << "Min distance: "<< lens.ld[isnap]/data.boxsize*1.e+3/POS_U<< " "<<lens.ld2[isnap]/data.boxsize*1.e+3/POS_U << endl;
+         cout << "Distance Range: "<< minDist << " " << maxDist << endl;
       }
 
       vector<float> xs(0),ys(0),ms(0);
@@ -292,8 +294,8 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         else
           num_float1=data.massarr[i];
 
-        double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2))*data.boxsize/1.e+3*POS_U;
-        if(di>=lens.ld[isnap] && di<lens.ld2[isnap]){
+        double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2));
+        if(di>=minDist && di<maxDist){
 
           double rai,deci,dd;
           getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],rai,deci,dd, true);

@@ -3,7 +3,6 @@
 #include "densitymaps.h"
 #include "gadget2io.h"
 #include "writeplc.h"
-#define numberOfLensPerSnap 2 // Number of Lens to be builded from a snap
 #define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
@@ -124,7 +123,7 @@ int main(int argc, char** argv){
     ifstream fin;
     if( readHeader (File+".0", simdata, fin, true) )
       MPI_Abort(MPI_COMM_WORLD,-1);
-      
+
     if( lens.pll[isnap]<10)
       snappl = "00"+sconv(lens.pll[isnap],fINT);
     else if(lens.pll[isnap]>=10 && lens.pll[isnap]<100 )
