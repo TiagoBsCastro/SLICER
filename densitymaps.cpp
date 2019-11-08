@@ -198,8 +198,8 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
 
 /*
  * Test if the chosen angular aperture is allowed.
- * !! SLICER do not allow repetitions of the Box in the plane parallel !!
- * !! the PLC axis THE DIRECTIVE ReplicationOnPerpendicularPlane == 1  !!
+ * !! SLICER do not allow repetitions of the Box in the perpendicular plane!!
+ * !! to the PLC axis unless THE DIRECTIVE ReplicationOnPerpendicularPlane  !!
  */
 int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
 
@@ -217,12 +217,12 @@ int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
 
 /*
  * Compute the number of replications on the perpendicular plane are necessary
- * !!!! ONLY USED IF THE DIRECTIVE ReplicationOnPerpendicularPlane == 1 !!!!
+ * !!!! ONLY USED IF THE DIRECTIVE ReplicationOnPerpendicularPlane is defined !!!!
  */
  void computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp){
 
   fovradiants = fov/180.*M_PI;
-  nrepperp = ceil( 2* boxl * sin(fovradiants/2) / boxl );
+  nrepperp = round( Ds * tan(fovradiants/2) / boxl );
 }
 
 /*
@@ -304,8 +304,8 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         else
           num_float1=data.massarr[i];
 
-        for(int ni = -(lens.nrepperp[isnap]-1); ni<=lens.nrepperp[isnap]-1; ni++)
-          for(int nj = -(lens.nrepperp[isnap]-1); nj<=lens.nrepperp[isnap]-1; nj++){
+        for(int ni = -lens.nrepperp[isnap]; ni<=lens.nrepperp[isnap]; ni++)
+          for(int nj = -lens.nrepperp[isnap]; nj<=lens.nrepperp[isnap]; nj++){
 
             double di = sqrt(pow(xx[i][0][l]+ni-0.5,2) + pow(xx[i][1][l]+nj-0.5,2) + pow(xx[i][2][l],2));
             if(di>=minDist && di<maxDist){

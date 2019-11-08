@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 #ifndef ReplicationOnPerpendicularPlane
     /*Check if the FOV does not require repetitions on the perpendicular plane*/
     if(i==0)
-      lens.nrepperp.resize(lens.ld.size(), 1);
+      lens.nrepperp.resize(lens.ld.size(), 0);
     if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
 #else
