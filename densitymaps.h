@@ -50,6 +50,12 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
                                 int numOfLensPerSnap, int myid);
 
 /*
+* Compute the number of replications on the perpendicular plane are necessary
+* !!!! ONLY USED IF THE DIRECTIVE ReplicationOnPerpendicularPlane == 1 !!!!
+*/
+void computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp);
+
+/*
  * Test if the chosen angular aperture is allowed.
  * !! SLICER do not allow repetitions of the Box in the plane parallel !!
  * !!                            the PLC axis                          !!

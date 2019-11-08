@@ -219,10 +219,10 @@ int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
  * Compute the number of replications on the perpendicular plane are necessary
  * !!!! ONLY USED IF THE DIRECTIVE ReplicationOnPerpendicularPlane == 1 !!!!
  */
- computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp){
+ void computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp){
 
   fovradiants = fov/180.*M_PI;
-  nrepperp = ceil( 2* D * sin(fovradiants/2) / boxl );
+  nrepperp = ceil( 2* boxl * sin(fovradiants/2) / boxl );
 }
 
 /*
