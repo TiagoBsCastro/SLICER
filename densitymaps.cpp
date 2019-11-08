@@ -199,7 +199,7 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
 /*
  * Test if the chosen angular aperture is allowed.
  * !! SLICER do not allow repetitions of the Box in the plane parallel !!
- * !!                            the PLC axis                          !!
+ * !! the PLC axis THE DIRECTIVE ReplicationOnPerpendicularPlane == 1  !!
  */
 int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
 
@@ -213,6 +213,16 @@ int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
     return 1;
   }
   return 0;
+}
+
+/*
+ * Compute the number of replications on the perpendicular plane are necessary
+ * !!!! ONLY USED IF THE DIRECTIVE ReplicationOnPerpendicularPlane == 1 !!!!
+ */
+ computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp){
+
+  fovradiants = fov/180.*M_PI;
+  nrepperp = ceil( 2* D * sin(fovradiants/2) / boxl );
 }
 
 /*
@@ -294,22 +304,26 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         else
           num_float1=data.massarr[i];
 
-        double di = sqrt(pow(xx[i][0][l]-0.5,2) + pow(xx[i][1][l]-0.5,2) + pow(xx[i][2][l],2));
-        if(di>=minDist && di<maxDist){
+        for(int ni = -(lens.nrepperp[isnap]-1); ni<=lens.nrepperp[isnap]-1; ni++)
+          for(int nj = -(lens.nrepperp[isnap]-1); nj<=lens.nrepperp[isnap]-1; nj++){
 
-          double rai,deci,dd;
-          getPolar(xx[i][0][l]-0.5,xx[i][1][l]-0.5,xx[i][2][l],rai,deci,dd, true);
-          if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
-            xs.push_back(deci/fovradiants+0.5);
-            ys.push_back(rai/fovradiants+0.5);
-            if(p.snopt==0){
-              ms.push_back(num_float1);
+            double di = sqrt(pow(xx[i][0][l]+ni-0.5,2) + pow(xx[i][1][l]+nj-0.5,2) + pow(xx[i][2][l],2));
+            if(di>=minDist && di<maxDist){
+
+              double rai,deci,dd;
+              getPolar(xx[i][0][l]+ni-0.5,xx[i][1][l]+nj-0.5,xx[i][2][l],rai,deci,dd, true);
+              if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
+                xs.push_back(deci/fovradiants+0.5);
+                ys.push_back(rai/fovradiants+0.5);
+                if(p.snopt==0){
+                  ms.push_back(num_float1);
+                }
+                else{
+                  if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
+                  else ms.push_back(0.);
+                }
+              }
             }
-            else{
-              if(rand()/ float(RAND_MAX) < 1./pow(2,p.snopt)) ms.push_back(pow(2,p.snopt)*num_float1);
-              else ms.push_back(0.);
-            }
-          }
         }
       }
       totPartxyi[i]=xs.size();
@@ -400,8 +414,8 @@ int createDensityMaps (InputParams &p, Lens &lens, Random &random, int isnap,
       mapxyi[i].resize(p.npix*p.npix);
 
     if(mapParticles(fin, data, p, lens, xx, fovradiants, isnap, mapxyi,
-                                                 ntotxyi, myid))
-      return 1;
+                                                 ntotxyi, myid)) return 1;
+
 
     if(p.hydro){
       fin.clear();

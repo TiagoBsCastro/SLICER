@@ -81,6 +81,7 @@ struct Lens{
   vector <double> ld2;          // End position of the i-th lens
   vector <double> zfromsnap;    // z from the snapshot selected to build the i-th lens
   vector <bool>   randomize;    // Bool variable to whether the positions should be re-randomized or not
+  vector <int>   nrepperp;    // Number of repetitions on the perpendicular plane
 
 };
 

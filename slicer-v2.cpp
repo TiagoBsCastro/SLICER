@@ -97,8 +97,18 @@ int main(int argc, char** argv){
   buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
   /* Testing if the PLC fits inside the piled boxes*/
   for(int i = 0; i< lens.ld.size(); i++){
+#ifndef ReplicationOnPerpendicularPlane
+    /*Check if the FOV does not require repetitions on the perpendicular plane*/
+    if(i==0)
+      lens.nrepperp.resize(lens.ld.size(), 1);
     if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
+#elif ReplicationOnPerpendicularPlane == 1
+    /*Compute the number of repetitions required on the perpendicular plane*/
+    if(i==0)
+      lens.nrepperp.resize(lens.ld.size());
+    computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants, lens.nrepperp[i]);
+#endif
   }
   /* Creating an Instance of the Randomization plan */
   Random random;
