@@ -103,7 +103,7 @@ int main(int argc, char** argv){
       lens.nrepperp.resize(lens.ld.size(), 1);
     if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
-#elif ReplicationOnPerpendicularPlane == 1
+#else
     /*Compute the number of repetitions required on the perpendicular plane*/
     if(i==0)
       lens.nrepperp.resize(lens.ld.size());
