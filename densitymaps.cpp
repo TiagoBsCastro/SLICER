@@ -304,12 +304,11 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         else
           num_float1=data.massarr[i];
 
-        for(int ni = -lens.nrepperp[isnap]; ni<=lens.nrepperp[isnap]; ni++)
-          for(int nj = -lens.nrepperp[isnap]; nj<=lens.nrepperp[isnap]; nj++){
+        if(xx[i][2][l]>=minDist && xx[i][2][l]<maxDist){
+          for(int ni = -lens.nrepperp[isnap]; ni<=lens.nrepperp[isnap]; ni++)
+            for(int nj = -lens.nrepperp[isnap]; nj<=lens.nrepperp[isnap]; nj++){
 
-            double di = sqrt(pow(xx[i][0][l]+ni-0.5,2) + pow(xx[i][1][l]+nj-0.5,2) + pow(xx[i][2][l],2));
-            if(di>=minDist && di<maxDist){
-
+              double di = sqrt(pow(xx[i][0][l]+ni-0.5,2) + pow(xx[i][1][l]+nj-0.5,2) + pow(xx[i][2][l],2));
               double rai,deci,dd;
               getPolar(xx[i][0][l]+ni-0.5,xx[i][1][l]+nj-0.5,xx[i][2][l],rai,deci,dd, true);
               if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
