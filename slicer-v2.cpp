@@ -107,7 +107,7 @@ int main(int argc, char** argv){
     /*Compute the number of repetitions required on the perpendicular plane*/
     if(i==0)
       lens.nrepperp.resize(lens.ld.size());
-    computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld[i], myid, fovradiants, lens.nrepperp[i]);
+    computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants, lens.nrepperp[i]);
 #endif
   }
   /* Creating an Instance of the Randomization plan */
