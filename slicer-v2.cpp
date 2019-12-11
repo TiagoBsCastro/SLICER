@@ -107,6 +107,12 @@ int main(int argc, char** argv){
     if(i==0)
       lens.nrepperp.resize(lens.ld.size());
     computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3*POS_U, lens.ld2[i], myid, fovradiants, lens.nrepperp[i]);
+    if(myid==0){
+      if(i==0)
+          cout << "\n"<< " Computing the Replications on the Perpendicular Plane" << endl;
+      cout << " Plane "<< i <<" Dlow = " << lens.ld[i] << " Dlup = " << lens.ld2[i] << endl;
+      cout << " Repetitions on the perpendicular plane = "<< pow(lens.nrepperp[i] + 1, 2) - 1 << endl;
+    }
 #endif
   }
   /* Creating an Instance of the Randomization plan */
