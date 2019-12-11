@@ -124,6 +124,8 @@ int main(int argc, char** argv){
     cout << " Now loop on " << lens.nplanes << " planes " << endl;
     cout << "  " << endl;
   }
+  /*Defining the variable for z-tiling*/
+  float rcase=0.0;
   for(int isnap=0; isnap < lens.nplanes; isnap++){
 
     /* Override p.npix if physical is True */
@@ -177,9 +179,9 @@ int main(int argc, char** argv){
       valarray<float> mapxytot;
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
-      float rcase;
       /*Computing the minimum distance for the lens in units of the current box size*/
-      rcase = floor(lens.ld[isnap]/snapbox[lens.fromsnapi[isnap]]*1e3/POS_U);
+      if(lens.randomize)
+        rcase = lens.ld[isnap]/snapbox[lens.fromsnapi[isnap]]*1e3/POS_U;
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
                             rcase, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
