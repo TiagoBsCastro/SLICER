@@ -221,7 +221,7 @@ int testFov(double fov, double boxl, double Ds, int myid, double & fovradiants){
  void computeReplications(double fov, double boxl, double Ds, int myid, double & fovradiants, int & nrepperp){
 
   fovradiants = fov/180.*M_PI;
-  if(Ds * tan(fovradiants/2.0) <= boxl)
+  if(Ds * tan(fovradiants/2.0) <= boxl/2.0)
     nrepperp = 0;
   else
     nrepperp = ceil( (Ds * tan(fovradiants/2)-boxl/2.0)/ boxl );
