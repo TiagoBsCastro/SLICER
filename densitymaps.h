@@ -3,12 +3,12 @@
 #include <CCfits/CCfits>
 #include "data.h"
 #include "utilities.h"
+#include "gadget2io.h"
 
 using namespace std;
 using namespace CCfits;
 
 #define MAX_M 1e3    // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
-#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
 #define DO_NGP false // Use NGP as the MAS
 #define numberOfLensPerSnap 2 // Number of Lens to be builded from a snap
 

@@ -14,9 +14,9 @@ void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int 
       /* Explicitly casting the variables as in Pinocchio PLC */
       int dummy;
       long long unsigned int id = halos.id[i];
-      double xx0 = (halos.xx0[i] - 0.5)*data.boxsize/1e3;
-      double yy0 = (halos.yy0[i] - 0.5)*data.boxsize/1e3;
-      double zz0 = halos.zz0[i]*data.boxsize/1e3;
+      double xx0 = (halos.xx0[i] - 0.5)*data.boxsize/1e3*POS_U;
+      double yy0 = (halos.yy0[i] - 0.5)*data.boxsize/1e3*POS_U;
+      double zz0 = halos.zz0[i]*data.boxsize/1e3*POS_U;
       double vx0 = halos.vx0[i];
       double vy0 = halos.vy0[i];
       double vz0 = halos.vz0[i];

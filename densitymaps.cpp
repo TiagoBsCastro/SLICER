@@ -1,5 +1,4 @@
 #include "densitymaps.h"
-#include "gadget2io.h"
 
 /*
  * Reads the vector with snapshots redshifts "zsnap" and returns the position
@@ -54,7 +53,7 @@ void buildPlanes(InputParams &p, Lens &lens,
     int pos_temp = pos;
     // checking which snapshot is the closest to the next lens plane
     for(int i=pos_temp; i<nsnaps; i++){
-      double dtest = ldbut + snapbox[i]/1e3/numOfLensPerSnap;
+      double dtest = ldbut + snapbox[i]/(1e3/POS_U)/numOfLensPerSnap;
       int    itest = getSnap(snapred, GetDl, accGetDl, dtest);
       double dz    = fabs( snapred[itest]-gsl_spline_eval (GetZl, dtest, accGetZl) );
       if(dz < ztest){
@@ -64,15 +63,15 @@ void buildPlanes(InputParams &p, Lens &lens,
         }
       }
     }
-    ldbut += snapbox[pos_temp]/1e3/numOfLensPerSnap;
+    ldbut += snapbox[pos_temp]/(1e3/POS_U)/numOfLensPerSnap;
     zdbut  = gsl_spline_eval (GetZl, ldbut, accGetZl);
-    double dlens = ldbut-0.5*snapbox[pos_temp]/1e3/numOfLensPerSnap;
+    double dlens = ldbut-0.5*snapbox[pos_temp]/(1e3/POS_U)/numOfLensPerSnap;
     double zlens = gsl_spline_eval (GetZl, dlens, accGetZl);
     pos_temp = getSnap(snapred, GetDl, accGetDl, dlens);
     if (myid==0)
       cout << " simulation snapshots = " << ldbut << "  " << zdbut << "  " << nrep << " from snap "
                                                        << snappath[pos_temp] << "  " << zlens << endl;
-    lens.ld.push_back(ldbut-snapbox[pos_temp]/1e3/numOfLensPerSnap);
+    lens.ld.push_back(ldbut-snapbox[pos_temp]/(1e3/POS_U)/numOfLensPerSnap);
     lens.ld2.push_back(ldbut);
     lens.zfromsnap.push_back(snapred[pos_temp]);
     if ( nrep != 1 && pos_temp != pos){
@@ -284,8 +283,8 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         cerr << "Aborting from Rank "<< myid << endl;
         return 1;
       }
-      double minDist = isnap*1.0/numberOfLensPerSnap;
-      double maxDist = isnap/numberOfLensPerSnap + (isnap%numberOfLensPerSnap + 1) * (lens.ld2[isnap]-lens.ld[isnap])/data.boxsize*1.e+3/POS_U;
+      double minDist = lens.ld[isnap]/data.boxsize*1.e+3/POS_U;
+      double maxDist = minDist + (lens.ld2[isnap]-lens.ld[isnap])/data.boxsize*1.e+3/POS_U;
       if (myid==0){
          cout << " Mapping type "<< i <<" particles on the grid with " << p.npix << " pixels" << endl;
          cout << "Distance Range: "<< minDist << " " << maxDist << endl;

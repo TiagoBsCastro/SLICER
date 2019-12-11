@@ -1,7 +1,6 @@
 #include "mpi.h"
 #include "cosmology.h"
 #include "densitymaps.h"
-#include "gadget2io.h"
 #include "writeplc.h"
 #define neval 1000             // Number of Points to interpolate the comoving distance
 
@@ -101,13 +100,13 @@ int main(int argc, char** argv){
     /*Check if the FOV does not require repetitions on the perpendicular plane*/
     if(i==0)
       lens.nrepperp.resize(lens.ld.size(), 0);
-    if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants))
+    if(testFov(p.fov, snapbox[lens.fromsnapi[i]]/1e3*POS_U, lens.ld2[i], myid, fovradiants))
       MPI_Abort(MPI_COMM_WORLD,-1);
 #else
     /*Compute the number of repetitions required on the perpendicular plane*/
     if(i==0)
       lens.nrepperp.resize(lens.ld.size());
-    computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3, lens.ld2[i], myid, fovradiants, lens.nrepperp[i]);
+    computeReplications(p.fov, snapbox[lens.fromsnapi[i]]/1e3*POS_U, lens.ld2[i], myid, fovradiants, lens.nrepperp[i]);
 #endif
   }
   /* Creating an Instance of the Randomization plan */
@@ -123,7 +122,7 @@ int main(int argc, char** argv){
 
     /* Override p.npix if physical is True */
     if (p.physical)
-      p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3 )+1;
+      p.npix=int( (lens.ld2[isnap]+lens.ld[isnap])/2*fovradiants/p.rgrid*1e3/POS_U )+1;
 
     /* Get the Snapshot Name */
     string File = p.pathsnap+lens.fromsnap[isnap];
@@ -172,9 +171,12 @@ int main(int argc, char** argv){
       valarray<float> mapxytot;
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
+      float rcase;
+      /*Computing the minimum distance for the lens in units of the current box size*/
+      rcase = floor(lens.ld[isnap]/snapbox[lens.fromsnapi[isnap]]*1e3/POS_U);
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
-                            floor(isnap*1.0/numberOfLensPerSnap), getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
+                            rcase, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
                             ntotxyi, myid))
         MPI_Abort(MPI_COMM_WORLD,-1);
 

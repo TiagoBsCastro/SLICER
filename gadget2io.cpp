@@ -50,7 +50,7 @@ void printHeader (Header header){
   cout << "N. tot.: "<< header.npartTotal[0]<<" "<< header.npartTotal[1]<<" "<< header.npartTotal[2]<<" "<< header.npartTotal[3]<<" "<< header.npartTotal[4]<<" "<< header.npartTotal[5]<<" "<< endl;
   cout << "Flag cooling: "<< header.flag_cooling<< endl;
   cout << "N. files: "<< header.numfiles<< endl;
-  cout << "Box size: "<< header.boxsize/1e3<< endl;
+  cout << "Box size: "<< header.boxsize/1e3*POS_U<< endl;
   cout << "Omega_matter: "<< header.om0<< endl;
   cout << "Omega_DE: "<< header.oml<< endl;
   cout << "h: "<< header.h<< endl;
@@ -92,7 +92,7 @@ void printHeader (Header header){
    << " " << header.npart[3] << " " << header.npart[4] << " " << header.npart[5] << endl;
 
   cout << "      Omegam = " << header.om0 << " " << "Omegal = " << header.oml << endl;
-  cout << "           h = " << header.h   << " " << "BoxSize = " << header.boxsize/1e3 << endl;
+  cout << "           h = " << header.h   << " " << "BoxSize = " << header.boxsize/1e3*POS_U << endl;
 
   cout << "      _______________________________________________  " << endl;
   cout << " " << endl;
@@ -234,7 +234,7 @@ void readPos (ifstream & fin, Header &data, InputParams &p, Random &random,
       if(x<0.) x = 1. + x;
       if(y<0.) y = 1. + y;
       if(z<0.) z = 1. + z;
-      z+=double(rcase); // pile the cones
+      z+=rcase; // pile the cones
       xx[i][0][pp] = x;
       xx[i][1][pp] = y;
       xx[i][2][pp] = z;
