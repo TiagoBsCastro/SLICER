@@ -180,7 +180,7 @@ int main(int argc, char** argv){
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
       /*Computing the minimum distance for the lens in units of the current box size*/
-      if(lens.randomize)
+      if(lens.randomize[isnap])
         rcase = lens.ld[isnap]/snapbox[lens.fromsnapi[isnap]]*1e3/POS_U;
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
