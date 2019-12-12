@@ -163,25 +163,25 @@ int main(int argc, char** argv){
     /* Starting the loop on different Snapshot subfiles */
     if(p.simType == "Gadget"){
 
-      /* If this lens plane was already created go to the next one */
-      if(p.partinplanes == false){
-        if( ifstream( fileOutput(p, snappl) ) ){
-          if (myid==0)
-            cout << fileOutput(p, snappl) << " Already exists" <<endl;
-          continue;
-        }
-      }else{
-        if (myid==0)
-          cout << "!It is not possible to resume a Gadget run with partinplanes == true!" << endl <<
-                  "!!               Files on Output folder will be overwritten        !!" << endl;
-      }
-
       valarray<float> mapxytot;
       int ntotxyi[6];
       valarray<float> mapxytoti[6];
       /*Computing the minimum distance for the lens in units of the current box size*/
       if(lens.randomize[isnap])
         rcase = lens.ld[isnap]/snapbox[lens.fromsnapi[isnap]]*1e3/POS_U;
+
+      /* If this lens plane was already created go to the next one */
+      if(p.partinplanes == false){
+        if( ifstream( fileOutput(p, snappl) ) ){
+          if (myid==0)
+            cout << fileOutput(p, snappl) << " Already exists" <<endl;
+          continue;
+      }
+      }else{
+        if (myid==0)
+          cout << "!It is not possible to resume a Gadget run with partinplanes == true!" << endl <<
+                  "!!               Files on Output folder will be overwritten        !!" << endl;
+      }
 
       if( createDensityMaps (p, lens, random, isnap, ffmin, ffmax, File, fovradiants,
                             rcase, getDl,accGetDl, getZl, accGetZl, mapxytot, mapxytoti,
