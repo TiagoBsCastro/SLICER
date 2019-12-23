@@ -283,8 +283,8 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         cerr << "Aborting from Rank "<< myid << endl;
         return 1;
       }
-      double minDist = lens.ld[isnap]/data.boxsize*1.e+3/POS_U;
-      double maxDist = minDist + (lens.ld2[isnap]-lens.ld[isnap])/data.boxsize*1.e+3/POS_U;
+      double minDist =  lens.ld[isnap]/data.boxsize*1.e+3/POS_U;
+      double maxDist = lens.ld2[isnap]/data.boxsize*1.e+3/POS_U;
       if (myid==0){
          cout << " Mapping type "<< i <<" particles on the grid with " << p.npix << " pixels" << endl;
          cout << "Distance Range: "<< minDist << " " << maxDist << endl;
@@ -335,21 +335,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
         mapxyi[i] = gridist_w(xs,ys,ms,p.npix,DO_NGP);
       }
 
-      //re-normalize to the total mass!
-      double mtot=0.;
-      double mnorm=0.;
-      for(int ii=0;ii<ms.size();ii++){
-        mnorm+=ms[ii];
-      }
-
-      if(totPartxyi[i]>0){
-        for(int l=0;l<p.npix*p.npix;l++)
-          mtot += mapxyi[i][l];
-        if(mtot==0.)
-          mtot=1.; //To avoid NaN
-        for(int l=0;l<p.npix*p.npix;l++)
-          mapxyi[i][l]*=mnorm/mtot;
-      }
     }
   }
 
