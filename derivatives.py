@@ -1,3 +1,4 @@
+# From https://gist.github.com/deeplycloudy
 import numpy as np
 
 #4th order accurate gradient function based on 2nd order version from http://projects.scipy.org/scipy/numpy/browser/trunk/numpy/lib/function_base.py
