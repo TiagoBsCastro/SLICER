@@ -3,7 +3,7 @@ from numpy.fft import ifft2, fft2, fft, ifft, fftfreq, fftshift, ifftshift
 from astropy.io import fits
 from derivatives import laplacian_O3, gradientO4
 
-#############################################  Utils  ##############################################################
+##################################################  Utils  ########################################################
 
 # Laplacian in 2D
 def convergence_fft(potential, KX, KY):
@@ -30,7 +30,7 @@ def unpad (array, n):
 
 ####################################################################################################################
 
-def map_get_gamma(fname, fout=None, derivative="FFT"):
+def smr(fname, fout=None, derivative="FFT"):
     '''
     Computes the shear maps reconstructing the lensing potential
     from the convergence map.
