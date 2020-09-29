@@ -11,6 +11,7 @@ from glob import glob
 import sys
 import input
 import utils
+import smr
 
 ############################ Cosmology ###############################
 
@@ -41,6 +42,16 @@ for i, fname in enumerate(mapsNames):
     dllow[i,0] = z_at_value(cosmo.comoving_distance, dllow[i,1]*u.Mpc) if dllow[i,1] > 0.0 else 0.0
     dlup[i,0]  = z_at_value(cosmo.comoving_distance,  dlup[i,1]*u.Mpc)
 
+print(dlup)
+# Defining the source redshifts for integration
+if input.source_redshifts == 'All':
+
+    ztab = dlup[:,0]
+
+else:
+
+    ztab = dlup[input.source_redshifts,0]
+
 # Testing the Lens Planes
 utils.planesSanityCheck(dllow, dlup)
 
@@ -58,7 +69,7 @@ for d1, dl, d2 in zip(dllow[:,1], dllen[:,1], dlup[:,1]):
 
 #################### Starting to Sum the Maps #######################
 
-for zs in dlup[:,0]:
+for zs in ztab:
 
     print( "\nIntegrating the convergence map: zs={:5.4f}\n".format(zs) )
     planeIndexes = dlup[:,0]<=zs
@@ -85,4 +96,6 @@ for zs in dlup[:,0]:
     utils.genericHeader(hdu.header, header['NAXIS1'] , zs, header['PHYSICALSIZE'])
     print("\nSaving the Map")
     hdu.writeto( input.kappaMapsNames.substitute(mapIndex=input.imap,zs=np.round(zs,4)) , overwrite=True)
+    print("Computing shear maps")
+    smr.smr( input.kappaMapsNames.substitute(mapIndex=input.imap,zs=np.round(zs,4)) )
     print("Done\n")

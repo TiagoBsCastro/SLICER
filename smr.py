@@ -115,23 +115,23 @@ def smr(fname, fout=None, derivative="FFT"):
 
             raise ValueError("fout can not be None if 'kappa' or 'kappaBApp' is not in fname.")
 
-        fits.writeto(fout, gamma1, header=header)
+        fits.writeto(fout, gamma1.astype(np.float32), header=header)
         fout = fname.replace("kappaBApp", "gamma2") if "kappaBApp" in fname else fname.replace("kappa", "gamma2")
-        fits.writeto(fout, gamma2, header=header)
+        fits.writeto(fout, gamma2.astype(np.float32), header=header)
         fout = fname.replace("kappaBApp", "gamma") if "kappaBApp" in fname else fname.replace("kappa", "gamma")
-        fits.writeto(fout, gamma, header=header)
-        fout = fname.replace("kappaBApp", "phi") if "kappaBApp" in fname else fname.replace("kappa", "gamma")
-        fits.writeto(fout, potential, header=header)
+        fits.writeto(fout, gamma.astype(np.float32), header=header)
+        fout = fname.replace("kappaBApp", "phi") if "kappaBApp" in fname else fname.replace("kappa", "phi")
+        fits.writeto(fout, potential.astype(np.float32), header=header)
 
     else:
 
         try:
 
             # Checking if it was run by PowerBornApp or if it has kappa in the name
-            fits.writeto(fout.format(statistic="gamma1"), gamma1, header=header)
-            fits.writeto(fout.format(statistic="gamma2"), gamma2, header=header)
-            fits.writeto(fout.format(statistic="gamma"), gamma, header=header)
-            fits.writeto(fout.format(statistic="phi"), potential, header=header)
+            fits.writeto(fout.format(statistic="gamma1"), gamma1.astype(np.float32), header=header)
+            fits.writeto(fout.format(statistic="gamma2"), gamma2.astype(np.float32), header=header)
+            fits.writeto(fout.format(statistic="gamma"), gamma.astype(np.float32), header=header)
+            fits.writeto(fout.format(statistic="phi"), potential.astype(np.float32), header=header)
 
         except KeyError:
 
