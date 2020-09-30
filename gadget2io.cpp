@@ -10,6 +10,7 @@ int readHeader (string file_in, Header &header, ifstream & fin,
 
   /* Read the Snap Header*/
   fin.open(file_in.c_str());
+  if (!fin) { fin.open( (file_in.substr(0, file_in.size()-2)).c_str());}
   if (!fin) {cerr <<"Error in opening the file: "<<file_in<<"!\n\a"; return 1;}
 
   int32_t blockheader[5];
