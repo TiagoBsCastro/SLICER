@@ -74,7 +74,6 @@ int main(int argc, char** argv){
   testHydro(p, simdata);
 
   /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
-  cout << simdata.om0;
   cosmology cosmo(simdata.om0,simdata.oml,1.0,-1.0);
   /* Creating a table with redshifts and comoving distances to be interpolated*/
   vector <double> zl(neval),dl(neval);
@@ -82,6 +81,7 @@ int main(int argc, char** argv){
     zl[i] = i * (p.zs+1.0)/(neval-1);
     dl[i] = cosmo.comovDist(zl[i])*speedcunit;
   }
+
   /* Initializing the auxiliary functions to get Dc given z and vice-versa */
   gsl_interp_accel *accGetDl = gsl_interp_accel_alloc ();
   gsl_interp_accel *accGetZl = gsl_interp_accel_alloc ();

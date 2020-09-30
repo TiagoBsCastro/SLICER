@@ -10,7 +10,7 @@ using namespace CCfits;
 
 #define MAX_M 1e3    // Threshold for mass; Particler heavier than MAX_M will be attached zero mass
 #define DO_NGP false // Use NGP as the MAS
-#define numberOfLensPerSnap 2 // Number of Lens to be builded from a snap
+#define numberOfLensPerSnap 1 // Number of Lens to be builded from a snap
 
 /*
  * Reads the vector with snapshots redshifts "zsnap" and returns the position

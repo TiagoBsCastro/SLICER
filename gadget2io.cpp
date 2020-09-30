@@ -578,10 +578,13 @@ int readRedList(string filredshiftlist, vector <double> & snapred, vector <strin
         cerr << " Snapshots on "<< filredshiftlist << " are not sorted!" << endl;
         return 1;
       }
-      else
+      else{
         zlast = header.redshift;
+        if (abs(zlast) < 1e-5) zlast = 0.0;
+        
+      }       
 
-      snapred.push_back(header.redshift);
+      snapred.push_back(zlast);
       snapbox.push_back(header.boxsize);
     }while(header.redshift<p.zs & !redlist.eof());
   }else{
