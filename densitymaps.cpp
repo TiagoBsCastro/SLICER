@@ -328,10 +328,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
                 }
               }
             }
-        }else{
-
-          cout << "This motherfucker is out! " << xx[i][2][l] << endl;
-
         }
       }
       totPartxyi[i]=xs.size();
