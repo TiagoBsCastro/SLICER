@@ -49,50 +49,49 @@ void getPolar(double x, double y, double z, double &ang1, double &ang2, double &
 
 // grid points distribution function with != wheights
 valarray<float> gridist_w (vector<float> x, vector<float> y , vector<float> w, int nn, bool do_NGP){
-  valarray<float> grxy( nn*nn );
-  int n0 = x.size();
-  if(n0!=y.size()){cout << "x and y positions don't match!" << endl; exit(-1);}
-  if(n0!=w.size()){cout << "positions and wheights don't match!" << endl; exit(-1);}
 
-  double dl = 1./double(nn);
   // --- - - - - - - - - - - - - - - - - - - - - - - ---
   //                               _ _ _ _ _ _
-  //  The order of the points is: |_7_|_8_|_9_|
-  //                              |_4_|_5_|_6_|
-  //                              |_1_|_2_|_3_|
+  //  The order of the points is: |_6_|_7_|_8_|
+  //                              |_3_|_4_|_5_|
+  //                              |_0_|_1_|_2_|
   // coordinate between 0 and 1 and mass particle = 1
   //
   // --- - - - - - - - - - - - - - - - - - - - - - - ---
+
+  valarray<float> grxy( nn*nn );
+  int n0 = x.size();
+  double dl = 1./double(nn);
+  int   gridpointx[9], gridpointy[9];
+  float posgridx, posgridy;
+  float wfx, wfy;
+
+  if(n0!=y.size()){cout << "x and y positions don't match!" << endl; exit(-1);}
+  if(n0!=w.size()){cout << "positions and wheights don't match!" << endl; exit(-1);}
+
   for (int i=0; i<n0; i++){
 
-    int grx=floor(x[i]/dl)+1;
-    int gry=floor(y[i]/dl)+1;
-
-    int   gridpointx[9], gridpointy[9];
-    float posgridx[9], posgridy[9];
-    float wfx[9], wfy[9];
-
-    gridpointx[0] = grx;
-    gridpointy[0] = gry;
+    gridpointx[4] = floor(x[i]/dl);
+    gridpointy[4] = floor(y[i]/dl);
 
     if(do_NGP){
-      if(grx>=0 && grx<nn && gry>=0 && gry<nn) grxy[grx+nn*gry] = grxy[grx+nn*gry] + w[i];
+      if(gridpointx[4]>=0 && gridpointx[4]<nn && gridpointy[4]>=0 && gridpointy[4]<nn) 
+        grxy[gridpointx[4]+nn*gridpointy[4]] = grxy[gridpointx[4]+nn*gridpointy[4]] + w[i];
     }
     else{
       for (int j=0; j<9; j++){
-        gridpointx[j]=gridpointx[0]+(j%3)-1;
-        gridpointy[j]=gridpointy[0]+(j/3)-1;
 
-        posgridx[j]=(gridpointx[j]+0.5)*dl;
-        posgridy[j]=(gridpointy[j]+0.5)*dl;
+        gridpointx[j]=gridpointx[4]+(j%3)-1;
+        gridpointy[j]=gridpointy[4]+(j/3)-1;
 
-        wfx[j] = sqrt(w[i])*weight(x[i],posgridx[j],dl);
-        wfy[j] = sqrt(w[i])*weight(y[i],posgridy[j],dl);
+        posgridx=(gridpointx[j]+0.5)*dl;
+        posgridy=(gridpointy[j]+0.5)*dl;
 
-        int grxc = gridpointx[j];
-        int gryc = gridpointy[j];
+        wfx = sqrt(w[i])*weight(x[i],posgridx,dl);
+        wfy = sqrt(w[i])*weight(y[i],posgridy,dl);
 
-        if(grxc>=0 && grxc<nn && gryc>=0 && gryc<nn) grxy[grxc+nn*gryc] = grxy[grxc+nn*gryc] + float(wfx[j])*float(wfy[j]);
+        if(gridpointx[j]>=0 && gridpointx[j]<nn && gridpointy[j]>=0 && gridpointy[j]<nn) 
+          grxy[gridpointx[j]+nn*gridpointy[j]] = grxy[gridpointx[j]+nn*gridpointy[j]] + wfx*wfy;
       }
     }
   }

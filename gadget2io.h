@@ -2,7 +2,7 @@
 #include "utilities.h"
 #include "data.h"
 
-#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
+#define POS_U 1000.0    // Unit conversion from BoxSize unit lengh to kpc/h
 
 /* Reads the "file_in" snapshot and stores it on the "header" instance
    of Header. "fin" is a ifstream instance that is leaved open for further
