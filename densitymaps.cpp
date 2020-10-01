@@ -247,9 +247,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
   int imax = 6;
   float num_float1;
   int totPartxyi[6];
-  int totpart = 0;
-  int totpartz = 0;
-  int totpartplc = 0;
 
   for(int i=0; i<imax; i++){
 
@@ -297,11 +294,7 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
       vector<float> xs(0),ys(0),ms(0);
       for(int l=0;l<data.npart[i];l++){
 
-        totpart++;
-
         if(p.hydro && data.massarr[i]==0){
-
-          cout << "Debugging: I should not be here!" << endl;
 
           if(l==0 && i==5){
             fastforwardNVars (fin, sizeof(int32_t), data.npart[5]);
@@ -317,8 +310,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
 
         if(xx[i][2][l]>=minDist && xx[i][2][l]<maxDist){
 
-          totpartz++;
-
           for(int ni = -lens.nrepperp[isnap]; ni<=lens.nrepperp[isnap]; ni++)
             for(int nj = -lens.nrepperp[isnap]; nj<=lens.nrepperp[isnap]; nj++){
 
@@ -326,7 +317,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
               double rai,deci,dd;
               getPolar(xx[i][0][l]+ni-0.5,xx[i][1][l]+nj-0.5,xx[i][2][l],rai,deci,dd, true);
               if(fabs(rai)<=fovradiants*(1.+2./p.npix)*0.5 && fabs(deci)<=fovradiants*(1.+2./p.npix)*0.5){
-                totpartplc++;
                 xs.push_back(deci/fovradiants+0.5);
                 ys.push_back(rai/fovradiants+0.5);
                 if(p.snopt==0){
@@ -353,8 +343,6 @@ int mapParticles(ifstream & fin, Header &data, InputParams &p, Lens &lens,
 
     }
   }
-
-  cout << "Debbuging: totpart: " << totpart << " totpartz: " << totpartz << " totpartplc: " << totpartplc << endl;
 
   return 0;
 
