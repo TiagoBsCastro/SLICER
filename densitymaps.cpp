@@ -448,8 +448,6 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
       cout << "Saving the maps on: " << fileoutput << endl;
       unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
       vector<long> naxex( 2 );
-      naxex[0]=p.npix;
-      naxex[1]=p.npix;
       PHDU *phxy=&ffxy->pHDU();
       phxy->write( 1, p.npix*p.npix, mapxytotrecv );
       phxy->addKey ("REDSHIFT",zsim," ");
@@ -485,8 +483,6 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
          fileoutput = fileOutput(p, snappl, i);
          unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
          vector<long> naxex( 2 );
-         naxex[0]=p.npix;
-         naxex[1]=p.npix;
          PHDU *phxy=&ffxy->pHDU();
          phxy->write( 1, p.npix*p.npix, mapxytotirecv[i] );
          phxy->addKey ("REDSHIFT",zsim," ");
