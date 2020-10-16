@@ -442,12 +442,24 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
       * write image array(s) to FITS files all particles in a FITS file!
       */
       long naxis = 2;
-      long naxes[2]={ p.npix,p.npix };
+      long naxes[2];
       string fileoutput;
+      unique_ptr<FITS> ffxy;
+
+      naxes[0] = p.npix; naxes[1] = p.npix;
       fileoutput = fileOutput(p, snappl);
       cout << "Saving the maps on: " << fileoutput << endl;
-      unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
-      vector<long> naxex( 2 );
+      try{
+
+        ffxy.reset( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+
+      }
+      catch (FITS::CantCreate){
+
+        cerr << "It was not possible to create the map: " << fileoutput << endl;
+        throw;
+
+      }
       PHDU *phxy=&ffxy->pHDU();
       phxy->write( 1, p.npix*p.npix, mapxytotrecv );
       phxy->addKey ("REDSHIFT",zsim," ");
@@ -478,11 +490,23 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
 
        if(ntotxyi[i]>0){
          long naxis = 2;
-         long naxes[2]={ p.npix,p.npix };
+         long naxes[2];
          string fileoutput;
+         unique_ptr<FITS> ffxy;
+
+         naxes[0] = p.npix; naxes[1] = p.npix;
          fileoutput = fileOutput(p, snappl, i);
-         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
-         vector<long> naxex( 2 );
+         try{
+
+           ffxy.reset( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+
+         }
+         catch (FITS::CantCreate){
+
+           cerr << "It was not possible to create the map: " << fileoutput << endl;
+           throw;
+
+         }
          PHDU *phxy=&ffxy->pHDU();
          phxy->write( 1, p.npix*p.npix, mapxytotirecv[i] );
          phxy->addKey ("REDSHIFT",zsim," ");

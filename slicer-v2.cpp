@@ -200,8 +200,14 @@ int main(int argc, char** argv){
         MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
       double zsim = gsl_spline_eval (getZl, (lens.ld2[isnap]+lens.ld[isnap])/2.0, accGetZl);
-      writeMaps (p, simdata, lens, isnap, zsim, snappl, p.snpix, mapxytotrecv,
+      try{
+        writeMaps (p, simdata, lens, isnap, zsim, snappl, p.snpix, mapxytotrecv,
                        mapxytotirecv, ntotxyi,  myid);
+      }catch(FITS::CantCreate){
+
+        MPI_Abort(MPI_COMM_WORLD,-1);
+
+      }
 
     }else{
 
