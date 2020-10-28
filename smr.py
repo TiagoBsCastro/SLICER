@@ -25,7 +25,7 @@ def convergence_fft(potential, KX, KY, zero_mode=None):
 # Shear direct terms
 def shear1_fft(potential, KX, KY, zero_mode=None):
 
-    shear1_k = np.fft.fft2(potential) * (KX**2-KY**2)
+    shear1_k = np.fft.fft2(potential) * (KX**2-KY**2)/2.0
 
     if zero_mode is None:
 

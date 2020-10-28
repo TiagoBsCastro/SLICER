@@ -2,7 +2,7 @@ import numpy as np
 import pymaster as nmt
 from astropy.io import fits
 import matplotlib.pyplot as plt
-import smrv2 as smr
+import smr
 
 # This script describes the functionality of the flat-sky version of pymaster
 
@@ -15,9 +15,13 @@ Ly = 10.0 * np.pi/180
 Nx = 256
 Ny = 256
 
-mpt  = np.random.randn(Nx, Ny)
-fits.writeto("kappa.fits", mpt.astype(np.float64))
-mpt2 = smr.smr("kappa.fits")
+#mpt  = np.random.randn(Nx, Ny)
+#fits.writeto("kappa.fits", mpt.astype(np.float64))
+#mpt2 = smr.smr("kappa.fits")
+
+mpt  = fits.getdata("gamma_fd.fits")
+mpt2 = fits.getdata("gamma_fft.fits") 
+
 mask = np.ones((Nx, Ny))
 
 # Bins:
