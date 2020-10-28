@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.fft import fft, ifft, fft2, ifft2, fftfreq
 from astropy.io import fits
 from derivatives import laplacian_O3, gradientO4
 
@@ -8,7 +7,7 @@ from derivatives import laplacian_O3, gradientO4
 # Laplacian in 2D
 def convergence_fft(potential, KX, KY, zero_mode=None):
 
-    kappa_k = np.fft.fft2(potential) * (KX**2+KY**2)
+    kappa_k = np.fft.fft2(potential) * (KX**2+KY**2)/2.0
 
     if zero_mode is None:
 
@@ -30,7 +29,7 @@ def shear1_fft(potential, KX, KY, zero_mode=None):
     if zero_mode is None:
 
         gamma1 = - np.fft.ifft2( shear1_k, potential.shape ).real
-        return gamma1 - gamma1[0,0]
+        return gamma1 - gamma1[0, 0]
 
     else:
 
@@ -41,26 +40,26 @@ def shear1_fft(potential, KX, KY, zero_mode=None):
 # Shear cross terms
 def shear2_fft(potential, KX, KY, zero_mode=None):
 
-    shear2_k = KX*KY*fft2(potential)
+    shear2_k = KX*KY*np.fft.fft2(potential)
 
     if zero_mode is None:
 
-        gamma2 = - ifft2( shear2_k, potential.shape).real
-
-        return gamma2 - gamma2[0,0]
+        gamma2 = - np.fft.ifft2( shear2_k, potential.shape).real
+        print(gamma2)
+        return gamma2 - gamma2[0, 0]
 
     else:
 
         shear2_k[0,0] = - zero_mode
 
-        return - ifft2( shear2_k, potential.shape).real
+        return - np.fft.ifft2( shear2_k, potential.shape).real
 
 def lensing_potential (kappa, KX, KY):
 
     # Going to Fourier Space
     with np.errstate(divide='ignore', invalid='ignore'):
 
-        phi_k = np.fft.fft2(kappa) / (KX**2+KY**2)
+        phi_k = 2.0 * np.fft.fft2(kappa) / (KX**2+KY**2)
 
     # Changing the monopole
     phi_k[0,0] = 0.0
@@ -119,8 +118,8 @@ def smr(fname, fout=None, derivative="FFT"):
         kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
 
     # Setting the FFT for inverting the Laplacian
-    kx     = 2 * np.pi * fftfreq(kappa.shape[0], 1)
-    ky     = 2 * np.pi * fftfreq(kappa.shape[1], 1)
+    kx     = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], 1)
+    ky     = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], 1)
     # Setting the zeroth mode to infinity to avoid divergence
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
 
@@ -138,7 +137,7 @@ def smr(fname, fout=None, derivative="FFT"):
         # Recomputing kappa (for redundancy check), gamma1, gamma2
         kappa     = 1/2 * ( d2_xx + d2_yy )
         gamma1    = 1/2 * ( d2_xx - d2_yy )
-        gamma2    = d2_xy
+        gamma2    = 1/2 * ( d2_xy + d2_yx )
         gamma     = np.sqrt(gamma1**2 + gamma2**2)
 
     elif derivative == "FFT":

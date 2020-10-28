@@ -19,8 +19,8 @@ Ny = 256
 #fits.writeto("kappa.fits", mpt.astype(np.float64))
 #mpt2 = smr.smr("kappa.fits")
 
-mpt  = fits.getdata("gamma_fd.fits")
-mpt2 = fits.getdata("gamma_fft.fits") 
+mpt  = fits.getdata("gamma2_fd.fits")
+mpt2 = fits.getdata("gamma2_fft.fits")
 
 mask = np.ones((Nx, Ny))
 
