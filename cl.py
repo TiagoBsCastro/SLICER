@@ -19,16 +19,16 @@ Ny = 256
 #fits.writeto("kappa.fits", mpt.astype(np.float64))
 #mpt2 = smr.smr("kappa.fits")
 
-mpt  = fits.getdata("gamma2_fd.fits")
-mpt2 = fits.getdata("gamma2_fft.fits")
+mpt  = fits.getdata("kappa_fd_rec.fits")
+mpt2 = fits.getdata("gamma_fd.fits")
 
 mask = np.ones((Nx, Ny))
 
 # Bins:
 # For flat-sky fields, bandpowers are simply defined as intervals in ell, and
 # pymaster doesn't currently support any weighting scheme within each interval.
-l0_bins = np.arange(Nx/8) * 8 * np.pi/Lx
-lf_bins = (np.arange(Nx/8)+1) * 8 * np.pi/Lx
+l0_bins = np.arange(Nx/4) * 4 * np.pi/Lx
+lf_bins = (np.arange(Nx/4)+1) * 4 * np.pi/Lx
 b = nmt.NmtBinFlat(l0_bins, lf_bins)
 # The effective sampling rate for these bandpowers can be obtained calling:
 ells_uncoupled = b.get_effective_ells()
@@ -57,7 +57,7 @@ for f0 in [nmt.field.NmtFieldFlat(Lx, Ly, mask, [mpt]), nmt.field.NmtFieldFlat(L
     cl00_coupled = nmt.compute_coupled_cell_flat(f0, f0, b)
 
     # Let's look at the results!
-    plt.plot(ells_uncoupled, cl00_coupled[0], 'r--', label='Coupled')
+    plt.plot(ells_uncoupled, cl00_coupled[0], label='Coupled')
     res += [cl00_coupled[0].tolist()]
 
 plt.loglog()
