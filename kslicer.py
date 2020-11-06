@@ -84,12 +84,12 @@ for zs in ztab:
         A          = utils.A( dllen[i,1], header['PHYSICALSIZE'] )
         A         /= header['NAXIS1'] * header['NAXIS2']
         mass       = fits.getdata(fname)/A
-        mean       = rho_m * (dlup[i,1] - dllow[i,1]) 
+        mean       = rho_m * (dlup[i,1] - dllow[i,1])
 
         growthCorr = pert.growthFactor(dllen[i,0])/pert.growthFactor(zsnap[i])
         print( "\t<rho>_theory/<rho>_map={}".format(mean/mass.mean()) )
         print( "\tGroth Factor Correction={}\n".format(growthCorr) )
-        kappa += 4.0 * np.pi/c2OverG * lensKernel * ( mass  - mean ) * growthCorr * (1.0+dllen[i,0])**2
+        kappa += 4.0 * np.pi/c2OverG * lensKernel * ( mass - mass.mean() ) * growthCorr * (1.0+dllen[i,0])**2
 
     hdu = fits.PrimaryHDU()
     hdu.data = kappa
