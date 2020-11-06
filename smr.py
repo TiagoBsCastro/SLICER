@@ -1,52 +1,23 @@
 import numpy as np
+from scipy.fft import dstn, idstn
 from astropy.io import fits
 from derivatives import laplacian_O3, gradientO4
 
 ##################################################  Utils  ########################################################
 # Laplacian in 2D
-def convergence_fft(potential, KX, KY, zero_mode=None):
+def convergence_fft(potential, KX, KY):
 
-    kappa_k = np.fft.fft2(potential) * (KX**2+KY**2)/2.0
-
-    if zero_mode is None:
-
-        kappa = - np.fft.ifft2( kappa_k, potential.shape ).real
-        return kappa - kappa[0,0]
-
-    else:
-
-        kappa_k[0, 0] = - zero_mode
-        return - np.fft.ifft2( kappa_k, potential.shape ).real
+    return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2+KY**2)/2.0, potential.shape ).real
 
 # Shear direct terms
 def shear1_fft(potential, KX, KY, zero_mode=None):
 
-    shear1_k = np.fft.fft2(potential) * (KX**2-KY**2)/2.0
-
-    if zero_mode is None:
-
-        gamma1 = - np.fft.ifft2( shear1_k, potential.shape ).real
-        return gamma1 - gamma1[0, 0]
-
-    else:
-
-        shear1_k[0, 0] = - zero_mode
-        return - np.fft.ifft2( shear1_k, potential.shape ).real
+    return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2-KY**2)/2.0, potential.shape ).real
 
 # Shear cross terms
 def shear2_fft(potential, KX, KY, zero_mode=None):
 
-    shear2_k = KX*KY*np.fft.fft2(potential)
-
-    if zero_mode is None:
-
-        gamma2 = - np.fft.ifft2( shear2_k, potential.shape).real
-        return gamma2 - gamma2[0, 0]
-
-    else:
-
-        shear2_k[0,0] = - zero_mode
-        return - np.fft.ifft2( shear2_k, potential.shape).real
+    return - np.fft.ifft2( KX*KY*np.fft.fft2(potential), potential.shape).real
 
 def lensing_potential (kappa, KX, KY):
 
@@ -94,6 +65,7 @@ def smr(fname, fout=None, derivative="FFT"):
     '''
     # Getting the convergence map
     kappa = fits.getdata(fname)
+
     # Zero padding the Map in place
     if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
 
@@ -120,41 +92,35 @@ def smr(fname, fout=None, derivative="FFT"):
     # Getting the potential
     potential = lensing_potential( kappa, KX, KY )
 
-    # Computing derivatives
-    d1_x, d1_y   = gradientO4(potential)
-    d2_xx, d2_xy = gradientO4( d1_x )
-    d2_yx, d2_yy = gradientO4( d1_y )
-    d2_xx, d2_yy = laplacian_O3(potential)
-
-    # Recomputing kappa (for redundancy check), gamma1, gamma2
-    kappa     = 1/2 * ( d2_xx + d2_yy )
-    gamma1    = 1/2 * ( d2_xx - d2_yy )
-    gamma2    = 1/2 * ( d2_xy + d2_yx )
-
     if derivative == "gradient":
 
-        gamma = np.sqrt(gamma1**2 + gamma2**2)
+        # Computing derivatives
+        d1_x, d1_y   = gradientO4(potential)
+        d2_xx, d2_xy = gradientO4( d1_x )
+        d2_yx, d2_yy = gradientO4( d1_y )
+        d2_xx, d2_yy = laplacian_O3(potential)
+
+        # Recomputing kappa (for redundancy check), gamma1, gamma2
+        kappa     = 1/2 * ( d2_xx + d2_yy )
+        gamma1    = 1/2 * ( d2_xx - d2_yy )
+        gamma2    = 1/2 * ( d2_xy + d2_yx )
 
     elif derivative == "FFT":
 
         # Recomputing kappa (for redundancy check), gamma1, gamma2
-        kappa  = unpad(kappa, 2)
-        gamma1    = unpad(gamma1, 2)
-        gamma2    = unpad(gamma2, 2)
-        kappa  = convergence_fft(potential, KX, KY, zero_mode=kappa.sum())
-        gamma1 = shear1_fft(potential, KX, KY, zero_mode=gamma1.sum())
-        gamma2 = shear2_fft(potential, KX, KY, zero_mode=gamma2.sum())
-        gamma  = np.sqrt(gamma1**2 + gamma2**2)
+        kappa  = convergence_fft(potential, KX, KY)
+        gamma1 = shear1_fft(potential, KX, KY)
+        gamma2 = shear2_fft(potential, KX, KY)
 
     else:
 
         raise NotImplementedError("derivative method '{}' is not implemented!".format(derivative))
 
     potential = unpad(potential, 2)
-    kappa     = unpad(kappa, 2)
-    gamma1    = unpad(gamma1, 2)
-    gamma2    = unpad(gamma2, 2)
-    gamma     = unpad(gamma, 2)
+    kappa     = unpad(kappa, 2); kappa -= kappa.mean()
+    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
+    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
+    gamma     = np.sqrt(gamma1**2 + gamma2**2);
 
     header = fits.getheader(fname)
 

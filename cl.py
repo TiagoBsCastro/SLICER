@@ -11,16 +11,15 @@ import smr
 #  - Lx and Ly: the size of the patch in the x and y dimensions (in radians)
 Lx = 10.0 * np.pi/180
 Ly = 10.0 * np.pi/180
+
+
+mpt  = fits.getdata("kappa_fft_rec.fits")
+mpt2 = fits.getdata("gamma_fft.fits")
 #  - Nx and Ny: the number of pixels in the x and y dimensions
-Nx = 256
-Ny = 256
+Nx = mpt.shape[0]
+Ny = mpt.shape[1]
 
-#mpt  = np.random.randn(Nx, Ny)
-#fits.writeto("kappa.fits", mpt.astype(np.float64))
-#mpt2 = smr.smr("kappa.fits")
-
-mpt  = fits.getdata("kappa_fd_rec.fits")
-mpt2 = fits.getdata("gamma_fd.fits")
+print("Is close: {}".format(np.allclose(mpt, mpt2)))
 
 mask = np.ones((Nx, Ny))
 
