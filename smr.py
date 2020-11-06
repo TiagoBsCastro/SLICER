@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.fft import dstn, idstn
+from scipy.stats import binned_statistic
 from astropy.io import fits
 from derivatives import laplacian_O3, gradientO4
 
@@ -10,12 +10,12 @@ def convergence_fft(potential, KX, KY):
     return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2+KY**2)/2.0, potential.shape ).real
 
 # Shear direct terms
-def shear1_fft(potential, KX, KY, zero_mode=None):
+def shear1_fft(potential, KX, KY):
 
     return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2-KY**2)/2.0, potential.shape ).real
 
 # Shear cross terms
-def shear2_fft(potential, KX, KY, zero_mode=None):
+def shear2_fft(potential, KX, KY):
 
     return - np.fft.ifft2( KX*KY*np.fft.fft2(potential), potential.shape).real
 
@@ -34,6 +34,20 @@ def lensing_potential (kappa, KX, KY):
 def unpad (array, n):
 
     return array[array.shape[0]//(2*n):-array.shape[0]//(2*n), array.shape[1]//(2*n):-array.shape[1]//(2*n)]
+
+def PS (field, KX, KY, n=50):
+
+    K = np.sqrt(KX**2 + KY**2).flatten()
+    P = np.abs(np.fft.fft2(field)**2).flatten()
+
+    kmin = np.min([KX[1,0], KY[0,1]])
+    kmax = np.max([KX[1:].max(), KY[1:].max()])
+    bins = np.geomspace(kmin, kmax, n)
+
+    P = binned_statistic(K, P, bins=bins, statistic='mean').statistic
+    K = binned_statistic(K, K, bins=bins, statistic='mean').statistic
+
+    return K, P
 
 ####################################################################################################################
 
@@ -116,6 +130,11 @@ def smr(fname, fout=None, derivative="FFT"):
 
         raise NotImplementedError("derivative method '{}' is not implemented!".format(derivative))
 
+    Pk  = PS(kappa, KX, KY)
+    Pg1 = PS(gamma1, KX, KY)
+    Pg2 = PS(gamma2, KX, KY)
+    Pg  = Pg1 + Pg2
+
     potential = unpad(potential, 2)
     kappa     = unpad(kappa, 2); kappa -= kappa.mean()
     gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
@@ -127,16 +146,24 @@ def smr(fname, fout=None, derivative="FFT"):
     if fout is None:
 
         # Checking if it was run by PowerBornApp or if it has kappa in the name
+        fout = fname.replace(".fits", ".txt")
+        np.savetxt(fout, Pk)
         fout = fname.replace("kappaBApp", "gamma1") if "kappaBApp" in fname else fname.replace("kappa", "gamma1")
         if fout == fname:
 
             raise ValueError("fout can not be None if 'kappa' or 'kappaBApp' is not in fname.")
 
         fits.writeto(fout, gamma1.astype(np.float32), header=header)
+        fout = fout.replace(".fits", ".txt")
+        np.savetxt(fout, Pg1)
         fout = fname.replace("kappaBApp", "gamma2") if "kappaBApp" in fname else fname.replace("kappa", "gamma2")
         fits.writeto(fout, gamma2.astype(np.float32), header=header)
+        fout = fout.replace(".fits", ".txt")
+        np.savetxt(fout, Pg2)
         fout = fname.replace("kappaBApp", "gamma") if "kappaBApp" in fname else fname.replace("kappa", "gamma")
         fits.writeto(fout, gamma.astype(np.float32), header=header)
+        fout = fout.replace(".fits", ".txt")
+        np.savetxt(fout, Pg)
         fout = fname.replace("kappaBApp", "phi") if "kappaBApp" in fname else fname.replace("kappa", "phi")
         fits.writeto(fout, potential.astype(np.float32), header=header)
 
