@@ -133,7 +133,7 @@ def smr(fname, fout=None, derivative="FFT"):
     Pk  = PS(kappa, KX, KY)
     Pg1 = PS(gamma1, KX, KY)
     Pg2 = PS(gamma2, KX, KY)
-    Pg  = Pg1 + Pg2
+    Pg  = (Pg1[0], Pg1[1]+Pg2[1])
 
     potential = unpad(potential, 2)
     kappa     = unpad(kappa, 2); kappa -= kappa.mean()

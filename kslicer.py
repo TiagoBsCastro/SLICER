@@ -72,7 +72,7 @@ for d1, dl, d2 in zip(dllow[:,1], dllen[:,1], dlup[:,1]):
 for zs in ztab:
 
     print( "\nIntegrating the convergence map: zs={:5.4f}\n".format(zs) )
-    planeIndexes = dlup[:,0]<=zs
+    planeIndexes = dlup[:,0]<= zs + 1e-4
     maps = mapsNames[planeIndexes]
     kappa = np.zeros_like( fits.getdata(maps[0]) )
     header = fits.getheader(maps[0])
