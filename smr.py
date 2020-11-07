@@ -88,7 +88,7 @@ def smr(fname, fout=None, derivative="FFT"):
     # Getting the convergence map
     kappa = fits.getdata(fname)
     size  = fits.getheader(fname)['ANGLE'] * np.pi / 180.0
-    '''
+
     # Zero padding the Map in place
     if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
 
@@ -105,7 +105,7 @@ def smr(fname, fout=None, derivative="FFT"):
     elif not (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
 
         kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
-    '''
+
     # Setting the FFT for inverting the Laplacian
     kx     = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], size/kappa.shape[0])
     ky     = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], size/kappa.shape[1])
@@ -144,10 +144,10 @@ def smr(fname, fout=None, derivative="FFT"):
     Pg2 = PS(gamma2, KX, KY)
     Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
 
-    #potential = unpad(potential, 2)
-    #kappa     = unpad(kappa, 2); kappa -= kappa.mean()
-    #gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
-    #gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
+    potential = unpad(potential, 2)
+    kappa     = unpad(kappa, 2); kappa -= kappa.mean()
+    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
+    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
     gamma     = np.sqrt(gamma1**2 + gamma2**2);
 
     header = fits.getheader(fname)
