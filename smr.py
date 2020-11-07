@@ -149,7 +149,7 @@ def smr(fname, fout=None, derivative="FFT"):
     gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean(); Ng2 *= gamma2.var()
     gamma     = np.sqrt(gamma1**2 + gamma2**2);
 
-    Pk *= Nk; Pg1 *= Ng1; Pg2 *= Ng2;
+    Pk[:,1] *= Nk; Pg1[:,1] *= Ng1; Pg2[:,1] *= Ng2;
     Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
 
     header = fits.getheader(fname)
