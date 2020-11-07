@@ -37,17 +37,25 @@ def unpad (array, n):
 
 def PS (field, KX, KY, n=50):
 
-    K = np.sqrt(KX**2 + KY**2).flatten()
-    P = np.abs(np.fft.fft2(field)**2).flatten()
+    # Taking the fourier transform
+    K  = np.sqrt(KX**2 + KY**2).flatten()
+    P  = np.fft.fft2(field).flatten()
+    P *= P.conj(); P = P.real
 
-    kmin = np.min([KX[1,0], KY[0,1]])
-    kmax = np.max([KX[1:].max(), KY[1:].max()])
+    # Binning
+    kmin = np.min([ KX[1,0], KY[0,1] ])
+    kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
     bins = np.geomspace(kmin, kmax, n)
 
     P = binned_statistic(K, P, bins=bins, statistic='mean').statistic
     K = binned_statistic(K, K, bins=bins, statistic='mean').statistic
 
-    return K, P
+    # Normalization
+    bin_width1 = 2*np.pi/KX[1,0]/KX.shape[0]
+    bin_width2 = 2*np.pi/KY[0,1]/KY.shape[1]
+    N = bin_width1*bin_width2/KX.shape[0]/KX.shape[1]
+
+    return np.transpose( [K, N*P] )
 
 ####################################################################################################################
 
@@ -79,7 +87,7 @@ def smr(fname, fout=None, derivative="FFT"):
     '''
     # Getting the convergence map
     kappa = fits.getdata(fname)
-    size  = fits.getheader(fname)['ANGLE']
+    size  = fits.getheader(fname)['ANGLE'] * np.pi / 180.0
     '''
     # Zero padding the Map in place
     if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
@@ -99,8 +107,8 @@ def smr(fname, fout=None, derivative="FFT"):
         kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
     '''
     # Setting the FFT for inverting the Laplacian
-    kx     = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], 1) / (size/kappa.shape[0])
-    ky     = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], 1) / (size/kappa.shape[1])
+    kx     = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], size/kappa.shape[0])
+    ky     = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], size/kappa.shape[1])
     # Setting the zeroth mode to infinity to avoid divergence
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
 
@@ -134,7 +142,7 @@ def smr(fname, fout=None, derivative="FFT"):
     Pk  = PS(kappa, KX, KY)
     Pg1 = PS(gamma1, KX, KY)
     Pg2 = PS(gamma2, KX, KY)
-    Pg  = (Pg1[0], Pg1[1]+Pg2[1])
+    Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
 
     #potential = unpad(potential, 2)
     #kappa     = unpad(kappa, 2); kappa -= kappa.mean()
