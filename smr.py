@@ -139,16 +139,18 @@ def smr(fname, fout=None, derivative="FFT"):
 
         raise NotImplementedError("derivative method '{}' is not implemented!".format(derivative))
 
-    Pk  = PS(kappa, KX, KY)
-    Pg1 = PS(gamma1, KX, KY)
-    Pg2 = PS(gamma2, KX, KY)
-    Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
+    Pk  = PS(kappa, KX, KY); Nk = 1.0/kappa.var()
+    Pg1 = PS(gamma1, KX, KY); Ng1 = 1.0/gamma1.var()
+    Pg2 = PS(gamma2, KX, KY); Ng2 = 1.0/gamma2.var()
 
     potential = unpad(potential, 2)
-    kappa     = unpad(kappa, 2); kappa -= kappa.mean()
-    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
-    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
+    kappa     = unpad(kappa, 2); kappa -= kappa.mean(); Nk *= kappa.var()
+    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean(); Ng1 *= gamma1.var()
+    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean(); Ng2 *= gamma2.var()
     gamma     = np.sqrt(gamma1**2 + gamma2**2);
+
+    Pk *= Nk; Pg1 *= Ng1; Pg2 *= Ng2;
+    Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
 
     header = fits.getheader(fname)
 
