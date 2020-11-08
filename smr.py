@@ -47,6 +47,9 @@ def PS (field, size, n=50):
     kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
     bins = np.geomspace(kmin, kmax, n)
 
+    P = np.fft.fft2( field )
+    P = (P * np.conj(P)).real
+
     P = binned_statistic(K, P, bins=bins, statistic='mean').statistic
     K = binned_statistic(K, K, bins=bins, statistic='mean').statistic
 
