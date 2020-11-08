@@ -35,15 +35,14 @@ def unpad (array, n):
 
     return array[array.shape[0]//(2*n):-array.shape[0]//(2*n), array.shape[1]//(2*n):-array.shape[1]//(2*n)]
 
-def PS (field, KX, KY, n=50):
+def PS (field, size, n=50):
 
     # Taking the fourier transform
-    K  = np.sqrt(KX**2 + KY**2).flatten()
-    P  = np.fft.fft2(field).flatten()
-    P *= P.conj(); P = P.real
+    kx = 2 * np.pi * np.fft.fftfreq(field.shape[0], size/field.shape[0])
+    ky = 2 * np.pi * np.fft.fftfreq(field.shape[1], size/field.shape[1])
+    KX, KY = np.meshgrid(kx, ky, indexing='ij')
 
-    # Binning; taking the third bin due to 0-padding
-    kmin = np.min([ KX[2,0], KY[0,2] ])
+    kmin = np.min([ KX[1,0], KY[0,1] ])
     kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
     bins = np.geomspace(kmin, kmax, n)
 
@@ -111,7 +110,6 @@ def smr(fname, fout=None, derivative="FFT"):
     # Setting the FFT for inverting the Laplacian
     kx = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], size/kappa.shape[0])
     ky = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], size/kappa.shape[1])
-    # Setting the zeroth mode to infinity to avoid divergence
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
 
     # Getting the potential
@@ -141,18 +139,16 @@ def smr(fname, fout=None, derivative="FFT"):
 
         raise NotImplementedError("derivative method '{}' is not implemented!".format(derivative))
 
-    Pk  = PS(kappa, KX, KY); Nk = kappa.var()
-    Pg1 = PS(gamma1, KX, KY); Ng1 = gamma1.var()
-    Pg2 = PS(gamma2, KX, KY); Ng2 = gamma2.var()
-
     potential = unpad(potential, 2)
-    kappa     = unpad(kappa, 2); kappa -= kappa.mean(); Nk /= kappa.var()
-    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean(); Ng1 /= gamma1.var()
-    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean(); Ng2 /= gamma2.var()
+    kappa     = unpad(kappa, 2); kappa -= kappa.mean()
+    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
+    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
     gamma     = np.sqrt(gamma1**2 + gamma2**2);
 
-    Pk[:,1] /= Nk; Pg1[:,1] /= Ng1; Pg2[:,1] /= Ng2;
-    Pg  = np.array( [Pg1[:,0], Pg1[:, 1]+Pg2[:, 1]] )
+    Pk  = PS(kappa, size/2.0)
+    Pg1 = PS(gamma1, size/2.0)
+    Pg2 = PS(gamma2, size/2.0)
+    Pg  = PS(gamma1 + 1j * gamma2, size/2.0)
 
     header = fits.getheader(fname)
 
