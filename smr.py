@@ -41,14 +41,14 @@ def PS (field, size, n=50):
     kx = 2 * np.pi * np.fft.fftfreq(field.shape[0], size/field.shape[0])
     ky = 2 * np.pi * np.fft.fftfreq(field.shape[1], size/field.shape[1])
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
-    K = np.sqrt(KX**2 + KY**2)
+    K = np.sqrt(KX**2 + KY**2).flatten()
 
     kmin = np.min([ KX[1,0], KY[0,1] ])
     kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
     bins = np.geomspace(kmin, kmax, n)
 
-    P = np.fft.fft2( field )
-    P = (P * np.conj(P)).real
+    P = np.fft.fft2( field ); P = P.flatten()
+    P = np.real(P * np.conj(P))
 
     P = binned_statistic(K, P, bins=bins, statistic='mean').statistic
     K = binned_statistic(K, K, bins=bins, statistic='mean').statistic
