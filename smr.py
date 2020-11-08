@@ -41,6 +41,7 @@ def PS (field, size, n=50):
     kx = 2 * np.pi * np.fft.fftfreq(field.shape[0], size/field.shape[0])
     ky = 2 * np.pi * np.fft.fftfreq(field.shape[1], size/field.shape[1])
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
+    K = np.sqrt(KX**2 + KY**2)
 
     kmin = np.min([ KX[1,0], KY[0,1] ])
     kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
