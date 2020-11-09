@@ -35,7 +35,7 @@ def unpad (array, n):
 
     return array[array.shape[0]//(2*n):-array.shape[0]//(2*n), array.shape[1]//(2*n):-array.shape[1]//(2*n)]
 
-def PS (field, size, n=50):
+def PS (field, size):
 
     # Taking the fourier transform
     kx = 2 * np.pi * np.fft.fftfreq(field.shape[0], size/field.shape[0])
@@ -43,9 +43,8 @@ def PS (field, size, n=50):
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
     K = np.sqrt(KX**2 + KY**2).flatten()
 
-    kmin = np.min([ KX[1,0], KY[0,1] ])
-    kmax = np.max([ KX[1:, 0].max(), KY[0, 1:].max() ])
-    bins = np.geomspace(kmin, kmax, n)
+    kf   = np.min([ KX[1,0], KY[0,1] ])
+    bins = np.array([i*kf for i in range(field.shape[0])])
 
     P = np.fft.fft2( field ); P = P.flatten()
     P = np.real(P * np.conj(P))
@@ -62,7 +61,7 @@ def PS (field, size, n=50):
 
 ####################################################################################################################
 
-def smr(fname, fout=None, derivative="FFT"):
+def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
     '''
     Computes the shear maps reconstructing the lensing potential
     from the convergence map.
@@ -93,23 +92,25 @@ def smr(fname, fout=None, derivative="FFT"):
     size  = fits.getheader(fname)['ANGLE'] * np.pi / 180.0
 
     # Zero padding the Map in place
-    if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
+    if zero_padding:
 
-        kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
+        if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
 
-    elif (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
+            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
 
-        kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
+        elif (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
 
-    elif not (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
+            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
 
-        kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
+        elif not (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
 
-    elif not (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
+            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
 
-        kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
+        elif not (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
 
-    size *= 2
+            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
+
+        size *= 2
 
     # Setting the FFT for inverting the Laplacian
     kx = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], size/kappa.shape[0])
@@ -143,18 +144,21 @@ def smr(fname, fout=None, derivative="FFT"):
 
         raise NotImplementedError("derivative method '{}' is not implemented!".format(derivative))
 
-    potential = unpad(potential, 2)
-    kappa     = unpad(kappa, 2); kappa -= kappa.mean()
-    gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
-    gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
-    gamma     = np.sqrt(gamma1**2 + gamma2**2);
+    if zero_padding:
 
-    Pk  = PS(kappa, size/2.0)
-    Pg1 = PS(gamma1, size/2.0)
-    Pg2 = PS(gamma2, size/2.0)
-    Pg  = PS(gamma1 + 1j * gamma2, size/2.0)
+        potential = unpad(potential, 2)
+        kappa     = unpad(kappa, 2); kappa -= kappa.mean()
+        gamma1    = unpad(gamma1, 2); gamma1 -= gamma1.mean()
+        gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
+        size     /= 2.0
+
+    Pk  = PS(kappa, size)
+    Pg1 = PS(gamma1, size)
+    Pg2 = PS(gamma2, size)
+    Pg  = PS(gamma1 + 1j * gamma2, size)
 
     header = fits.getheader(fname)
+    gamma  = np.sqrt(gamma1**2 + gamma2**2);
 
     if fout is None:
 
