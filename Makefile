@@ -1,6 +1,7 @@
 # executable name
 PREFIXDIR = /u/$(USER)
-PROG = $(PREFIXDIR)/bin/SLICER.EXE
+PROG = $(PREFIXDIR)/SLICER/bin/SLICER.EXE
+OPTFLAGS = -DFixedPLCVertex # This optional flag forces the first snapshot to be centered around (0.5, 0.5, 0.5)
 
 MAIN = slicer-v2.cpp utilities.cpp cosmology.cpp densitymaps.cpp gadget2io.cpp writeplc.cpp data.cpp
 
@@ -24,6 +25,6 @@ CFLAGS=-O3 -g -fPIC -std=c++11
 
 default: main
 main:
-	$(CC) $(CFLAGS) ${ALLFLAGS} $(MAIN) ${LIBS} ${LDFLAGS} -o ${PROG}
+	$(CC) $(CFLAGS) ${ALLFLAGS} $(MAIN) ${LIBS} ${LDFLAGS} ${OPTFLAGS} -o ${PROG}
 clean:
 	$(RM) $(PROG) $(OBJ) *~

@@ -151,11 +151,29 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
   for(int i=0;i<nrandom;i++){
 
     if ( lens.randomize[i] ){
-
+/*If FixedPLCVertex directive is activated the first snapshot
+  is recentered on x,y,z = 0.5, 0.5, 0.5*/
+#ifndef FixedPLCVertex
       srand(p.seedcenter+i/numOfLensPerSnap*13);
       random.x0[i] = rand() / float(RAND_MAX);
       random.y0[i] = rand() / float(RAND_MAX);
       random.z0[i] = rand() / float(RAND_MAX);
+#else
+      if(i==0){
+        
+        srand(p.seedcenter+i/numOfLensPerSnap*13);
+        random.x0[i] = 0.5;
+        random.y0[i] = 0.5;
+        random.z0[i] = 0.5;
+
+      }else{
+
+        random.x0[i] = rand() / float(RAND_MAX);
+        random.y0[i] = rand() / float(RAND_MAX);
+        random.z0[i] = rand() / float(RAND_MAX);
+
+      }
+#endif
       if(myid==0){
         cout << "  " << endl;
         cout << " random centers  for the box " << i << " = " << random.x0[i] << "  " << random.y0[i] << "  " << random.z0[i] << endl;
