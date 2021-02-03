@@ -35,7 +35,7 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl,
  * - Each lens will be BoxSize/numberOfLensPerSnap thick
  * - if myid == 0: monitoring messages are produced
  */
-void buildPlanes(InputParams &p, Lens &lens,
+int buildPlanes(InputParams &p, Lens &lens,
   vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox,
   gsl_spline *GetDl, gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
   int numOfLensPerSnap, int myid){
@@ -55,6 +55,14 @@ void buildPlanes(InputParams &p, Lens &lens,
     for(int i=pos_temp; i<nsnaps; i++){
       double dtest = ldbut + snapbox[i]/(1e3/POS_U)/numOfLensPerSnap;
       int    itest = getSnap(snapred, GetDl, accGetDl, dtest);
+      if( itest >= snapred.size()){
+
+          cerr << "getSnap returned an index outside the range! " << endl;
+          cerr << "Check your snapshot list file and if the code" << endl;
+          cerr << "has been compiled with correct units (POS_U is set to " << POS_U << " kpc/h)" << endl;
+          return 1;
+
+      }
       double dz    = fabs( snapred[itest]-gsl_spline_eval (GetZl, dtest, accGetZl) );
       if(dz < ztest){
         if( nrep==1 || ( !bool((nrep-1)%numOfLensPerSnap) || snapbox[itest] == snapbox[pos] ) ){
@@ -121,6 +129,7 @@ void buildPlanes(InputParams &p, Lens &lens,
     planelist.close();
 
   lens.nplanes = lens.replication.back();
+  return 0;
 }
 
 /*

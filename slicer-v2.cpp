@@ -94,7 +94,8 @@ int main(int argc, char** argv){
 
   /* Creating an Instance of the Lens and Building the Planes */
   Lens lens;
-  buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
+  if(buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid))
+    MPI_Abort(MPI_COMM_WORLD,-1);
   /* Testing if the PLC fits inside the piled boxes*/
   for(int i = 0; i< lens.ld.size(); i++){
 #ifndef ReplicationOnPerpendicularPlane
