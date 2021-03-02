@@ -160,9 +160,9 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
       random.z0[i] = rand() / float(RAND_MAX);
 #else
       srand(p.seedcenter+i/numOfLensPerSnap*13);
-      random.x0[i] = 0.5;
-      random.y0[i] = 0.5;
-      random.z0[i] = 0.5;
+      random.x0[i] = 0.0;
+      random.y0[i] = 0.0;
+      random.z0[i] = 0.0;
 #endif
       if(myid==0){
         cout << "  " << endl;
