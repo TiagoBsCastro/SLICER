@@ -35,7 +35,7 @@ int getSnap (vector <double> & zsnap, gsl_spline *GetDl,
  * - Each lens will be BoxSize/numberOfLensPerSnap thick
  * - if myid == 0: monitoring messages are produced
  */
-void buildPlanes(InputParams &p, Lens &lens,
+int buildPlanes(InputParams &p, Lens &lens,
   vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox,
   gsl_spline *GetDl, gsl_interp_accel *accGetDl, gsl_spline *GetZl, gsl_interp_accel *accGetZl,
   int numOfLensPerSnap, int myid){
@@ -55,6 +55,14 @@ void buildPlanes(InputParams &p, Lens &lens,
     for(int i=pos_temp; i<nsnaps; i++){
       double dtest = ldbut + snapbox[i]/(1e3/POS_U)/numOfLensPerSnap;
       int    itest = getSnap(snapred, GetDl, accGetDl, dtest);
+      if( itest >= snapred.size()){
+
+          cerr << "getSnap returned an index outside the range! " << endl;
+          cerr << "Check your snapshot list file and if the code" << endl;
+          cerr << "has been compiled with correct units (POS_U is set to " << POS_U << " kpc/h)" << endl;
+          return 1;
+
+      }
       double dz    = fabs( snapred[itest]-gsl_spline_eval (GetZl, dtest, accGetZl) );
       if(dz < ztest){
         if( nrep==1 || ( !bool((nrep-1)%numOfLensPerSnap) || snapbox[itest] == snapbox[pos] ) ){
@@ -121,6 +129,7 @@ void buildPlanes(InputParams &p, Lens &lens,
     planelist.close();
 
   lens.nplanes = lens.replication.back();
+  return 0;
 }
 
 /*
@@ -142,11 +151,19 @@ void randomizeBox (Random & random, Lens & lens, InputParams & p,
   for(int i=0;i<nrandom;i++){
 
     if ( lens.randomize[i] ){
-
+/*If FixedPLCVertex directive is activated the snapshots
+  are always centered on x,y,z = 0.5, 0.5, 0.5*/
+#ifndef FixedPLCVertex
       srand(p.seedcenter+i/numOfLensPerSnap*13);
       random.x0[i] = rand() / float(RAND_MAX);
       random.y0[i] = rand() / float(RAND_MAX);
       random.z0[i] = rand() / float(RAND_MAX);
+#else
+      srand(p.seedcenter+i/numOfLensPerSnap*13);
+      random.x0[i] = 0.0;
+      random.y0[i] = 0.0;
+      random.z0[i] = 0.0;
+#endif
       if(myid==0){
         cout << "  " << endl;
         cout << " random centers  for the box " << i << " = " << random.x0[i] << "  " << random.y0[i] << "  " << random.z0[i] << endl;
@@ -442,14 +459,24 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
       * write image array(s) to FITS files all particles in a FITS file!
       */
       long naxis = 2;
-      long naxes[2]={ p.npix,p.npix };
+      long naxes[2];
       string fileoutput;
+      unique_ptr<FITS> ffxy;
+
+      naxes[0] = p.npix; naxes[1] = p.npix;
       fileoutput = fileOutput(p, snappl);
       cout << "Saving the maps on: " << fileoutput << endl;
-      unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
-      vector<long> naxex( 2 );
-      naxex[0]=p.npix;
-      naxex[1]=p.npix;
+      try{
+
+        ffxy.reset( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+
+      }
+      catch (FITS::CantCreate){
+
+        cerr << "It was not possible to create the map: " << fileoutput << endl;
+        throw;
+
+      }
       PHDU *phxy=&ffxy->pHDU();
       phxy->write( 1, p.npix*p.npix, mapxytotrecv );
       phxy->addKey ("REDSHIFT",zsim," ");
@@ -480,13 +507,23 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
 
        if(ntotxyi[i]>0){
          long naxis = 2;
-         long naxes[2]={ p.npix,p.npix };
+         long naxes[2];
          string fileoutput;
+         unique_ptr<FITS> ffxy;
+
+         naxes[0] = p.npix; naxes[1] = p.npix;
          fileoutput = fileOutput(p, snappl, i);
-         unique_ptr<FITS> ffxy( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
-         vector<long> naxex( 2 );
-         naxex[0]=p.npix;
-         naxex[1]=p.npix;
+         try{
+
+           ffxy.reset( new FITS( fileoutput, FLOAT_IMG, naxis, naxes ) );
+
+         }
+         catch (FITS::CantCreate){
+
+           cerr << "It was not possible to create the map: " << fileoutput << endl;
+           throw;
+
+         }
          PHDU *phxy=&ffxy->pHDU();
          phxy->write( 1, p.npix*p.npix, mapxytotirecv[i] );
          phxy->addKey ("REDSHIFT",zsim," ");

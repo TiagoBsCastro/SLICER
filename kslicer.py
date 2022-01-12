@@ -72,7 +72,7 @@ for d1, dl, d2 in zip(dllow[:,1], dllen[:,1], dlup[:,1]):
 for zs in ztab:
 
     print( "\nIntegrating the convergence map: zs={:5.4f}\n".format(zs) )
-    planeIndexes = dlup[:,0]<=zs
+    planeIndexes = dlup[:,0]<= zs + 1e-4
     maps = mapsNames[planeIndexes]
     kappa = np.zeros_like( fits.getdata(maps[0]) )
     header = fits.getheader(maps[0])
@@ -84,12 +84,12 @@ for zs in ztab:
         A          = utils.A( dllen[i,1], header['PHYSICALSIZE'] )
         A         /= header['NAXIS1'] * header['NAXIS2']
         mass       = fits.getdata(fname)/A
-        mean       = rho_m * (dlup[i,1] - dllow[i,1]) 
+        mean       = rho_m * (dlup[i,1] - dllow[i,1])
 
         growthCorr = pert.growthFactor(dllen[i,0])/pert.growthFactor(zsnap[i])
         print( "\t<rho>_theory/<rho>_map={}".format(mean/mass.mean()) )
         print( "\tGroth Factor Correction={}\n".format(growthCorr) )
-        kappa += 4.0 * np.pi/c2OverG * lensKernel * ( mass  - mean ) * growthCorr * (1.0+dllen[i,0])**2
+        kappa += 4.0 * np.pi/c2OverG * lensKernel * ( mass - mass.mean() ) * growthCorr * (1.0+dllen[i,0])**2
 
     hdu = fits.PrimaryHDU()
     hdu.data = kappa

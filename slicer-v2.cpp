@@ -94,7 +94,8 @@ int main(int argc, char** argv){
 
   /* Creating an Instance of the Lens and Building the Planes */
   Lens lens;
-  buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid);
+  if(buildPlanes(p, lens, snapred, snappath, snapbox, getDl, accGetDl, getZl, accGetZl, numberOfLensPerSnap, myid))
+    MPI_Abort(MPI_COMM_WORLD,-1);
   /* Testing if the PLC fits inside the piled boxes*/
   for(int i = 0; i< lens.ld.size(); i++){
 #ifndef ReplicationOnPerpendicularPlane
@@ -200,8 +201,14 @@ int main(int argc, char** argv){
         MPI_Reduce( &mapxytoti[i][0],  &mapxytotirecv[i][0],  p.npix*p.npix, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
       double zsim = gsl_spline_eval (getZl, (lens.ld2[isnap]+lens.ld[isnap])/2.0, accGetZl);
-      writeMaps (p, simdata, lens, isnap, zsim, snappl, p.snpix, mapxytotrecv,
+      try{
+        writeMaps (p, simdata, lens, isnap, zsim, snappl, p.snpix, mapxytotrecv,
                        mapxytotirecv, ntotxyi,  myid);
+      }catch(FITS::CantCreate){
+
+        MPI_Abort(MPI_COMM_WORLD,-1);
+
+      }
 
     }else{
 
