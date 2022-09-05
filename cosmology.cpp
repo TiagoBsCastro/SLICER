@@ -29,13 +29,6 @@ double st,wt;
 
 cosmology::cosmology(double omega,double lambda,double hubble,double wquint,double baryon)
   :om(omega),la(lambda),h0(hubble),wq(wquint),omb(baryon),cw(true){
-  if(wq!=-1){
-    std:: cout << " setting wq = " << wq << std:: endl;
-    std:: cout << " you are running MOKA with w/=-1 !!! " << std:: endl;
-    std:: cout << " if you are aware of eventual problems " << std:: endl;
-    std:: cout << " you can comment this line in cosmology.cpp " << std:: endl;
-    exit(1);
-  }
   ew=3.0*(1.0+wq);
   ri=0;
   initialise();
@@ -333,13 +326,16 @@ double cosmology::timeKernel(double a){
 
 double cosmology::ePrime (double a)
 {
-  // not working for w/=-1!!!
   return
-    -0.5*(4.0*ri/gsl_pow_4 (a)+3.0*om/gsl_pow_3 (a)+la*0.+
-	  2.0*(1.0-om-la)/gsl_pow_2 (a))/e (a)/a;
-  //-0.5*(4.0*ri/gsl_pow_4 (a)+3.0*om/gsl_pow_3 (a)+la*qPrime (a)+
-  //	  2.0*(1.0-om-la)/gsl_pow_2 (a))/e (a)/a;
+  -0.5*(4.0*ri/gsl_pow_4 (a)+3.0*om/gsl_pow_3 (a)+la*qPrime (a)+
+  	  2.0*(1.0-om-la)/gsl_pow_2 (a))/e (a)/a;
 }
+
+double cosmology::qPrime (double a)
+{
+  return -ew*q(a)/a 
+}
+
 
 double cosmology:: time(double z){
   double a=1.0/(1.0+z);

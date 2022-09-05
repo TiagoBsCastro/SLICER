@@ -1,7 +1,7 @@
 from astropy.io import fits
 import numpy as np
 from scipy.integrate import quad
-from astropy.cosmology import FlatLambdaCDM
+from astropy.cosmology import Flatw0waCDM
 from astropy.cosmology import z_at_value
 from astropy.constants import G as GNewton
 from astropy.constants import c as speedOfLight
@@ -16,9 +16,9 @@ import smr
 ############################ Cosmology ###############################
 
 # Background quantities are computed with Astropy
-cosmo   = FlatLambdaCDM(Om0=input.Om0, H0 = 100.0)                        # Mpc/h units
-c2OverG = (speedOfLight**2/GNewton).to(u.Msun/u.Mpc).value/1e10           # c^2/G in 10^10Msun/h/(Mpc/h)
-rho_m   = cosmo.Om0 * cosmo.critical_density0.to('Msun/Mpc^3').value/1e10 # <rho_m> in 10^10 Msun/h/(Mpc/h)^3
+cosmo   = Flatw0waCDM(Om0=input.Om0, H0 = 100.0, w0=input.w0, wa=input.wa) # Mpc/h units
+c2OverG = (speedOfLight**2/GNewton).to(u.Msun/u.Mpc).value/1e10            # c^2/G in 10^10Msun/h/(Mpc/h)
+rho_m   = cosmo.Om0 * cosmo.critical_density0.to('Msun/Mpc^3').value/1e10  # <rho_m> in 10^10 Msun/h/(Mpc/h)^3
 # Perturbation quantities are computed with Colossus
 pert = cosmology.setCosmology('MyCosmo', input.pert_params)
 

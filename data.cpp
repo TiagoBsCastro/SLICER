@@ -54,6 +54,10 @@ int readInput(struct InputParams &p, string name){
   std::getline(fin, str);
   std::getline(fin, str);
   p.snopt = std::stoi(str);//        13. Shot-noise option: 0-No random Degradation; 1-Half particles degradation ...
+  std::getline(fin, str);
+  std::getline(fin, str);
+  p.w = std::stof(str);    //        14. Dark-Energy EOS w
+
 
   if(p.npix==0)
     p.simType = "SubFind";

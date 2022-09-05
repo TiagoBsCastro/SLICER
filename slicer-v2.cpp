@@ -74,7 +74,7 @@ int main(int argc, char** argv){
   testHydro(p, simdata);
 
   /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
-  cosmology cosmo(simdata.om0,simdata.oml,1.0,-1.0);
+  cosmology cosmo(simdata.om0,simdata.oml,1.0,p.w);
   /* Creating a table with redshifts and comoving distances to be interpolated*/
   vector <double> zl(neval),dl(neval);
   for(int i=0;i<neval;i++){

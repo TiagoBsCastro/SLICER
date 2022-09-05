@@ -32,6 +32,7 @@ struct InputParams{
   int snopt; // Shot-noise option: 0-No random Degradation; 1-Half particles degradation; 2- Three quarters particle degradation ...
   string snpix; // Label string for the output according to npix and physical options
   bool physical; // How the pixelization should be done: True on physical distances. False on angular positions
+  double w; 	 // Dark-Energy EOS w
 };
 
 // Gadget2 Header Struct
