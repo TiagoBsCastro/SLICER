@@ -333,7 +333,7 @@ double cosmology::ePrime (double a)
 
 double cosmology::qPrime (double a)
 {
-  return -ew*q(a)/a 
+  return -ew*q(a)/a;
 }
 
 

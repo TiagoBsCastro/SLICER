@@ -107,6 +107,11 @@ class cosmology{
     /**
      * Returns the cosmic time in unit of the Hubble time 1/H_0
      */
+    double qPrime( double a );
+    /**
+     * Returns the time derivative of the expansion function in 
+     * unit time 1/H_0.
+     */
     double time(double z);
     /**
      * Returns the equation-of-state exponent ew=3(1+wq) of the cosmological model.
