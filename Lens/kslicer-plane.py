@@ -1,32 +1,51 @@
-from astropy.io import fits
+import astropy.units as u
 import numpy as np
+import sys
+import utils
+import smr
 from scipy.integrate import quad
-from astropy.cosmology import FlatLambdaCDM
-from astropy.cosmology import z_at_value
+from astropy.cosmology import Flatw0waCDM, z_at_value 
 from astropy.constants import G as GNewton
 from astropy.constants import c as speedOfLight
 from colossus.cosmology import cosmology
-import astropy.units as u
 from glob import glob
-import sys
-import input
-import utils
-import smr
+
+############################## Input #################################
+
+# Cosmology
+Om0 = 0.300
+Ob0 = 0.049
+H0  = 100.0
+w0  = -1.00
+wa  = 0.000
+
+# Output file
+output_file = 'ref/0/outputs.txt'
+
+# Sim directory
+base_dir = 'ref/0/'
+
+# Sim details
+box_size = 250.0 # Mpc/h
+
+# Seed for randomization
+np.random.seed(3395)
 
 ############################ Cosmology ###############################
 
 # Background quantities are computed with Astropy
-cosmo   = FlatLambdaCDM(Om0=input.Om0, H0 = 100.0)                        # Mpc/h units
-c2OverG = (speedOfLight**2/GNewton).to(u.Msun/u.Mpc).value/1e10           # c^2/G in 10^10Msun/h/(Mpc/h)
-rho_m   = cosmo.Om0 * cosmo.critical_density0.to('Msun/Mpc^3').value/1e10 # <rho_m> in 10^10 Msun/h/(Mpc/h)^3
+cosmo   = Flatw0waCDM(Om0=Om0, H0 = 100.0, w0=w0, wa=wa) # Mpc/h units
+c2OverG = (speedOfLight**2/GNewton).to(u.Msun/u.Mpc).value/1e10            # c^2/G in 10^10Msun/h/(Mpc/h)
+rho_m   = cosmo.Om0 * cosmo.critical_density0.to('Msun/Mpc^3').value/1e10  # <rho_m> in 10^10 Msun/h/(Mpc/h)^3
 # Perturbation quantities are computed with Colossus
-pert = cosmology.setCosmology('MyCosmo', input.pert_params)
+pert = cosmology.setCosmology('MyCosmo', 
+        {'flat': True, 'H0': H0, 'Om0': Om0, 'Ob0': Ob0, 'sigma8': sigma8, 'ns': ns, 'relspecies':False, 'de_model':'w0wa', 'w0':w0, 'wa':wa})
 
 ########################### Mass Maps ################################
 
-mapsNames = sorted(glob( input.massMapsNames.substitute(mapIndex=input.imap) ))
+mapsNames = sorted(glob( base_dir + 'snapdir_*/*npy' ))
 mapsNames = np.array(mapsNames)
-zsnap     = np.loadtxt( input.planesFileNames.substitute(mapIndex=input.imap), usecols=[6] )
+zsnap     = 1.0/np.loadtxt( output_file ) - 1
 
 ################ Reconstruction of the Lens Planes ###################
 
@@ -36,21 +55,15 @@ dllen = np.empty_like(dllow)
 
 for i, fname in enumerate(mapsNames):
 
-    dllow[i,1] = fits.getheader(fname)['DLLOW'] * input.H0/100
-    dlup[i,1]  = fits.getheader(fname)['DLUP'] * input.H0/100
+    dllow[i,1] = box_size * i
+    dlup[i,1]  = box_size * (i+1)
 
     dllow[i,0] = z_at_value(cosmo.comoving_distance, dllow[i,1]*u.Mpc) if dllow[i,1] > 0.0 else 0.0
     dlup[i,0]  = z_at_value(cosmo.comoving_distance,  dlup[i,1]*u.Mpc)
 
 print(dlup)
 # Defining the source redshifts for integration
-if input.source_redshifts == 'All':
-
-    ztab = dlup[:,0]
-
-else:
-
-    ztab = dlup[input.source_redshifts,0]
+ztab = dlup[:,0]
 
 # Testing the Lens Planes
 utils.planesSanityCheck(dllow, dlup)
@@ -81,21 +94,21 @@ for zs in ztab:
 
         print( "\t{}".format(fname) )
         lensKernel = utils.lensKernel( dllen[i,0], zs, cosmo )
-        A          = utils.A( dllen[i,1], header['PHYSICALSIZE'] )
-        A         /= header['NAXIS1'] * header['NAXIS2']
-        mass       = fits.getdata(fname)/A
+        mass       = np.load(fname)
+        A          = box_size**2/mass.shape[0]/mass.shape[1]
+        mass      /= A
         mean       = rho_m * (dlup[i,1] - dllow[i,1])
 
         growthCorr = pert.growthFactor(dllen[i,0])/pert.growthFactor(zsnap[i])
         print( "\t<rho>_theory/<rho>_map={}".format(mean/mass.mean()) )
-        print( "\tGroth Factor Correction={}\n".format(growthCorr) )
+        print( "\tGrowth Factor Correction={}\n".format(growthCorr) )
         kappa += 4.0 * np.pi/c2OverG * lensKernel * ( mass - mass.mean() ) * growthCorr * (1.0+dllen[i,0])**2
 
     hdu = fits.PrimaryHDU()
     hdu.data = kappa
-    utils.genericHeader(hdu.header, header['NAXIS1'] , zs, header['PHYSICALSIZE'])
+    utils.genericHeader(hdu.header, kappa.shape[0] , zs)
     print("\nSaving the Map")
-    hdu.writeto( input.kappaMapsNames.substitute(mapIndex=input.imap,zs=np.round(zs,4)) , overwrite=True)
-    print("Computing shear maps")
-    smr.smr( input.kappaMapsNames.substitute(mapIndex=input.imap,zs=np.round(zs,4)) )
+    hdu.writeto( base_dir + "kappa_{0:3.2}.fits".format(zs) , overwrite=True)
+    #print("Computing shear maps")
+    #smr.smr( input.kappaMapsNames.substitute(mapIndex=input.imap,zs=np.round(zs,4)) )
     print("Done\n")
