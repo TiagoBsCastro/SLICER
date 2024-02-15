@@ -1,53 +1,111 @@
 import numpy as np
+import pyfftw
 from scipy.stats import binned_statistic
 from astropy.io import fits
 from derivatives import laplacian_O3, gradientO4
+from copy import deepcopy
 
 ##################################################  Utils  ########################################################
 # Laplacian in 2D
-def convergence_fft(potential, KX, KY):
+def statistic_fft(phi, KX, KY, threads=1, input_space='real', statistic=None):
 
-    return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2+KY**2)/2.0, potential.shape ).real
+    if (statistic is None) or (statistic not in ['kappa', 'shear1', 'shear2']):
 
-# Shear direct terms
-def shear1_fft(potential, KX, KY):
+        raise RuntimeError('Statistic should be `kappa`, `shear1`, or `shear2`')
 
-    return - np.fft.ifft2( np.fft.fft2(potential) * (KX**2-KY**2)/2.0, potential.shape ).real
+    # Prepare the FFT object for forward and inverse FFT
+    if input_space=='real':
 
-# Shear cross terms
-def shear2_fft(potential, KX, KY):
+        # Allocate aligned arrays for output, and the inverse FFT output
+        fft_input    = pyfftw.empty_aligned((phi.shape[0], phi.shape[1]), dtype='float32')
+        fft_input[:] = phi
+        fft_output   = pyfftw.empty_aligned((phi.shape[0], phi.shape[1]//2 + 1), dtype='complex64')
+        fft_object   = pyfftw.FFTW(fft_input, fft_output, axes=(0, 1), direction='FFTW_FORWARD', flags=('FFTW_ESTIMATE',), threads=threads)
 
-    return - np.fft.ifft2( KX*KY*np.fft.fft2(potential), potential.shape).real
+        # Perform the forward FFT
+        phi_k = fft_object() 
 
-def lensing_potential (kappa, KX, KY):
+    elif input_space=='fourier':
 
-    # Going to Fourier Space
+        # Allocate aligned arrays for output, and the inverse FFT output
+        fft_input     = pyfftw.empty_aligned((phi.shape[0], 2*(phi.shape[1] - 1)), dtype='float32')
+        fft_output    = pyfftw.empty_aligned(phi.shape, dtype='complex64')
+        fft_output[:] = phi
+        phi_k         = fft_output[:]
+
+    else:
+
+        raise RuntimeError(f'Unknown input space {input_space}. It should be either real or fourier.')
+
+    if statistic == 'kappa':
+
+        phi_k *= (KX**2 + KY**2) / 2.0
+
+    elif statistic == 'shear1':
+
+        phi_k *= (KX**2 - KY**2) / 2.0
+
+    elif statistic == 'shear2':
+
+        phi_k *= KX * KY
+
+    ifft_object = pyfftw.FFTW(fft_output, fft_input, axes=(0, 1), direction='FFTW_BACKWARD', flags=('FFTW_ESTIMATE',), threads=threads)
+    # Perform the inverse FFT
+    return  -ifft_object()
+
+def lensing_potential (kappa, KX, KY, threads=1, return_phi_k=False):
+
+    # Allocate aligned arrays for output, and the inverse FFT output
+    fft_input  = pyfftw.empty_aligned(kappa.shape, dtype='float32')
+    fft_output = pyfftw.empty_aligned((kappa.shape[0], kappa.shape[1]//2 + 1), dtype='complex64')
+    fft_input[:] = kappa
+    
+    # Prepare the FFT object for forward and inverse FFT
+    fft_object  = pyfftw.FFTW(fft_input, fft_output, axes=(0, 1), direction='FFTW_FORWARD', flags=('FFTW_ESTIMATE',), threads=threads)
+    ifft_object = pyfftw.FFTW(fft_output, fft_input, axes=(0, 1), direction='FFTW_BACKWARD', flags=('FFTW_ESTIMATE',), threads=threads)
+
+    # Perform the forward FFT
+    phi_k = fft_object()
+
+    # Perform operations in Fourier space
     with np.errstate(divide='ignore', invalid='ignore'):
-
-        phi_k = 2.0 * np.fft.fft2(kappa) / (KX**2+KY**2)
-
-    # Changing the monopole
+        phi_k /= (KX**2 + KY**2)
+    
+    # Handling the monopole term explicitly
     phi_k[0,0] = 0.0
 
-    return - np.fft.ifft2( phi_k, kappa.shape ).real
+    if return_phi_k:
+        # This is needed to break the alias between phi_k and fft_output
+        # that will be destroyed during the inverse FFT.
+        phi_k = deepcopy(phi_k)
+
+    # Inverse FFT
+    ifft_object()
+    # Perform the inverse FFT
+    if return_phi_k:
+        return -2 * ifft_object.output_array, -2 * phi_k
+    else:
+        return -2 * ifft_object.output_array
 
 def unpad (array, n):
 
     return array[array.shape[0]//(2*n):-array.shape[0]//(2*n), array.shape[1]//(2*n):-array.shape[1]//(2*n)]
 
-def PS (field, size):
+def PS (field, size, threads=1):
+
+    from pyfftw.interfaces import numpy_fft as fft
 
     # Taking the fourier transform
     kx = 2 * np.pi * np.fft.fftfreq(field.shape[0], size/field.shape[0])
-    ky = 2 * np.pi * np.fft.fftfreq(field.shape[1], size/field.shape[1])
+    ky = 2 * np.pi * np.fft.rfftfreq(field.shape[1], size/field.shape[1])
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
     K = np.sqrt(KX**2 + KY**2).flatten()
 
     kf   = np.min([ KX[1,0], KY[0,1] ])
     bins = np.array([i*kf for i in range(field.shape[0])])
 
-    P = np.fft.fft2( field ); P = P.flatten()
-    P = np.real(P * np.conj(P))
+    P = fft.rfft2( field , threads=threads); P = P.flatten()
+    P = P ** 2
 
     P = binned_statistic(K, P, bins=bins, statistic='mean').statistic
     K = binned_statistic(K, K, bins=bins, statistic='mean').statistic
@@ -61,7 +119,7 @@ def PS (field, size):
 
 ####################################################################################################################
 
-def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
+def smr(fname, zero_padding=False, fout=None, derivative="FFT", threads=1, overwrite=False):
     '''
     Computes the shear maps reconstructing the lensing potential
     from the convergence map.
@@ -79,6 +137,12 @@ def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
             * FFT (Default): Compute the derivatives using FFT and IFFT.
             * gradient     : Use forth order finite differences.
 
+    threads: int (optional)
+        Number of threads to be used by pyfftw
+
+    overwrite: bool (optional)
+        Whether overwite files in case the fout name already exists.
+
     returns:
 
     kappa: array
@@ -87,38 +151,46 @@ def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
 
     gamma, gamma1, gamma2 maps are saved directly on fout.
     '''
-    # Getting the convergence map
-    kappa = fits.getdata(fname)
-    size  = fits.getheader(fname)['ANGLE'] * np.pi / 180.0
+    # Getting the convergence map info
+    nx   = fits.getheader(fname)['NAXIS1']
+    ny   = fits.getheader(fname)['NAXIS2']
+    size = fits.getheader(fname)['ANGLE'] * np.pi / 180.0
 
     # Zero padding the Map in place
     if zero_padding:
 
-        if (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
-
-            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
-
-        elif (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
-
-            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2+1), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
-
-        elif not (kappa.shape[0] % 2) and (kappa.shape[1] % 2):
-
-            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2+1) ) )
-
-        elif not (kappa.shape[0] % 2) and not (kappa.shape[1] % 2):
-
-            kappa = np.pad(kappa, ( (kappa.shape[0]//2, kappa.shape[0]//2), (kappa.shape[1]//2, kappa.shape[1]//2) ) )
-
         size *= 2
+        nx   *= 2
+        ny   *= 2
+        kappa = fits.getdata(fname)
+
+        if (nx % 2) and (ny % 2):
+
+            kappa = np.pad(kappa, ( (nx//2, nx//2+1), (ny//2, ny//2+1) ) )
+
+        elif (nx % 2) and not (ny % 2):
+
+            kappa = np.pad(kappa, ( (nx//2, nx//2+1), (ny//2, ny//2) ) )
+
+        elif not (nx % 2) and (ny % 2):
+
+            kappa = np.pad(kappa, ( (nx//2, nx//2), (ny//2, ny//2+1) ) )
+
+        elif not (nx % 2) and not (ny % 2):
+
+            kappa = np.pad(kappa, ( (nx//2, nx//2), (ny//2, ny//2) ) )
+
+    else:
+
+        kappa = fits.getdata(fname)
 
     # Setting the FFT for inverting the Laplacian
-    kx = 2 * np.pi * np.fft.fftfreq(kappa.shape[0], size/kappa.shape[0])
-    ky = 2 * np.pi * np.fft.fftfreq(kappa.shape[1], size/kappa.shape[1])
+    kx = 2 * np.pi * np.fft.fftfreq(nx, size/nx).astype(np.float32)
+    ky = 2 * np.pi * np.fft.rfftfreq(ny, size/ny).astype(np.float32)
     KX, KY = np.meshgrid(kx, ky, indexing='ij')
 
     # Getting the potential
-    potential = lensing_potential( kappa, KX, KY )
+    potential, phi_k = lensing_potential( kappa, KX, KY, threads=threads, return_phi_k=True)
 
     if derivative == "gradient":
 
@@ -136,9 +208,9 @@ def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
     elif derivative == "FFT":
 
         # Recomputing kappa (for redundancy check), gamma1, gamma2
-        kappa  = convergence_fft(potential, KX, KY)
-        gamma1 = shear1_fft(potential, KX, KY)
-        gamma2 = shear2_fft(potential, KX, KY)
+        kappa  = statistic_fft(phi_k, KX, KY, threads=threads, input_space='fourier', statistic='kappa')
+        gamma1 = statistic_fft(phi_k, KX, KY, threads=threads, input_space='fourier', statistic='shear1')
+        gamma2 = statistic_fft(phi_k, KX, KY, threads=threads, input_space='fourier', statistic='shear2')
 
     else:
 
@@ -152,11 +224,6 @@ def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
         gamma2    = unpad(gamma2, 2); gamma2 -= gamma2.mean()
         size     /= 2.0
 
-    Pk  = PS(kappa, size)
-    Pg1 = PS(gamma1, size)
-    Pg2 = PS(gamma2, size)
-    Pg  = PS(gamma1 + 1j * gamma2, size)
-
     header = fits.getheader(fname)
     gamma  = np.sqrt(gamma1**2 + gamma2**2);
 
@@ -164,35 +231,28 @@ def smr(fname, zero_padding=False, fout=None, derivative="FFT"):
 
         # Checking if it was run by PowerBornApp or if it has kappa in the name
         fout = fname.replace(".fits", ".txt")
-        np.savetxt(fout, Pk)
         fout = fname.replace("kappaBApp", "gamma1") if "kappaBApp" in fname else fname.replace("kappa", "gamma1")
         if fout == fname:
 
             raise ValueError("fout can not be None if 'kappa' or 'kappaBApp' is not in fname.")
 
-        fits.writeto(fout, gamma1.astype(np.float32), header=header)
-        fout = fout.replace(".fits", ".txt")
-        np.savetxt(fout, Pg1)
+        fits.writeto(fout, gamma1.astype(np.float32), header=header, overwrite=overwrite)
         fout = fname.replace("kappaBApp", "gamma2") if "kappaBApp" in fname else fname.replace("kappa", "gamma2")
-        fits.writeto(fout, gamma2.astype(np.float32), header=header)
-        fout = fout.replace(".fits", ".txt")
-        np.savetxt(fout, Pg2)
+        fits.writeto(fout, gamma2.astype(np.float32), header=header, overwrite=overwrite)
         fout = fname.replace("kappaBApp", "gamma") if "kappaBApp" in fname else fname.replace("kappa", "gamma")
-        fits.writeto(fout, gamma.astype(np.float32), header=header)
-        fout = fout.replace(".fits", ".txt")
-        np.savetxt(fout, Pg)
+        fits.writeto(fout, gamma.astype(np.float32), header=header, overwrite=overwrite)
         fout = fname.replace("kappaBApp", "phi") if "kappaBApp" in fname else fname.replace("kappa", "phi")
-        fits.writeto(fout, potential.astype(np.float32), header=header)
+        fits.writeto(fout, potential.astype(np.float32), header=header, overwrite=overwrite)
 
     else:
 
         try:
 
             # Checking if it was run by PowerBornApp or if it has kappa in the name
-            fits.writeto(fout.format(statistic="gamma1"), gamma1.astype(np.float32), header=header)
-            fits.writeto(fout.format(statistic="gamma2"), gamma2.astype(np.float32), header=header)
-            fits.writeto(fout.format(statistic="gamma"), gamma.astype(np.float32), header=header)
-            fits.writeto(fout.format(statistic="phi"), potential.astype(np.float32), header=header)
+            fits.writeto(fout.format(statistic="gamma1"), gamma1.astype(np.float32), header=header, overwrite=overwrite)
+            fits.writeto(fout.format(statistic="gamma2"), gamma2.astype(np.float32), header=header, overwrite=overwrite)
+            fits.writeto(fout.format(statistic="gamma"), gamma.astype(np.float32), header=header, overwrite=overwrite)
+            fits.writeto(fout.format(statistic="phi"), potential.astype(np.float32), header=header, overwrite=overwrite)
 
         except KeyError:
 
