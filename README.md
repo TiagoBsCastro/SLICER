@@ -22,7 +22,7 @@ sudo apt-get install libgsl-dev libcfitsio-dev cmake mpich libccfits-dev
 1. Clone the Repository
 ```bash
 git clone https://github.com/TiagoBsCastro/SLICER.git
-cd slicer
+cd SLICER
 ```
 2. Configure with CMake
 Create a build directory and run CMake to configure the project:
