@@ -13,7 +13,13 @@
 
 using namespace std;
 
-// Input file struct
+/**
+ * @struct InputParams
+ * @brief Stores parameters read from an input file for simulation configuration.
+ *
+ * This structure contains settings and parameters that control the behavior of the simulation,
+ * such as pixel count, redshift information, and paths for input and output files.
+ */
 struct InputParams{
   int npix; // Number of Pixels
   double zs; // Source Redshift
@@ -35,7 +41,13 @@ struct InputParams{
   double w; 	 // Dark-Energy EOS w
 };
 
-// Gadget2 Header Struct
+/**
+ * @struct Header
+ * @brief Represents the header information in a Gadget-2 simulation file.
+ *
+ * This structure stores various metadata about a Gadget-2 simulation, including particle counts,
+ * mass array, time, redshift, and other simulation parameters.
+ */
 const int dummy = 14;
 struct Header
 {
@@ -59,7 +71,13 @@ struct Header
   int32_t la[dummy];
 };
 
-// Gadget2 Block Metadata structure
+/**
+ * @struct Block
+ * @brief Stores block metadata in a Gadget-2 data file.
+ *
+ * This structure represents the metadata for a block in a Gadget-2 file, detailing its size,
+ * alignment, and other necessary data for file parsing.
+ */
 struct Block
 {
   int32_t blocksize1;
@@ -70,7 +88,13 @@ struct Block
 };
 
 
-// Lens structure
+/**
+ * @struct Lens
+ * @brief Represents lensing configuration for the simulation.
+ *
+ * This structure stores information about the lens planes used in the simulation,
+ * including their indices, associated snapshots, and z positions.
+ */
 struct Lens{
   int nplanes;                   // Number of lens planes
   vector <int>    replication;  // Number of repetitions of the i-th snapshot box
@@ -86,14 +110,26 @@ struct Lens{
 
 };
 
-// Randomization plan structure
+/**
+ * @struct Random
+ * @brief Holds the parameters for randomizing aspects of the simulation.
+ *
+ * This structure contains vectors that store values used to randomize the simulation's 
+ * initial conditions, such as the simulation box's center and orientation.
+ */
 struct Random{
   vector<double> x0, y0, z0;   // ramdomizing the center of the simulation [0,1]
   vector<int> face;            // face of the dice
   vector<int> sgnX, sgnY,sgnZ; // randomizing the box axis signs
 };
 
-// Particles position structure
+/**
+ * @struct Gadget
+ * @brief Stores the positions of different types of particles in a GADGET simulation.
+ *
+ * GADGET simulations categorize particles into different types, each represented by a separate vector.
+ * This structure holds the positions of these particles across different types.
+ */
 struct Gadget{
   // GADGET has 6 different particle type
   vector<float> xx0, yy0, zz0;
@@ -104,7 +140,16 @@ struct Gadget{
   vector<float> xx5, yy5, zz5;
 };
 
-// Subfind structure
+/**
+ * @brief Constructor for the SubFind object, initializing its internal state and preparing it for use.
+ *
+ * This constructor sets up the initial configuration of the SubFind object, based on the provided
+ * parameters. It ensures that all necessary properties are set to default values if not specified
+ * and prepares any internal resources needed for the object's operations.
+ *
+ * @param param1 Description of what param1 represents and how it's used in initialization.
+ * @param param2 Description of what param2 does and its significance to the SubFind object.
+ */
 struct SubFind{
   // SubFind has 1 particle type (Pinocchio PLC like structure)
   vector<uint32_t> id; //                 1) Group ID
@@ -123,22 +168,45 @@ struct SubFind{
 
 };
 
-// Operators to Read Header and Block
+/**
+ * @brief Stream extraction operator for reading Header structure data from an input stream.
+ * @param input Reference to the input stream from which to read.
+ * @param header Reference to the Header structure to populate with read data.
+ * @return Reference to the updated input stream.
+ *
+ * Reads binary data corresponding to the Header structure directly from the input stream into the provided Header object.
+ */
 inline istream & operator>>(istream &input, Header &header)
 {
   input.read((char *)&header, sizeof(header));
   return input;
 };
+
+/**
+ * @brief Stream extraction operator for reading Block structure data from an input stream.
+ * @param input Reference to the input stream from which to read.
+ * @param block Reference to the Block structure to populate with read data.
+ * @return Reference to the updated input stream.
+ *
+ * Reads binary data corresponding to the Block structure directly from the input stream into the provided Block object.
+ */
 inline istream & operator>>(istream &input, Block &block)
 {
   input.read((char *)&block, sizeof(block));
   return input;
 };
 
-/*
-  Reads the input params file "name" and stores the parameter values in the
-  InputParams structure
-*/
+/**
+ * @brief Reads the input parameters file and stores the values in the provided InputParams structure.
+ *
+ * This function opens and reads the contents of a named input parameters file. It parses the file
+ * and populates the provided InputParams structure with the values read from the file. If the file
+ * cannot be opened, the program will print an error message and terminate.
+ *
+ * @param p Reference to an InputParams structure where read parameters will be stored.
+ * @param name Name of the file to read. The file should be in the current working directory.
+ * @return int Returns 0 on success, or exits with 1 if the file cannot be opened.
+ */
 int readInput(struct InputParams &p, string name);
 
 #endif

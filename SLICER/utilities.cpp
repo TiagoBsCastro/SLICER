@@ -1,5 +1,6 @@
 #include "utilities.h"
 
+//TSC weights
 float weight (float ixx, float ixh, double dx) {
   float DD = ixx-ixh;
   float x=fabs(DD)/dx;
@@ -12,6 +13,7 @@ float weight (float ixx, float ixh, double dx) {
   return w;
 }
 
+// get polar coordinates
 void getPolar(double x, double y, double z, double &ang1, double &ang2, double &d, bool radec){
   if(radec){
     d = sqrt(x*x+y*y+z*z);
