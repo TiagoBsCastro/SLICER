@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SLICER - Simulation LIght conE buildeR: Main Page</title>
+<title>SLICER - Simulation LIght conE buildeR: SLICER: Simulation Light Cone Builder</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,11 +62,110 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">SLICER - Simulation LIght conE buildeR Documentation</div>  </div>
+<div class="title">SLICER: Simulation Light Cone Builder </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md_README"></a> <a href="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml"><img src="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg" alt="C++ Build CI" style="pointer-events: none;" class="inline"/></a> <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" style="pointer-events: none;" class="inline"/> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/docs-available-green.svg" alt="Documentation" style="pointer-events: none;" class="inline"/></a> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/updated-April%2024-orange.svg" alt="Last Updated" style="pointer-events: none;" class="inline"/></a></p>
+<p><b>SLICER</b> stands for <b>Simulation Light Cone Builder</b>, a specialized tool crafted for astrophysicists and cosmologists. Developed in C++ and parallelized using MPI, SLICER efficiently generates mass maps from particles and past light cones of structures and substructures from SUBFIND catalogs, all from GADGET simulation snapshots (format 2).</p>
+<h1><a class="anchor" id="autotoc_md7"></a>
+Key Features</h1>
+<ul>
+<li><b>High-Performance Computing</b>: Utilizes MPI for efficient parallel computing, enabling the handling of extensive cosmological datasets.</li>
+<li><b>Versatile Data Processing</b>: It is capable of creating both mass maps and past light cones of structures. The mass maps can be written for all particle species or separately.</li>
+<li><b>Outputs in FITS Format</b>: Delivers results for mass maps in the Flexible Image Transport System (FITS) format, which is extensively used in the astronomical community for storing scientific data.</li>
+<li><b>PINOCCHIO like PLC</b>: The past-light cone (PLC) of (sub)-structures is written with the same structure used by PINOCCHIO (<a href="https://github.com/pigimonaco/Pinocchio">Pinocchio on GitHub</a>).</li>
+<li><b>Lensing post-processing</b>: SLICER is distributed with several Python post-processing tools that efficiently extract lensing maps from the mass maps. These tools can be found in the <a href="./Lens/"><code>Lens/</code> directory</a>.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md8"></a>
+Dependencies</h1>
+<p>Before installing SLICER, ensure that the following dependencies are met:</p><ul>
+<li><b>C++ Compiler</b>: A modern C++ compiler (e.g., GCC, Clang)</li>
+<li><b>MPI</b>: For parallel computation (e.g., MPICH, OpenMPI)</li>
+<li><b>CMake</b>: For building the application (version 3.10 or higher)</li>
+<li><b>GNU Scientific Library (GSL)</b>: Provides numerous mathematical routines</li>
+<li><b>CFITSIO</b>: Library for reading and writing FITS files</li>
+<li><b>CCfits</b> (optional): A C++ wrapper for CFITSIO</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md9"></a>
+Installing Dependencies</h2>
+<p>On Ubuntu, you can install these dependencies using: </p><div class="fragment"><div class="line">sudo apt-get update</div>
+<div class="line">sudo apt-get install libgsl-dev libcfitsio-dev cmake mpich libccfits-dev</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md10"></a>
+Installing</h1>
+<ol type="1">
+<li>Clone the Repository <div class="fragment"><div class="line">git clone https://github.com/TiagoBsCastro/SLICER.git</div>
+<div class="line">cd SLICER</div>
+</div><!-- fragment --></li>
+<li>Configure with CMake Create a build directory and run CMake to configure the project: <div class="fragment"><div class="line">mkdir build</div>
+<div class="line">cd build</div>
+<div class="line">cmake .. -DCMAKE_PREFIX_PATH=$(Your Library Path)</div>
+</div><!-- fragment --></li>
+<li>Build the Project Compile the project: <div class="fragment"><div class="line">make</div>
+</div><!-- fragment --></li>
+</ol>
+<h1><a class="anchor" id="autotoc_md11"></a>
+Running the SLICER</h1>
+<p>To run SLICER, follow these simple steps:</p>
+<ol type="1">
+<li><b>Modify the <code>InputParams.ini</code> File</b>: Configure the simulation parameters by editing the <a href="./examples/InputParams.ini">InputParams.ini</a> file. Here is a breakdown of what each parameter means:<ul>
+<li><b>Number of Map Pixels</b>: Defines the square root of the number of pixels of the output map. Example: <code>256</code>.</li>
+<li><b>Source Redshift</b>: The redshift of the source plane. Example: <code>0.5</code>.</li>
+<li><b>Field of View</b>: Angular aperture of the field of view in degrees. Example: <code>2.0</code>.</li>
+<li><b>File with Snapshots</b>: Path to the file listing the snapshots to use. Example: <a href="./examples/snapshot_list.txt">snapshot_list.txt</a>.</li>
+<li><b>Snapshots Directory</b>: Directory containing the snapshots. Example: <code>/home/tcastro/L128N256/</code>.</li>
+<li><b>PLC Sim. Name</b>: The naming convention used for your simulation outputs. Example: <code>gadget</code>.</li>
+<li><b>Seed for Pos. Center</b>: Seed used for random positioning of the center. Example: <code>-229</code>.</li>
+<li><b>Seed for Pos. Reflec.</b>: Seed for random reflections in positioning. Example: <code>-230</code>.</li>
+<li><b>Seed for Axis Sel.</b>: Seed used for random axis selection. Example: <code>-231</code>.</li>
+<li><b>Part. in Planes</b>: Controls whether particle types are written to separate lens planes or collectively to the same lens plane. Set to <code>0</code> to write collectively, or <code>1</code> to separate by particle type.</li>
+<li><b>PLC Directory</b>: Output directory for the past light cones. Example: <code>/home/tcastro/test_</code>.</li>
+<li><b>PLC Suffix</b>: Suffix for the output files. Example: <code>0</code>.</li>
+<li><b>Part. Degradation</b>: <code>log₂</code> of the factor by which the particle number is reduced for faster processing. Example: <code>0</code> (no reduction).</li>
+<li><b>DE-EOS w</b>: Equation of state parameter for dark energy. Example: <code>-1.0</code>.</li>
+</ul>
+</li>
+<li><b>Run SLICER</b>: Navigate to the build directory and execute SLICER: <div class="fragment"><div class="line">./SLICER InputParams.ini</div>
+</div><!-- fragment --></li>
+</ol>
+<h2><a class="anchor" id="autotoc_md12"></a>
+Configuration Definitions and Compile-Time Directives</h2>
+<p>SLICER includes several predefined constants and compile-time options that you can adjust according to your specific research needs.</p>
+<h3><a class="anchor" id="autotoc_md13"></a>
+Special Definitions in Code</h3>
+<p>The following definitions within the SLICER code help control various functional aspects:</p>
+<ul>
+<li><code>POS_U 1.0</code>: Converts units from BoxSize unit length to kpc/h, defined in <a href="./SLICER/gadget2io.h"><code>gadget2io.h</code></a>.</li>
+<li><code>MAX_M 1e3</code>: Establishes a mass threshold; particles exceeding this threshold are assigned zero mass. This limit is particularly useful as the chemical enrichment model may sometimes produce stellar particles with unreasonably high masses, defined in <a href="./SLICER/densitymaps.h"><code>densitymaps.h</code></a>.</li>
+<li><code>DO_NGP false</code>: Determines whether to use the Nearest Grid Point (NGP) instead of the Triangular-Shaped Cloud (TSC) for the Mass Assignment Scheme (MAS), defined in <a href="./SLICER/densitymaps.h"><code>densitymaps.h</code></a>.</li>
+<li><code>numberOfLensPerSnap 4</code>: Indicates the number of lens planes to construct from a single snapshot, defined in <a href="./SLICER/densitymaps.h"><code>densitymaps.h</code></a>.</li>
+</ul>
+<p>To modify these definitions, locate the respective <code>.h</code> files in the <code>SLICER</code> directory and adjust the <code>#define</code> statements accordingly.</p>
+<h3><a class="anchor" id="autotoc_md14"></a>
+Compile-Time Directives</h3>
+<p>These options can be defined at compile time to modify SLICER's behavior:</p>
+<ul>
+<li><b>FixedPLCVertex</b>: When activated, centers snapshots consistently at (x, y, z = 0.5, 0.5, 0.5), ensuring a uniform center across snapshots.</li>
+<li><b>ReplicationOnPerpendicularPlane</b>: By default, SLICER restricts replications of the simulation box in the direction perpendicular to the lens plane, limiting the maximum possible aperture. Enabling this directive permits such replications, although it's important to note that repeated replication might lead to wide-angle effects under the flat sky approximation used by SLICER.</li>
+</ul>
+<p>To enable these compile-time directives, add them when running the CMake configuration command: </p><div class="fragment"><div class="line">cmake -DUSE_FIXED_PLC_VERTEX=ON -DUSE_REPLICATION=ON ..</div>
+</div><!-- fragment --><p>These settings empower advanced users to tailor SLICER’s functionality to better suit their computational and analytical requirements.</p>
+<h1><a class="anchor" id="autotoc_md15"></a>
+Documentation</h1>
+<p>Visit our <a href="https://tiagobscastro.github.io/SLICER/">Documentation</a> for full API details.</p>
+<h1><a class="anchor" id="autotoc_md16"></a>
+To-Do List</h1>
+<ul>
+<li>Remove numberOfLensPerPlane directive and add as an entry in InputParams.ini.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md17"></a>
+Contributing</h1>
+<p>Contributions to SLICER are welcome!</p>
+<h1><a class="anchor" id="autotoc_md18"></a>
+License</h1>
+<p>SLICER is licensed under the GNU GPL3 license. See LICENSE for more details. </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
