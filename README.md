@@ -40,7 +40,7 @@ Create a build directory and run CMake to configure the project:
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_PREFIX_PATH=$HOME
+cmake .. -DCMAKE_PREFIX_PATH=$(Your Library Path)
 ```
 
 3. Build the Project
