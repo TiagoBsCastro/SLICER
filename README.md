@@ -1,4 +1,10 @@
 # SLICER
+
+[![C++ Build CI](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml)
+
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+
+
 SLICER (Simulation LIght conE buildeR) is designed to create mass maps (FITS files) from GADGET numerical simulation snapshot formats. It is compatible with both Dark Matter (DM) and Hydro-dynamic simulation runs.
 
 ## Dependencies
