@@ -18,7 +18,7 @@ Before installing SLICER, ensure that the following dependencies are met:
 - **CMake**: For building the application (version 3.10 or higher)
 - **GNU Scientific Library (GSL)**: Provides numerous mathematical routines
 - **CFITSIO**: Library for reading and writing FITS files
-- **CCfits** (optional): A C++ wrapper for CFITSIO, required only if using C++ interfaces
+- **CCfits** (optional): A C++ wrapper for CFITSIO
 
 ### Installing Dependencies
 On Ubuntu, you can install these dependencies using:
