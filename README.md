@@ -1,7 +1,6 @@
 # SLICER: Simulation Light Cone Builder
 
 [![C++ Build CI](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml)
-
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 **SLICER** stands for **Simulation Light Cone Builder**, a specialized tool crafted for astrophysicists and cosmologists. Developed in C++ and parallelized using MPI, SLICER efficiently generates mass maps from particles and past light cones of structures and substructures from SUBFIND catalogs, all from GADGET simulation snapshots (format 2).
