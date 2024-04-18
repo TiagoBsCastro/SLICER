@@ -138,3 +138,6 @@ build/
 bin/
 obj/
 
+# VSCODE
+.vscode
+
