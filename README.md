@@ -59,7 +59,7 @@ To run SLICER, follow these simple steps:
    - **Source Redshift**: The redshift of the source plane. Example: `0.5`.
    - **Field of View**: Angular aperture of the field of view in degrees. Example: `2.0`.
    - **File with Snapshots**: Path to the file listing the snapshots to use. Example: [snapshot_list.txt](./examples/snapshot_list.txt).
-   - **Snapshots Directory**: Directory containing the simulation snapshots. Example: `/home/tcastro/L128N256/`.
+   - **Snapshots Directory**: Directory containing the snapshots. Example: `/home/tcastro/L128N256/`.
    - **PLC Sim. Name**: The naming convention used for your simulation outputs. Example: `gadget`.
    - **Seed for Pos. Center**: Seed used for random positioning of the center. Example: `-229`.
    - **Seed for Pos. Reflec.**: Seed for random reflections in positioning. Example: `-230`.
@@ -73,7 +73,8 @@ To run SLICER, follow these simple steps:
 2. **Run SLICER**:
    Navigate to the build directory and execute SLICER:
    ```bash
-   ./SLICER
+   ./SLICER InputParams.ini
+   ```
 
 ## To-Do List
 
