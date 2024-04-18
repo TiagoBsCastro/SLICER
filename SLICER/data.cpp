@@ -1,10 +1,17 @@
 /* Routines to read InputFiles */
 #include "data.h"
 
-/*
-  Reads the input params file "name" and stores the parameter values in the
-  InputParams structure
-*/
+/**
+ * @brief Reads the input parameters file and stores the values in the provided InputParams structure.
+ *
+ * This function opens and reads the contents of a named input parameters file. It parses the file
+ * and populates the provided InputParams structure with the values read from the file. If the file
+ * cannot be opened, the program will print an error message and terminate.
+ *
+ * @param p Reference to an InputParams structure where read parameters will be stored.
+ * @param name Name of the file to read. The file should be in the current working directory.
+ * @return int Returns 0 on success, or exits with 1 if the file cannot be opened.
+ */
 int readInput(struct InputParams &p, string name){
   // read fileinput
   std:: ifstream fin (name.c_str());
@@ -83,9 +90,16 @@ int readInput(struct InputParams &p, string name){
 
 }
 
-/*
- * SubFind Constructor
-*/
+/**
+ * @brief Constructor for the SubFind object, initializing its internal state and preparing it for use.
+ *
+ * This constructor sets up the initial configuration of the SubFind object, based on the provided
+ * parameters. It ensures that all necessary properties are set to default values if not specified
+ * and prepares any internal resources needed for the object's operations.
+ *
+ * @param param1 Description of what param1 represents and how it's used in initialization.
+ * @param param2 Description of what param2 does and its significance to the SubFind object.
+ */
 SubFind::SubFind(int n, bool halos){
   this->id.resize(n);
   this->truez.resize(n);

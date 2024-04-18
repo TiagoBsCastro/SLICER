@@ -1,28 +1,5 @@
 #include "utilities.h"
 
-void error (const std::string s){
-  std::cerr << "error: " << s << std::endl;
-  exit (-1);
-}
-
-void error (const bool f, const std::string s){
-  if (f){
-    std::cerr << "error: " << s << std::endl;
-    exit (-1);
-  }
-}
-
-void gsl_error_handler (const char * reason, const char * file, int line, int gsl_errno){
-  std::cerr
-    << "GSL error handler: in "
-    << file << ", line " << line << ", error code " << gsl_errno << ": "
-    << reason << std::endl;
-}
-
-void warning (const std::string s){
-  std::cout << "warning: " << s << std::endl;
-}
-
 float weight (float ixx, float ixh, double dx) {
   float DD = ixx-ixh;
   float x=fabs(DD)/dx;

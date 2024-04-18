@@ -15,7 +15,7 @@ include_directories(
 set(SOURCES
     slicer-v2.cpp
     utilities.cpp
-    cosmology.cpp
+    w0waCDM.cpp
     densitymaps.cpp
     gadget2io.cpp
     writeplc.cpp

@@ -1,5 +1,5 @@
 #include "mpi.h"
-#include "cosmology.h"
+#include "w0waCDM.h"
 #include "densitymaps.h"
 #include "writeplc.h"
 #define neval 10000             // Number of Points to interpolate the comoving distance
@@ -74,12 +74,12 @@ int main(int argc, char** argv){
   testHydro(p, simdata);
 
   /* Creating an Instance of the cosmology class to compute distances (!!h=1!!) */
-  cosmology cosmo(simdata.om0,simdata.oml,1.0,p.w);
+  w0waCDM cosmo (100.0, simdata.om0, simdata.oml, p.w, 0.0);
   /* Creating a table with redshifts and comoving distances to be interpolated*/
   vector <double> zl(neval),dl(neval);
   for(int i=0;i<neval;i++){
     zl[i] = i * (p.zs+1.0)/(neval-1);
-    dl[i] = cosmo.comovDist(zl[i])*speedcunit;
+    dl[i] = cosmo.transverseComovingDistance(zl[i]);
   }
 
   /* Initializing the auxiliary functions to get Dc given z and vice-versa */
