@@ -10,6 +10,7 @@
 - **Versatile Data Processing**: It is capable of creating both mass maps and past light cones of structures. The mass maps can be written for all particle species or separately.
 - **Outputs in FITS Format**: Delivers results for mass maps in the Flexible Image Transport System (FITS) format, which is extensively used in the astronomical community for storing scientific data.
 - **PINOCCHIO like PLC**: The past-light cone (PLC) of (sub)-structures is written with the same structure used by PINOCCHIO ([Pinocchio on GitHub](https://github.com/pigimonaco/Pinocchio)).
+- **Lensing post-processing**: SLICER is distributed with several Python post-processing tools that efficiently extract lensing maps from the mass maps. These tools can be found in the [`Lens/` directory](./Lens/).
 
 ## Dependencies
 Before installing SLICER, ensure that the following dependencies are met:
