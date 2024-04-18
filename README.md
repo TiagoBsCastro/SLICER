@@ -67,7 +67,7 @@ To run SLICER, follow these simple steps:
    - **Part. in Planes**: Controls whether particle types are written to separate lens planes or collectively to the same lens plane. Set to `0` to write collectively, or `1` to separate by particle type.
    - **PLC Directory**: Output directory for the past light cones. Example: `/home/tcastro/test_`.
    - **PLC Suffix**: Suffix for the output files. Example: `0`.
-   - **Part. Degradation**: `log_2` of the factor by which the particle number is reduced for faster processing. Example: `0` (no reduction).
+   - **Part. Degradation**: `log₂` of the factor by which the particle number is reduced for faster processing. Example: `0` (no reduction).
    - **DE-EOS w**: Equation of state parameter for dark energy. Example: `-1.0`.
 
 2. **Run SLICER**:
