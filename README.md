@@ -51,7 +51,29 @@ make
 
 ## Running the SLICER
 
-Modify the InputParams.ini file to adjust the simulation parameters according to your requirements.
+To run SLICER, follow these simple steps:
+
+1. **Modify the `InputParams.ini` File**: Configure the simulation parameters by editing the [InputParams.ini](./examples/InputParams.ini) file. Here is a breakdown of what each parameter means:
+
+   - **Number of Map Pixels**: Defines the square root of the number of pixels of the output map. Example: `256`.
+   - **Source Redshift**: The redshift of the source plane. Example: `0.5`.
+   - **Field of View**: Angular aperture of the field of view in degrees. Example: `2.0`.
+   - **File with Snapshots**: Path to the file listing the snapshots to use. Example: [snapshot_list.txt](./examples/snapshot_list.txt).
+   - **Snapshots Directory**: Directory containing the simulation snapshots. Example: `/home/tcastro/L128N256/`.
+   - **PLC Sim. Name**: The naming convention used for your simulation outputs. Example: `gadget`.
+   - **Seed for Pos. Center**: Seed used for random positioning of the center. Example: `-229`.
+   - **Seed for Pos. Reflec.**: Seed for random reflections in positioning. Example: `-230`.
+   - **Seed for Axis Sel.**: Seed used for random axis selection. Example: `-231`.
+   - **Part. in Planes**: Controls whether particle types are written to separate lens planes or collectively to the same lens plane. Set to `0` to write collectively, or `1` to separate by particle type.
+   - **PLC Directory**: Output directory for the past light cones. Example: `/home/tcastro/test_`.
+   - **PLC Suffix**: Suffix for the output files. Example: `0`.
+   - **Part. Degradation**: `log_2` of the factor by which the particle number is reduced for faster processing. Example: `0` (no reduction).
+   - **DE-EOS w**: Equation of state parameter for dark energy. Example: `-1.0`.
+
+2. **Run SLICER**:
+   Navigate to the build directory and execute SLICER:
+   ```bash
+   ./SLICER
 
 ## To-Do List
 
