@@ -3,9 +3,7 @@
 [![C++ Build CI](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml)
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 [![Documentation](https://img.shields.io/badge/docs-available-green.svg)](https://tiagobscastro.github.io/SLICER/)
-[![Documentation Version](https://img.shields.io/badge/docs-v1.0.3-blue.svg)](https://tiagobscastro.github.io/SLICER/)
-![Doxygen Build](https://github.com/username/repository/workflows/Doxygen%20Build/badge.svg)
-[![Last Updated](https://img.shields.io/badge/updated-July%202021-orange.svg)](https://tiagobscastro.github.io/SLICER/)
+[![Last Updated](https://img.shields.io/badge/updated-April%2024-orange.svg)](https://tiagobscastro.github.io/SLICER/)
 
 
 **SLICER** stands for **Simulation Light Cone Builder**, a specialized tool crafted for astrophysicists and cosmologists. Developed in C++ and parallelized using MPI, SLICER efficiently generates mass maps from particles and past light cones of structures and substructures from SUBFIND catalogs, all from GADGET simulation snapshots (format 2).
