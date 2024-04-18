@@ -76,6 +76,33 @@ To run SLICER, follow these simple steps:
    ./SLICER InputParams.ini
    ```
 
+### Configuration Definitions and Compile-Time Directives
+
+SLICER includes several predefined constants and compile-time options that you can adjust according to your specific research needs.
+
+#### Special Definitions in Code
+The following definitions within the SLICER code help control various functional aspects:
+
+- `POS_U 1.0`: Converts units from BoxSize unit length to kpc/h, defined in [`gadget2io.h`](./SLICER/gadget2io.h).
+- `MAX_M 1e3`: Establishes a mass threshold; particles exceeding this threshold are assigned zero mass. This limit is particularly useful as the chemical enrichment model may sometimes produce stellar particles with unreasonably high masses, defined in [`densitymaps.h`](./SLICER/densitymaps.h).
+- `DO_NGP false`: Determines whether to use the Nearest Grid Point (NGP) instead of the Triangular-Shaped Cloud (TSC) for the Mass Assignment Scheme (MAS), defined in [`densitymaps.h`](./SLICER/densitymaps.h).
+- `numberOfLensPerSnap 4`: Indicates the number of lens planes to construct from a single snapshot, defined in [`densitymaps.h`](./SLICER/densitymaps.h).
+
+To modify these definitions, locate the respective `.h` files in the `SLICER` directory and adjust the `#define` statements accordingly.
+
+#### Compile-Time Directives
+These options can be defined at compile time to modify SLICER's behavior:
+
+- **FixedPLCVertex**: When activated, centers snapshots consistently at \(x, y, z = 0.5, 0.5, 0.5\), ensuring a uniform center across snapshots.
+- **ReplicationOnPerpendicularPlane**: By default, SLICER restricts replications of the simulation box in the direction perpendicular to the lens plane, limiting the maximum possible aperture. Enabling this directive permits such replications, although it's important to note that repeated replication might lead to wide-angle effects under the flat sky approximation used by SLICER.
+
+To enable these compile-time directives, add them when running the CMake configuration command:
+```bash
+cmake -DUSE_FIXED_PLC_VERTEX=ON -DUSE_REPLICATION=ON ..
+```
+
+These settings empower advanced users to tailor SLICER’s functionality to better suit their computational and analytical requirements.
+
 ## To-Do List
 
 * Remove numberOfLensPerPlane directive and add as an entry in InputParams.ini.

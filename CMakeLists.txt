@@ -13,9 +13,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_COMPILER mpic++)
 add_compile_options(-O3 -g -fPIC -Wall -Wpedantic)
 
+# Option for enabling custom features
+option(ENABLE_CUSTOM_FEATURES "Enable custom features in SLICER" ON)
+
+# Check if the custom features are enabled and add definitions accordingly
+if(ENABLE_CUSTOM_FEATURES)
+    add_definitions(-DFixedPLCVertex)
+    add_definitions(-DReplicationOnPerpendicularPlane)
+endif()
+
 # Define executable output path
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 # Add the subdirectory containing the source files
 add_subdirectory(SLICER)
-
