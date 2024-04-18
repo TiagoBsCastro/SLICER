@@ -186,4 +186,5 @@ void writeMaps (InputParams &p, Header &data, Lens &lens, int isnap, double zsim
  * @param p InputParams structure with current simulation settings.
  * @param snappl Snapshot path label used as part of the filename.
  * @param label Optional label to include in
+ */
 string fileOutput (InputParams p, string snappl, int label = 0);

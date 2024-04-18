@@ -1,0 +1,84 @@
+\hypertarget{classw0waCDM}{}\doxysection{w0wa\+CDM Class Reference}
+\label{classw0waCDM}\index{w0waCDM@{w0waCDM}}
+
+
+A class to compute distances in a universe modeled by the \mbox{\hyperlink{classw0waCDM}{w0wa\+CDM}} cosmology.  
+
+
+
+
+{\ttfamily \#include $<$w0wa\+CDM.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classw0waCDM_abe5b0ff67589996de2a19695a672ba87}{w0wa\+CDM}} (double H0, double OmegaM, double Omega\+Lambda, double w0, double wa)
+\item 
+double \mbox{\hyperlink{classw0waCDM_a8717489a2604c684a3bc3bfecbf972ee}{comoving\+Distance}} (double z) const
+\item 
+double \mbox{\hyperlink{classw0waCDM_ac379088e799e380f47feea1713eec487}{transverse\+Comoving\+Distance}} (double z) const
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A class to compute distances in a universe modeled by the \mbox{\hyperlink{classw0waCDM}{w0wa\+CDM}} cosmology. 
+
+This class encapsulates the parameters and functions required to compute the Hubble parameter and various cosmological distances such as comoving and transverse comoving distances considering a dynamic dark energy component. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classw0waCDM_abe5b0ff67589996de2a19695a672ba87}\label{classw0waCDM_abe5b0ff67589996de2a19695a672ba87}} 
+\index{w0waCDM@{w0waCDM}!w0waCDM@{w0waCDM}}
+\index{w0waCDM@{w0waCDM}!w0waCDM@{w0waCDM}}
+\doxysubsubsection{\texorpdfstring{w0waCDM()}{w0waCDM()}}
+{\footnotesize\ttfamily w0wa\+CDM\+::w0wa\+CDM (\begin{DoxyParamCaption}\item[{double}]{H0,  }\item[{double}]{OmegaM,  }\item[{double}]{Omega\+Lambda,  }\item[{double}]{w0,  }\item[{double}]{wa }\end{DoxyParamCaption})}
+
+Constructs a \mbox{\hyperlink{classw0waCDM}{w0wa\+CDM}} cosmology model with specified parameters. 
+\begin{DoxyParams}{Parameters}
+{\em H0} & Hubble constant at z = 0 in km/s/\+Mpc. \\
+\hline
+{\em OmegaM} & Matter density parameter. \\
+\hline
+{\em Omega\+Lambda} & Dark energy density parameter. \\
+\hline
+{\em w0} & Equation of state parameter at z = 0. \\
+\hline
+{\em wa} & Change rate of the equation of state parameter. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classw0waCDM_a8717489a2604c684a3bc3bfecbf972ee}\label{classw0waCDM_a8717489a2604c684a3bc3bfecbf972ee}} 
+\index{w0waCDM@{w0waCDM}!comovingDistance@{comovingDistance}}
+\index{comovingDistance@{comovingDistance}!w0waCDM@{w0waCDM}}
+\doxysubsubsection{\texorpdfstring{comovingDistance()}{comovingDistance()}}
+{\footnotesize\ttfamily double w0wa\+CDM\+::comoving\+Distance (\begin{DoxyParamCaption}\item[{double}]{z }\end{DoxyParamCaption}) const}
+
+Computes the comoving distance from z = 0 to a given redshift z. This method uses caching to speed up repeated calculations. 
+\begin{DoxyParams}{Parameters}
+{\em z} & The redshift to which the comoving distance is calculated. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The comoving distance in Mpc. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classw0waCDM_ac379088e799e380f47feea1713eec487}\label{classw0waCDM_ac379088e799e380f47feea1713eec487}} 
+\index{w0waCDM@{w0waCDM}!transverseComovingDistance@{transverseComovingDistance}}
+\index{transverseComovingDistance@{transverseComovingDistance}!w0waCDM@{w0waCDM}}
+\doxysubsubsection{\texorpdfstring{transverseComovingDistance()}{transverseComovingDistance()}}
+{\footnotesize\ttfamily double w0wa\+CDM\+::transverse\+Comoving\+Distance (\begin{DoxyParamCaption}\item[{double}]{z }\end{DoxyParamCaption}) const}
+
+Computes the transverse comoving distance at a given redshift z. This distance accounts for the curvature of space. 
+\begin{DoxyParams}{Parameters}
+{\em z} & The redshift at which to compute the transverse comoving distance. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The transverse comoving distance in Mpc. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+SLICER/\mbox{\hyperlink{w0waCDM_8h}{w0wa\+CDM.\+h}}\item 
+SLICER/w0wa\+CDM.\+cpp\end{DoxyCompactItemize}
