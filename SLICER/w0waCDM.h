@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <map>
+#include "utilities.h"
 
 /**
  * @class w0waCDM
@@ -24,7 +25,7 @@
  */
 class w0waCDM {
 private:
-    static constexpr double CSPEEDOFLIGHT = 299792.458; ///< Speed of light in km/s
+    static constexpr double CSPEEDOFLIGHT = speedcunit * 100; ///< Speed of light in H0/h * 1 Mpc
     double H0;  ///< Hubble constant at z = 0 in units of km/s/Mpc
     double OmegaM;  ///< Matter density parameter
     double OmegaLambda;  ///< Dark energy density parameter

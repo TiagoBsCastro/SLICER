@@ -29,8 +29,8 @@ double w0waCDM::comovingDistance(double z) const {
     }
 
     double distance = 0;
-    double dz = 0.001;  // Integration step size
     double lastZ = 0;
+    double dz = 1e-4;  // Integration step size
 
     // Find the largest z in the cache less than the target z, if any
     auto it = cache.lower_bound(z);
@@ -38,6 +38,7 @@ double w0waCDM::comovingDistance(double z) const {
         --it;
         distance = it->second;
         lastZ = it->first;
+        dz = (z-lastZ)/100;  // Better update dz in case we use the cache Integration step size
     }
 
     for (double zi = lastZ; zi < z; zi += dz) {
@@ -45,8 +46,8 @@ double w0waCDM::comovingDistance(double z) const {
     }
 
     // Store the computed value in the cache
-    cache[z] = distance * CSPEEDOFLIGHT;  // Convert to Mpc
-    return cache[z];
+    cache[z] = distance; 
+    return cache[z] * CSPEEDOFLIGHT;  // Convert to Mpc
 }
 
     // Method to compute the transverse comoving distance D_M(z)

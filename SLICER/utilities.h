@@ -9,11 +9,7 @@
 
 using namespace std;
 
-const double speedcunit = 2.99792458e+3; // speed of light / H0/h
-
-//const double tiny=1e-6;
-//const double tiny4 = 1e-4;
-//const double conv = 648000/M_PI;
+constexpr double speedcunit = 2.99792458e+3; // speed of light / H0/h
 
 // conversion: double or int -> string
 static const char fINT[] = "%i";

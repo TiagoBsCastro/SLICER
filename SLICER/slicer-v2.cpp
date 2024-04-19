@@ -2,7 +2,7 @@
 #include "w0waCDM.h"
 #include "densitymaps.h"
 #include "writeplc.h"
-#define neval 10000             // Number of Points to interpolate the comoving distance
+#define neval 1000             // Number of Points to interpolate the comoving distance
 
 /*****************************************************************************/
 /*                                                                           */
