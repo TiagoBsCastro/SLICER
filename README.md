@@ -110,13 +110,9 @@ These settings empower advanced users to tailor SLICER’s functionality to bett
 
 Visit our [Documentation](https://tiagobscastro.github.io/SLICER/) for full API details.
 
-## To-Do List
-
-* Remove numberOfLensPerPlane directive and add as an entry in InputParams.ini.
-
 ## Contributing
 
-Contributions to SLICER are welcome!
+Contributions to SLICER are welcome! Check our [Contribution](CIBTRUBUTIONS.md) session.
 
 ## License
 
