@@ -1,6 +1,6 @@
 # SLICER: Simulation Light Cone Builder
 
-![Alt text](./logo.png)
+![Logo](./slicer.png)
 
 [![C++ Build CI](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml)
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
