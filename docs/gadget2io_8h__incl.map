@@ -1,0 +1,37 @@
+<map id="SLICER/gadget2io.h" name="SLICER/gadget2io.h">
+<area shape="rect" id="Node000001" title="Interfaces for handling Gadget&#45;2 simulation data, including reading snapshot headers,..." alt="" coords="191,5,338,33"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="135,157,200,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="258,35,186,145,182,142,254,32"/>
+<area shape="rect" id="Node000003" href="$utilities_8h.html" title="Provides a set of utility functions for mathematical operations, conversion utilities,..." alt="" coords="223,157,306,184"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="267,33,267,141,262,141,262,33"/>
+<area shape="rect" id="Node000010" href="$data_8h.html" title="Header with different data structures and how to read them." alt="" coords="495,81,557,109"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="312,31,481,78,479,83,311,36"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="430,232,510,260"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="302,182,420,224,418,229,300,187"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="331,232,390,260"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="283,183,333,221,330,225,280,187"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="5,232,68,260"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="225,187,83,233,82,228,223,182"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="541,232,604,260"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="307,179,317,182,522,230,527,231,526,236,521,235,316,187,305,184"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="92,232,208,260"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="245,187,184,226,181,222,243,183"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="232,232,308,260"/>
+<area shape="poly" id="edge8_Node000003_Node000009" title=" " alt="" coords="268,185,270,216,265,217,263,185"/>
+<area shape="poly" id="edge17_Node000010_Node000002" title=" " alt="" coords="495,104,376,125,215,159,214,153,375,120,494,99"/>
+<area shape="poly" id="edge19_Node000010_Node000003" title=" " alt="" coords="495,108,321,156,320,151,494,102"/>
+<area shape="poly" id="edge18_Node000010_Node000004" title=" " alt="" coords="526,110,503,185,487,220,482,217,498,183,520,108"/>
+<area shape="poly" id="edge11_Node000010_Node000007" title=" " alt="" coords="532,108,566,217,561,218,527,110"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="615,157,736,184"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="554,107,636,147,634,152,551,112"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="760,157,833,184"/>
+<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="558,102,746,153,745,158,557,107"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="857,157,941,184"/>
+<area shape="poly" id="edge13_Node000010_Node000013" title=" " alt="" coords="558,99,843,154,842,159,557,104"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="965,157,1036,184"/>
+<area shape="poly" id="edge14_Node000010_Node000014" title=" " alt="" coords="558,97,722,116,834,133,951,154,950,159,833,138,721,122,557,102"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="329,157,395,184"/>
+<area shape="poly" id="edge15_Node000010_Node000015" title=" " alt="" coords="498,112,406,153,404,148,495,107"/>
+<area shape="rect" id="Node000016" title=" " alt="" coords="419,157,489,184"/>
+<area shape="poly" id="edge16_Node000010_Node000016" title=" " alt="" coords="515,111,479,147,475,144,511,107"/>
+</map>

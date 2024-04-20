@@ -1,0 +1,16 @@
+<map id="SLICER/utilities.h" name="SLICER/utilities.h">
+<area shape="rect" id="Node000001" title="Provides a set of utility functions for mathematical operations, conversion utilities,..." alt="" coords="274,5,405,33"/>
+<area shape="rect" id="Node000002" href="$data_8h.html" title="Header with different data structures and how to read them." alt="" coords="100,81,211,109"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="293,42,189,83,187,78,291,37"/>
+<area shape="rect" id="Node000003" href="$densitymaps_8h.html" title="This file defines the functions related to density map creation, particle mapping,..." alt="" coords="174,232,340,260"/>
+<area shape="poly" id="edge6_Node000001_Node000003" title=" " alt="" coords="350,47,356,77,359,113,356,150,345,186,334,201,320,215,289,234,287,230,316,211,330,198,340,183,351,149,354,113,351,78,345,48"/>
+<area shape="rect" id="Node000004" href="$gadget2io_8h.html" title="Interfaces for handling Gadget&#45;2 simulation data, including reading snapshot headers,..." alt="" coords="183,157,330,184"/>
+<area shape="poly" id="edge7_Node000001_Node000004" title=" " alt="" coords="328,47,266,157,262,155,323,45"/>
+<area shape="rect" id="Node000006" href="$w0waCDM_8h.html" title="Class to model the universe using the w0waCDM cosmological model." alt="" coords="405,81,556,109"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="379,38,457,78,455,83,377,43"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="85,115,51,128,22,143,14,152,9,162,9,172,15,183,39,199,78,213,174,232,173,238,76,218,36,204,11,186,4,173,4,160,9,149,19,139,48,123,84,110"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="187,116,240,154,237,158,184,120"/>
+<area shape="rect" id="Node000005" href="$writeplc_8h.html" title="Provides functionality for writing processed halo data to a binary output file formatted specifically..." alt="" coords="24,157,159,184"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="136,122,105,158,101,154,132,119"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="259,200,259,232,254,232,254,200"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="SLICER/utilities.h" name="SLICER/utilities.h">
+<area shape="rect" id="Node000001" title="Provides a set of utility functions for mathematical operations, conversion utilities,..." alt="" coords="199,5,331,33"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,81,85,109"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="227,36,100,78,98,73,225,31"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="109,81,168,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="244,36,175,75,172,71,241,31"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="191,81,254,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="260,35,240,69,235,66,255,32"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="278,81,340,109"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="275,32,296,66,291,69,271,35"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="364,81,481,109"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="294,31,382,72,380,77,292,36"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="505,81,580,109"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="315,31,490,77,489,82,314,36"/>
+</map>

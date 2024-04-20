@@ -1,0 +1,33 @@
+<map id="SLICER/data.h" name="SLICER/data.h">
+<area shape="rect" id="Node000001" title="Header with different data structures and how to read them." alt="" coords="390,5,502,33"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,81,127,109"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="390,34,142,82,141,76,389,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="68,157,131,184"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="390,31,306,50,259,65,215,83,166,114,125,148,122,144,162,110,213,79,258,60,304,45,389,26"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="359,81,432,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="439,35,415,70,411,66,435,32"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="456,81,540,109"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="457,32,482,67,478,70,453,35"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="564,81,635,109"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="475,31,560,72,557,76,472,36"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="659,81,724,109"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="491,31,645,77,643,82,489,36"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="749,81,818,109"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="502,29,734,78,733,83,501,34"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="843,81,908,109"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="503,25,646,45,828,78,827,83,645,50,502,30"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="154,157,234,184"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="390,28,354,34,315,45,277,61,242,83,219,112,204,143,200,141,214,109,239,79,274,56,314,40,353,29,389,23"/>
+<area shape="rect" id="Node000011" href="$utilities_8h.html" title="Provides a set of utility functions for mathematical operations, conversion utilities,..." alt="" coords="253,81,335,109"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="420,36,336,76,333,72,418,31"/>
+<area shape="poly" id="edge14_Node000011_Node000003" title=" " alt="" coords="260,112,146,155,144,150,258,107"/>
+<area shape="poly" id="edge11_Node000011_Node000010" title=" " alt="" coords="278,111,225,150,222,145,275,107"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="497,157,555,184"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="336,107,483,153,481,158,335,112"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="579,157,641,184"/>
+<area shape="poly" id="edge13_Node000011_Node000013" title=" " alt="" coords="336,103,348,106,455,129,564,153,563,159,454,134,347,111,335,109"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="257,157,374,184"/>
+<area shape="poly" id="edge15_Node000011_Node000014" title=" " alt="" coords="300,108,310,141,305,142,295,110"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="398,157,473,184"/>
+<area shape="poly" id="edge16_Node000011_Node000015" title=" " alt="" coords="320,107,398,147,395,152,318,112"/>
+</map>

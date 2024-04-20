@@ -1,5 +1,20 @@
 <map id="SLICER/w0waCDM.h" name="SLICER/w0waCDM.h">
-<area shape="rect" id="node1" title="Class to model the universe using the w0waCDM cosmological model." alt="" coords="5,5,157,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="10,80,73,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="97,80,148,107"/>
+<area shape="rect" id="Node000001" title="Class to model the universe using the w0waCDM cosmological model." alt="" coords="50,5,202,33"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,157,68,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="120,35,91,82,54,145,49,142,86,80,115,32"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="101,81,151,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="129,34,129,65,123,65,123,34"/>
+<area shape="rect" id="Node000004" href="$utilities_8h.html" title="Provides a set of utility functions for mathematical operations, conversion utilities,..." alt="" coords="183,81,266,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="145,31,197,70,193,74,142,36"/>
+<area shape="poly" id="edge6_Node000004_Node000002" title=" " alt="" coords="192,112,83,154,81,149,190,107"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="92,157,171,184"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="209,111,161,149,158,145,206,107"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="195,157,254,184"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="227,109,227,141,222,141,222,109"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="277,157,340,184"/>
+<area shape="poly" id="edge7_Node000004_Node000007" title=" " alt="" coords="241,107,284,144,280,148,238,111"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="364,157,480,184"/>
+<area shape="poly" id="edge8_Node000004_Node000008" title=" " alt="" coords="261,107,374,148,372,153,259,112"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="504,157,580,184"/>
+<area shape="poly" id="edge9_Node000004_Node000009" title=" " alt="" coords="266,103,490,153,489,159,265,108"/>
 </map>

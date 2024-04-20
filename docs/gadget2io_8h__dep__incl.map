@@ -1,0 +1,5 @@
+<map id="SLICER/gadget2io.h" name="SLICER/gadget2io.h">
+<area shape="rect" id="Node000001" title="Interfaces for handling Gadget&#45;2 simulation data, including reading snapshot headers,..." alt="" coords="15,5,162,33"/>
+<area shape="rect" id="Node000002" href="$densitymaps_8h.html" title="This file defines the functions related to density map creation, particle mapping,..." alt="" coords="5,81,172,109"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,49,91,81,86,81,86,49"/>
+</map>

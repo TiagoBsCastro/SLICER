@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['comovingdistance_21',['comovingDistance',['../classw0waCDM.html#a8717489a2604c684a3bc3bfecbf972ee',1,'w0waCDM']]]
+  ['buildplanes_0',['buildPlanes',['../densitymaps_8h.html#a50c7db077c0207fff260ead64776d72a',1,'densitymaps.cpp']]]
 ];
