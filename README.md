@@ -114,6 +114,41 @@ Visit our [Documentation](https://tiagobscastro.github.io/SLICER/) for full API 
 
 Contributions to SLICER are welcome! Check our [Contributing](./.github/CONTRIBUTING.md) session.
 
+## Featured Projects
+
+SLICER has been employed in a variety of research projects. This section highlights some of the significant projects and published papers that have utilized SLICER.
+
+### The [BEHOMO](https://valerio-marra.github.io/BEHOMO-project/) Project
+
+The BEHOMO (Beyond Homogeneity) project leverages Λ Lemaître-Tolman-Bondi N-body simulations to explore large-scale structures and their evolution. SLICER has been instrumental in producing the lensing maps from the BEHOMO simulations.
+
+* Marra, V., Castro, T., Camarena, D., Borgani, S., & Ragagnin, A. (2022). The BEHOMO project: Λ Lemaître-Tolman-Bondi N-body simulations. Astronomy & Astrophysics, 664, A179. https://doi.org/10.1051/0004-6361/202243539
+
+### [Magneticum](https://magneticum.org) Collaboration
+
+Magneticum is a series of hydrodynamical simulations focusing on the impact of baryons on cosmological structures. Several studies under this collaboration have used SLICER to analyze the effects of baryonic processes on cosmic structures.
+
+* Castro, T., Quartin, M., Giocoli, C., Borgani, S., & Dolag, K. (2018). The effect of baryons in the cosmological lensing PDFs. Monthly Notices of the Royal Astronomical Society, 478(1), 1305-1325. https://doi.org/10.1093/mnras/sty1117
+
+* Martinet, N., Castro, T., Harnois-Déraps, J., Jullo, E., Giocoli, C., et al. (2021). Impact of baryons in cosmic shear analyses with tomographic aperture mass statistics. Astronomy & Astrophysics, 648, A115. https://doi.org/10.1051/0004-6361/202040155
+
+
+### Collaborative Research
+
+SLICER has also been used in other papers to quantify the impact of baryons on cosmological analysis of weak lensing data.
+
+* Harnois-Déraps, J., Martinet, N., Castro, T., Dolag, K., Giblin, B., et al. (2021). Cosmic shear cosmology beyond two-point statistics: A combined peak count and correlation function analysis of DES-Y1. Monthly Notices of the Royal Astronomical Society, 506(2), 1623-1650. https://doi.org/10.1093/mnras/stab1623
+
+* Heydenreich, S., Brück, B., Burger, P., Harnois-Déraps, J., Unruh, S., et al. (2022). Persistent homology in cosmic shear - II. A tomographic analysis of DES-Y1. Astronomy & Astrophysics, 667, A125. https://doi.org/10.1051/0004-6361/202243868
+
+* Burger, P. A., Friedrich, O., Harnois-Déraps, J., Schneider, P., Asgari, M., et al. (2023). KiDS-1000 cosmology: Constraints from density split statistics. Astronomy & Astrophysics, 669, A69. https://doi.org/10.1051/0004-6361/202244673
+  
+* Burger, P. A., Porth, L., Heydenreich, S., Linke, L., Wielders, N., et al. (2024). KiDS-1000 cosmology: Combined second- and third-order shear statistics. Astronomy & Astrophysics, 683, A103. https://doi.org/10.1051/0004-6361/202347986
+
+Ongoing Research
+
+SLICER continues to be a tool of choice for upcoming studies and publications! Stay tunned for more ;)
+
 ## License
 
 SLICER is licensed under the GNU GPL3 license. See [LICENSE](./LICENSE) for more details.
