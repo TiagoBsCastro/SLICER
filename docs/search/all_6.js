@@ -9,6 +9,7 @@ var searchData=
   ['getpolar_6',['getPolar',['../utilities_8h.html#aa46fba35bb875142bae91040b8ccbe93',1,'utilities.cpp']]],
   ['getsnap_7',['getSnap',['../densitymaps_8h.html#a112c14ed0c46f3e74e6ed800c5ff02b5',1,'densitymaps.cpp']]],
   ['gettruez_8',['getTrueZ',['../gadget2io_8h.html#a7f871bd67bae3a893758cdaeed3edb07',1,'gadget2io.cpp']]],
-  ['grid_20distribution_20details_9',['Grid Distribution Details',['../utilities_8h.html#autotoc_md1',1,'']]],
-  ['gridist_5fw_10',['gridist_w',['../utilities_8h.html#af510a59f98b0d336508c25a6bf113b1d',1,'utilities.cpp']]]
+  ['github_20io_20behomo_20project_20behomo_20a_20project_9',['The &lt;a href=&quot;https://valerio-marra.github.io/BEHOMO-project/&quot; &gt;BEHOMO&lt;/a&gt; Project',['../index.html#autotoc_md18',1,'']]],
+  ['grid_20distribution_20details_10',['Grid Distribution Details',['../utilities_8h.html#autotoc_md4',1,'']]],
+  ['gridist_5fw_11',['gridist_w',['../utilities_8h.html#af510a59f98b0d336508c25a6bf113b1d',1,'utilities.cpp']]]
 ];

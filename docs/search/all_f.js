@@ -8,5 +8,6 @@ var searchData=
   ['readpos_5',['readPos',['../gadget2io_8h.html#a331e538ffdcd77471a2aed4cef371896',1,'gadget2io.cpp']]],
   ['readredlist_6',['readRedList',['../gadget2io_8h.html#a46f33a2fb8105a56129e9864c2d4bd8f',1,'gadget2io.cpp']]],
   ['readvel_7',['readVel',['../gadget2io_8h.html#a01e8ed2179fc67f3743c90f83bdfc55e',1,'gadget2io.cpp']]],
-  ['running_20the_20slicer_8',['Running the SLICER',['../index.html#autotoc_md11',1,'']]]
+  ['research_8',['Research',['../index.html#autotoc_md20',1,'Collaborative Research'],['../index.html#autotoc_md21',1,'Ongoing Research']]],
+  ['running_20the_20slicer_9',['Running the SLICER',['../index.html#autotoc_md11',1,'']]]
 ];

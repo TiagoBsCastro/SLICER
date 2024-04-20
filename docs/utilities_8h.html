@@ -280,13 +280,13 @@ constexpr double&#160;</td><td class="memItemRight" valign="bottom"><b>speedcuni
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>valarray&lt;float&gt; A flat array representing the 2D grid, where mass values are assigned according to the particle weights and positions.</dd></dl>
-<h2><a class="anchor" id="autotoc_md1"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
 Grid Distribution Details</h2>
 <p>The mass is distributed on a 2D grid based on the specified positions and weights:</p><ul>
 <li><b>NGP Mode</b>: Directly assigns the full weight of each particle to the nearest grid point.</li>
 <li><b>Weighted Mode</b>: Assigns mass to a 3x3 block of grid points centered on the nearest point, adjusted by the weight function which accounts for the distance from each grid point to the actual particle position.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md2"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Error Handling</h2>
 <p>Throws runtime errors if the lengths of <code>x</code>, <code>y</code>, and <code>w</code> do not match, ensuring data consistency. </p>
 

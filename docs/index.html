@@ -75,7 +75,8 @@ $(function() {
   <div class="headertitle"><div class="title">SLICER: Simulation Light Cone Builder </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md_README"></a> <a href="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml"><img src="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg" alt="C++ Build CI" style="pointer-events: none;" class="inline"/></a> <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" style="pointer-events: none;" class="inline"/> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/docs-available-green.svg" alt="Documentation" style="pointer-events: none;" class="inline"/></a> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/updated-April%2024-orange.svg" alt="Last Updated" style="pointer-events: none;" class="inline"/></a></p>
+<div class="textblock"><p><a class="anchor" id="md_README"></a> <img src="./slicer.png" alt="Logo" width="440" class="inline"/></p>
+<p><a href="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml"><img src="https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg" alt="C++ Build CI" style="pointer-events: none;" class="inline"/></a> <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" style="pointer-events: none;" class="inline"/> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/docs-available-green.svg" alt="Documentation" style="pointer-events: none;" class="inline"/></a> <a href="https://tiagobscastro.github.io/SLICER/"><img src="https://img.shields.io/badge/updated-April%2024-orange.svg" alt="Last Updated" style="pointer-events: none;" class="inline"/></a></p>
 <p><b>SLICER</b> stands for <b>Simulation Light Cone Builder</b>, a specialized tool crafted for astrophysicists and cosmologists. Developed in C++ and parallelized using MPI, SLICER efficiently generates mass maps from particles and past light cones of structures and substructures from SUBFIND catalogs, all from GADGET simulation snapshots (format 2).</p>
 <h1><a class="anchor" id="autotoc_md7"></a>
 Key Features</h1>
@@ -83,7 +84,7 @@ Key Features</h1>
 <li><b>High-Performance Computing</b>: Utilizes MPI for efficient parallel computing, enabling the handling of extensive cosmological datasets.</li>
 <li><b>Versatile Data Processing</b>: It is capable of creating both mass maps and past light cones of structures. The mass maps can be written for all particle species or separately.</li>
 <li><b>Outputs in FITS Format</b>: Delivers results for mass maps in the Flexible Image Transport System (FITS) format, which is extensively used in the astronomical community for storing scientific data.</li>
-<li><b>PINOCCHIO like PLC</b>: The past-light cone (PLC) of (sub)-structures is written with the same structure used by PINOCCHIO (<a href="https://github.com/pigimonaco/Pinocchio">Pinocchio on GitHub</a>).</li>
+<li><b>PINOCCHIO-like PLC</b>: The past-light cone (PLC) of (sub)-structures is written with the same structure used by PINOCCHIO (<a href="https://github.com/pigimonaco/Pinocchio">Pinocchio on GitHub</a>).</li>
 <li><b>Lensing post-processing</b>: SLICER is distributed with several Python post-processing tools that efficiently extract lensing maps from the mass maps. These tools can be found in the <a href="./Lens/"><code>Lens/</code> directory</a>.</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md8"></a>
@@ -166,6 +167,34 @@ Documentation</h1>
 Contributing</h1>
 <p>Contributions to SLICER are welcome! Check our Contributing session.</p>
 <h1><a class="anchor" id="autotoc_md17"></a>
+Featured Projects</h1>
+<p>SLICER has been employed in a variety of research projects. This section highlights some of the significant projects and published papers that have utilized SLICER.</p>
+<h2><a class="anchor" id="autotoc_md18"></a>
+The <a href="https://valerio-marra.github.io/BEHOMO-project/">BEHOMO</a> Project</h2>
+<p>The BEHOMO (Beyond Homogeneity) project leverages Λ Lemaître-Tolman-Bondi N-body simulations to explore large-scale structures and their evolution. SLICER has been instrumental in producing the lensing maps from the BEHOMO simulations.</p>
+<ul>
+<li>Marra, V., Castro, T., Camarena, D., Borgani, S., &amp; Ragagnin, A. (2022). The BEHOMO project: Λ Lemaître-Tolman-Bondi N-body simulations. Astronomy &amp; Astrophysics, 664, A179. <a href="https://doi.org/10.1051/0004-6361/202243539">https://doi.org/10.1051/0004-6361/202243539</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md19"></a>
+<a href="https://magneticum.org">Magneticum</a> Collaboration</h2>
+<p>Magneticum is a series of hydrodynamical simulations focusing on the impact of baryons on cosmological structures. Several studies under this collaboration have used SLICER to analyze the effects of baryonic processes on cosmic structures.</p>
+<ul>
+<li>Castro, T., Quartin, M., Giocoli, C., Borgani, S., &amp; Dolag, K. (2018). The effect of baryons in the cosmological lensing PDFs. Monthly Notices of the Royal Astronomical Society, 478(1), 1305-1325. <a href="https://doi.org/10.1093/mnras/sty1117">https://doi.org/10.1093/mnras/sty1117</a></li>
+<li>Martinet, N., Castro, T., Harnois-Déraps, J., Jullo, E., Giocoli, C., et al. (2021). Impact of baryons in cosmic shear analyses with tomographic aperture mass statistics. Astronomy &amp; Astrophysics, 648, A115. <a href="https://doi.org/10.1051/0004-6361/202040155">https://doi.org/10.1051/0004-6361/202040155</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md20"></a>
+Collaborative Research</h2>
+<p>SLICER has also been used in other papers to quantify the impact of baryons on cosmological analysis of weak lensing data.</p>
+<ul>
+<li>Harnois-Déraps, J., Martinet, N., Castro, T., Dolag, K., Giblin, B., et al. (2021). Cosmic shear cosmology beyond two-point statistics: A combined peak count and correlation function analysis of DES-Y1. Monthly Notices of the Royal Astronomical Society, 506(2), 1623-1650. <a href="https://doi.org/10.1093/mnras/stab1623">https://doi.org/10.1093/mnras/stab1623</a></li>
+<li>Heydenreich, S., Brück, B., Burger, P., Harnois-Déraps, J., Unruh, S., et al. (2022). Persistent homology in cosmic shear - II. A tomographic analysis of DES-Y1. Astronomy &amp; Astrophysics, 667, A125. <a href="https://doi.org/10.1051/0004-6361/202243868">https://doi.org/10.1051/0004-6361/202243868</a></li>
+<li>Burger, P. A., Friedrich, O., Harnois-Déraps, J., Schneider, P., Asgari, M., et al. (2023). KiDS-1000 cosmology: Constraints from density split statistics. Astronomy &amp; Astrophysics, 669, A69. <a href="https://doi.org/10.1051/0004-6361/202244673">https://doi.org/10.1051/0004-6361/202244673</a></li>
+<li>Burger, P. A., Porth, L., Heydenreich, S., Linke, L., Wielders, N., et al. (2024). KiDS-1000 cosmology: Combined second- and third-order shear statistics. Astronomy &amp; Astrophysics, 683, A103. <a href="https://doi.org/10.1051/0004-6361/202347986">https://doi.org/10.1051/0004-6361/202347986</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md21"></a>
+Ongoing Research</h2>
+<p>SLICER continues to be a tool of choice for upcoming studies and publications! Stay tunned for more ;)</p>
+<h1><a class="anchor" id="autotoc_md22"></a>
 License</h1>
 <p>SLICER is licensed under the GNU GPL3 license. See <a href="./LICENSE">LICENSE</a> for more details. </p>
 </div></div><!-- PageDoc -->
