@@ -112,7 +112,7 @@ Visit our [Documentation](https://tiagobscastro.github.io/SLICER/) for full API 
 
 ## Contributing
 
-Contributions to SLICER are welcome! Check our [Contribution](CIBTRUBUTIONS.md) session.
+Contributions to SLICER are welcome! Check our [Contributing](CONTRIBUTING.md) session.
 
 ## License
 
