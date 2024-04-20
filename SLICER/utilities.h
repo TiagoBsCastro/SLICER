@@ -1,5 +1,12 @@
+/**
+ * @file utilities.h
+ * @brief Provides a set of utility functions for mathematical operations, conversion utilities,
+ * and handling geometrical transformations useful in simulation data processing.
+ */
+
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
+
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -30,7 +37,7 @@ static const char ee3[] = "%4.3e";
  * allows for precise control over the output format, similar to printf syntax. This function
  * is useful for creating formatted strings from numerical or other data types dynamically.
  *
- * @tparam T The type of the value to be converted into a string. Can be any type that is 
+ * @tparam T The type of the value to be converted into a string. Can be any type that is
  *           compatible with the sprintf format specifiers.
  * @param val Reference to the value to be converted into a string.
  * @param fact The format specifier as a C-style string, which determines the formatting of the output string.
@@ -51,9 +58,10 @@ static const char ee3[] = "%4.3e";
  * buffer size are properly managed.
  */
 template <class T>
-string sconv (T &val, const char *fact)
+string sconv(T &val, const char *fact)
 {
-  char VAL[20]; sprintf (VAL, fact, val);
+  char VAL[20];
+  sprintf(VAL, fact, val);
   return string(VAL);
 }
 
@@ -61,13 +69,13 @@ string sconv (T &val, const char *fact)
  * @brief Calculates the mass assignment weight using the Triangular Shaped Cloud (TSC) kernel.
  *
  * This function computes the weight for a particle relative to a grid point based on the distance
- * between them, using the TSC kernel. The TSC kernel is a piecewise quadratic function that 
+ * between them, using the TSC kernel. The TSC kernel is a piecewise quadratic function that
  * effectively assigns mass to grid points based on particle proximity, within a specified range.
  *
  * @param ixx The actual position of the particle.
  * @param ixh The position of the grid point.
  * @param dx The grid spacing, which defines the scale of the kernel.
- * @return float The calculated weight according to the TSC kernel. If the distance exceeds the range 
+ * @return float The calculated weight according to the TSC kernel. If the distance exceeds the range
  *               of influence defined by the kernel, the weight will be zero.
  *
  * The weight is determined based on the relative distance between the particle and the grid point,
@@ -78,7 +86,7 @@ string sconv (T &val, const char *fact)
  *   a quadratic drop-off: \f$0.5 \times (\frac{3}{2} - x)^2\f$.
  * - Beyond 1.5 times the grid spacing, the weight is 0, indicating no contribution to the grid point.
  */
-float weight (float ixx, float ixh, double dx);
+float weight(float ixx, float ixh, double dx);
 
 /**
  * @brief Converts Cartesian coordinates to polar coordinates or celestial coordinates (RA, Dec).
@@ -96,7 +104,7 @@ float weight (float ixx, float ixh, double dx);
  *
  * The function computes the distance 'd' as the Euclidean distance from the origin to the point (x, y, z).
  * Depending on the 'radec' flag, it calculates either:
- * - Polar coordinates: 
+ * - Polar coordinates:
  *   - Theta (ang1) as the angle from the positive z-axis.
  *   - Phi (ang2) as the angle from the positive x-axis in the x-y plane.
  * - Celestial coordinates:
@@ -129,6 +137,6 @@ void getPolar(double x, double y, double z, double &ang1, double &ang2, double &
  * ## Error Handling
  * Throws runtime errors if the lengths of `x`, `y`, and `w` do not match, ensuring data consistency.
  */
-valarray<float> gridist_w (vector<float>, vector<float> , vector<float>, int, bool);
+valarray<float> gridist_w(vector<float>, vector<float>, vector<float>, int, bool);
 
 #endif

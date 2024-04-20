@@ -1,8 +1,17 @@
-/* Header with definitions to read Gadget2 snapshot format */
+/**
+ * @file gadget2io.h
+ * @brief Interfaces for handling Gadget-2 simulation data, including reading snapshot headers,
+ * particle data, and performing unit conversions and other necessary preprocessing steps.
+ */
+
+#ifndef GADGET2IO_H
+#define GADGET2IO_H
+
+#include <cstdint>
 #include "utilities.h"
 #include "data.h"
 
-#define POS_U 1.0    // Unit conversion from BoxSize unit lengh to kpc/h
+#define POS_U 1.0 // Unit conversion from BoxSize unit lengh to kpc/h
 
 /**
  * @brief Reads the header from a snapshot file and stores it in the provided Header structure.
@@ -16,7 +25,7 @@
  * @param close Boolean flag indicating whether to close the ifstream after reading.
  * @return int Returns 0 on successful read, otherwise returns an error code.
  */
-int readHeader (string file_in, Header &header, ifstream & fin, bool close);
+int readHeader(string file_in, Header &header, ifstream &fin, bool close);
 
 /**
  * @brief Tests if the snapshot contains hydrodynamic (Hydro) particles.
@@ -27,7 +36,7 @@ int readHeader (string file_in, Header &header, ifstream & fin, bool close);
  * @param p Reference to the InputParams structure containing simulation settings.
  * @param data Reference to the Header structure containing the snapshot header data.
  */
-void testHydro(InputParams & p, Header & data);
+void testHydro(InputParams &p, Header &data);
 
 /**
  * @brief Prints the details of a snapshot header.
@@ -37,7 +46,7 @@ void testHydro(InputParams & p, Header & data);
  *
  * @param header The Header structure whose contents are to be printed.
  */
-void printHeader (Header header);
+void printHeader(Header header);
 
 /**
  * @brief Advances the file stream by skipping a specified number of variables.
@@ -49,7 +58,7 @@ void printHeader (Header header);
  * @param size The size of each variable to skip.
  * @param n The number of variables to skip.
  */
-void fastforwardNVars (ifstream & fin, size_t size, size_t n);
+void fastforwardNVars(ifstream &fin, size_t size, size_t n);
 
 /**
  * @brief Advances the file stream to the start of a specified block.
@@ -62,7 +71,7 @@ void fastforwardNVars (ifstream & fin, size_t size, size_t n);
  * @param BLOCK The label of the block to which the file stream is to be advanced.
  * @param myid Processor ID used to determine if metadata should be printed.
  */
-void fastforwardToBlock (ifstream & fin, string BLOCK, int myid);
+void fastforwardToBlock(ifstream &fin, string BLOCK, int myid);
 
 /**
  * @brief Reads a block of data from a file stream into a provided array.
@@ -79,17 +88,18 @@ void fastforwardToBlock (ifstream & fin, string BLOCK, int myid);
  * @param scalar Pointer to the array where read elements are stored.
  * @param myid Processor ID used for conditional monitoring outputs.
  */
-template<typename T>
-void readBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
+template <typename T>
+void readBlock(ifstream &fin, size_t num, string block, T *scalar, int myid)
+{
 
   T dummy; // Dummy vars to read x,y, and z
-  fastforwardToBlock (fin, block, myid);
+  fastforwardToBlock(fin, block, myid);
   /* Loop on different types */
-  for (int pp=0; pp<num; pp++){
+  for (size_t pp = 0; pp < num; pp++)
+  {
 
     fin.read((char *)&dummy, sizeof(dummy));
     scalar[pp] = dummy;
-
   }
 };
 
@@ -109,8 +119,8 @@ void readBlock(ifstream & fin, size_t num, string block, T *scalar, int myid){
  * @param rcase Replication factor for box dimensions.
  * @param myid Processor ID for conditional monitoring.
  */
-void readPos (ifstream & fin, Header &data, InputParams &p, Random &random,
-                              int isnap, float* xx[6][3], float rcase,int myid);
+void readPos(ifstream &fin, Header &data, InputParams &p, Random &random,
+             int isnap, float *xx[6][3], float rcase, int myid);
 
 /**
  * @brief Reads particle velocities from a snapshot and applies randomization.
@@ -127,8 +137,8 @@ void readPos (ifstream & fin, Header &data, InputParams &p, Random &random,
  * @param vv Array to store the read velocities.
  * @param myid Processor ID for conditional monitoring.
  */
-void readVel (ifstream & fin, Header &data, InputParams &p, Random &random,
-                              int isnap, float* vv[6][3], int myid);
+void readVel(ifstream &fin, Header &data, InputParams &p, Random &random,
+             int isnap, float *vv[6][3], int myid);
 
 /**
  * @brief Retrieves group velocities from subhalos, applying randomization.
@@ -184,7 +194,7 @@ void getLOSVel(SubFind &halos);
  * @param isnap Snapshot index for processing.
  */
 void getTrueZ(SubFind &halos, Header &data, gsl_spline *getZl,
-  gsl_interp_accel *accGetZl, Lens lens, int isnap);
+              gsl_interp_accel *accGetZl, Lens lens, int isnap);
 
 /**
  * @brief Computes the angular positions of halos, matching the coordinate system used in Pinocchio.
@@ -208,4 +218,6 @@ void getAngular(SubFind &halos);
  * @param p Reference to InputParams for source depth and other settings.
  * @return int Status code of the function (0 for success).
  */
-int readRedList(string filredshiftlist, vector <double> & snapred, vector <string> & snappath, vector <double> & snapbox , InputParams &p);
+int readRedList(string filredshiftlist, vector<double> &snapred, vector<string> &snappath, vector<double> &snapbox, InputParams &p);
+
+#endif

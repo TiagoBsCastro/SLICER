@@ -110,7 +110,6 @@ These settings empower advanced users to tailor SLICER’s functionality to bett
 
 Visit our [Documentation](https://tiagobscastro.github.io/SLICER/) for full API details.
 
-
 ## To-Do List
 
 * Remove numberOfLensPerPlane directive and add as an entry in InputParams.ini.
@@ -121,4 +120,4 @@ Contributions to SLICER are welcome!
 
 ## License
 
-SLICER is licensed under the GNU GPL3 license. See LICENSE for more details.
+SLICER is licensed under the GNU GPL3 license. See [LICENSE](./LICENSE) for more details.

@@ -23,15 +23,16 @@
  * the Hubble parameter and various cosmological distances such as comoving
  * and transverse comoving distances considering a dynamic dark energy component.
  */
-class w0waCDM {
+class w0waCDM
+{
 private:
     static constexpr double CSPEEDOFLIGHT = speedcunit * 100; ///< Speed of light in H0/h * 1 Mpc
-    double H0;  ///< Hubble constant at z = 0 in units of km/s/Mpc
-    double OmegaM;  ///< Matter density parameter
-    double OmegaLambda;  ///< Dark energy density parameter
-    double w0;  ///< Equation of state parameter at z = 0
-    double wa;  ///< Change rate of the equation of state parameter
-    mutable std::map<double, double> cache;  ///< Cache for storing computed comoving distances
+    double H0;                                                ///< Hubble constant at z = 0 in units of km/s/Mpc
+    double OmegaM;                                            ///< Matter density parameter
+    double OmegaLambda;                                       ///< Dark energy density parameter
+    double w0;                                                ///< Equation of state parameter at z = 0
+    double wa;                                                ///< Change rate of the equation of state parameter
+    mutable std::map<double, double> cache;                   ///< Cache for storing computed comoving distances
 
     /**
      * Calculates the Hubble parameter H(z) as a function of redshift z.

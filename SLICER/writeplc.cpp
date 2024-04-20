@@ -1,22 +1,25 @@
 #include "writeplc.h"
 #include "densitymaps.h"
 
-void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int ff){
+void writePLC(SubFind &halos, Header &data, InputParams &p, string snappl, int ff)
+{
 
-  fstream fileoutput ( fileOutput(p, snappl, ff), ios::out | ios::binary );
-  double fovradiants = p.fov/180.*M_PI;
+  fstream fileoutput(fileOutput(p, snappl, ff), ios::out | ios::binary);
+  double fovradiants = p.fov / 180. * M_PI;
 
   int nhalos = halos.m.size();
 
-  for(int i=0; i<nhalos; i++){
+  for (int i = 0; i < nhalos; i++)
+  {
 
-    if( (abs(halos.phi[i]) <=  fovradiants/2.0) & (abs(halos.theta[i]) <=  fovradiants/2.0) & (halos.m[i]>0) & (halos.truez[i]>0) ){
+    if ((abs(halos.phi[i]) <= fovradiants / 2.0) & (abs(halos.theta[i]) <= fovradiants / 2.0) & (halos.m[i] > 0) & (halos.truez[i] > 0))
+    {
       /* Explicitly casting the variables as in Pinocchio PLC */
       int dummy;
       long long unsigned int id = halos.id[i];
-      double xx0 = (halos.xx0[i] - 0.5)*data.boxsize/1e3*POS_U;
-      double yy0 = (halos.yy0[i] - 0.5)*data.boxsize/1e3*POS_U;
-      double zz0 = halos.zz0[i]*data.boxsize/1e3*POS_U;
+      double xx0 = (halos.xx0[i] - 0.5) * data.boxsize / 1e3 * POS_U;
+      double yy0 = (halos.yy0[i] - 0.5) * data.boxsize / 1e3 * POS_U;
+      double zz0 = halos.zz0[i] * data.boxsize / 1e3 * POS_U;
       double vx0 = halos.vx0[i];
       double vy0 = halos.vy0[i];
       double vz0 = halos.vz0[i];
@@ -27,31 +30,28 @@ void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int 
       double theta, phi, r;
 
       getPolar(xx0, yy0, zz0, theta, phi, r, false);
-      theta = 90.0-theta*180.0/M_PI;
-      phi = phi*180.0/M_PI;
-      if( phi<0.0 )
+      theta = 90.0 - theta * 180.0 / M_PI;
+      phi = phi * 180.0 / M_PI;
+      if (phi < 0.0)
         phi += 360.0;
 
-      fileoutput.write((char*)&dummy, sizeof (int));
-      fileoutput.write((char*)&id, sizeof (unsigned long long int));
-      fileoutput.write((char*)&truez, sizeof (double));
-      fileoutput.write((char*)&xx0, sizeof (double));
-      fileoutput.write((char*)&yy0, sizeof (double));
-      fileoutput.write((char*)&zz0, sizeof (double));
-      fileoutput.write((char*)&vx0, sizeof (double));
-      fileoutput.write((char*)&vy0, sizeof (double));
-      fileoutput.write((char*)&vz0, sizeof (double));
-      fileoutput.write((char*)&m, sizeof (double));
-      fileoutput.write((char*)&theta, sizeof (double));
-      fileoutput.write((char*)&phi, sizeof (double));
-      fileoutput.write((char*)&vel, sizeof (double));
-      fileoutput.write((char*)&obsz, sizeof (double));
-      fileoutput.write((char*)&dummy, sizeof (int));
-
+      fileoutput.write((char *)&dummy, sizeof(int));
+      fileoutput.write((char *)&id, sizeof(unsigned long long int));
+      fileoutput.write((char *)&truez, sizeof(double));
+      fileoutput.write((char *)&xx0, sizeof(double));
+      fileoutput.write((char *)&yy0, sizeof(double));
+      fileoutput.write((char *)&zz0, sizeof(double));
+      fileoutput.write((char *)&vx0, sizeof(double));
+      fileoutput.write((char *)&vy0, sizeof(double));
+      fileoutput.write((char *)&vz0, sizeof(double));
+      fileoutput.write((char *)&m, sizeof(double));
+      fileoutput.write((char *)&theta, sizeof(double));
+      fileoutput.write((char *)&phi, sizeof(double));
+      fileoutput.write((char *)&vel, sizeof(double));
+      fileoutput.write((char *)&obsz, sizeof(double));
+      fileoutput.write((char *)&dummy, sizeof(int));
     }
-
   }
 
   fileoutput.close();
-
 }

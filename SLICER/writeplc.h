@@ -1,3 +1,12 @@
+/**
+ * @file writeplc.h
+ * @brief Provides functionality for writing processed halo data to a binary output file
+ * formatted specifically for compatibility with visualization or further analysis tools.
+ */
+
+#ifndef WRITEPLC_H
+#define WRITEPLC_H
+
 #include "data.h"
 
 /**
@@ -37,4 +46,6 @@
  * To use this function, ensure that the halo, header, and input parameters are properly set up and that
  * the snapshot label and frame file index are correctly specified.
  */
-void writePLC (SubFind &halos, Header &data, InputParams &p, string snappl, int ff);
+void writePLC(SubFind &halos, Header &data, InputParams &p, string snappl, int ff);
+
+#endif
