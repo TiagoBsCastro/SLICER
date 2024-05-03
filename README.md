@@ -6,7 +6,7 @@
 ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 [![Documentation](https://img.shields.io/badge/docs-available-green.svg)](https://tiagobscastro.github.io/SLICER/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11048430.svg)](https://doi.org/10.5281/zenodo.11048430)
-[![Last Updated](https://img.shields.io/badge/updated-April%2024-orange.svg)](https://tiagobscastro.github.io/SLICER/)
+[![Last Updated](https://img.shields.io/badge/updated-May%2024-orange.svg)](https://tiagobscastro.github.io/SLICER/)
 
 <div align="justify">
 
