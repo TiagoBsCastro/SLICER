@@ -149,9 +149,11 @@ SLICER has also been used in other papers to quantify the impact of baryons on c
   
 * Burger, P. A., Porth, L., Heydenreich, S., Linke, L., Wielders, N., et al. (2024). KiDS-1000 cosmology: Combined second- and third-order shear statistics. Astronomy & Astrophysics, 683, A103. https://doi.org/10.1051/0004-6361/202347986
 
+* Alfradique, V., Castro, T., Marra, V., Quartin, M., Giocoli, C., & Monaco, P. (2024). A deconstruction of methods to derive one-point lensing statistics. arXiv preprint arXiv:2405.00147.
+
 ### Ongoing Research
 
-SLICER continues to be a tool of choice for upcoming studies and publications! Stay tunned for more ;)
+SLICER continues to be a tool of choice for upcoming studies and publications! Stay tuned for more ;)
 
 ## License
 
