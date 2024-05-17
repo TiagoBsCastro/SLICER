@@ -3,7 +3,7 @@
 <img src="./slicer.png" width="440" alt="Logo">
 
 [![C++ Build CI](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml/badge.svg)](https://github.com/TiagoBsCastro/SLICER/actions/workflows/ci.yml)
-![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 [![Documentation](https://img.shields.io/badge/docs-available-green.svg)](https://tiagobscastro.github.io/SLICER/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11048430.svg)](https://doi.org/10.5281/zenodo.11048430)
 [![Last Updated](https://img.shields.io/badge/updated-May%2024-orange.svg)](https://tiagobscastro.github.io/SLICER/)
@@ -139,7 +139,7 @@ Magneticum is a series of hydrodynamical simulations focusing on the impact of b
 
 ### Collaborative Research
 
-SLICER has also been used in other papers to quantify the impact of baryons on cosmological analysis of weak lensing data.
+SLICER has also been used in other papers to quantify the impact of baryons on the cosmological analysis of weak lensing data.
 
 * Harnois-Déraps, J., Martinet, N., Castro, T., Dolag, K., Giblin, B., et al. (2021). Cosmic shear cosmology beyond two-point statistics: A combined peak count and correlation function analysis of DES-Y1. Monthly Notices of the Royal Astronomical Society, 506(2), 1623-1650. https://doi.org/10.1093/mnras/stab1623
 
@@ -149,7 +149,9 @@ SLICER has also been used in other papers to quantify the impact of baryons on c
   
 * Burger, P. A., Porth, L., Heydenreich, S., Linke, L., Wielders, N., et al. (2024). KiDS-1000 cosmology: Combined second- and third-order shear statistics. Astronomy & Astrophysics, 683, A103. https://doi.org/10.1051/0004-6361/202347986
 
-* Alfradique, V., Castro, T., Marra, V., Quartin, M., Giocoli, C., & Monaco, P. (2024). A deconstruction of methods to derive one-point lensing statistics. arXiv preprint arXiv:2405.00147.
+* Alfradique, V., Castro, T., Marra, V., Quartin, M., Giocoli, C., & Monaco, P. (2024). A deconstruction of methods to derive one-point lensing statistics. [arXiv:2405.00147](https://arxiv.org/abs/2405.00147).
+
+* Harnois-Deraps, J., & others. (2024). KiDS-1000 and DES-Y1 combined: Cosmology from peak count statistics. [arXiv:2405.10312](https://arxiv.org/abs/2405.10312).
 
 ### Ongoing Research
 
