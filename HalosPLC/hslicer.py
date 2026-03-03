@@ -45,8 +45,8 @@ for i, (d1, d2, z) in enumerate(zip(layerdistances[:-1], layerdistances[1:], par
 
         plc = np.empty(0, outtype)
 
-    repinside = geometry[ ((d1.value>=geometry['nearestpoint']) & (d1.value<geometry['farthestpoint'])) | ((d2.value>=geometry['nearestpoint']) & (d2.value<geometry['farthestpoint'])) ]
-    print("# Total number of replications inside the layer {}".format(repinside.shape[0]))
+    repinside = geometry[(d2.value > geometry["nearestpoint"]) & (d1.value < geometry["farthestpoint"])]
+	print("# Total number of replications inside the layer {}".format(repinside.shape[0]))
     print("# Looping over the Replications")
     print("##                          x   y   z      nearest        farthest")
     for repi in repinside:
